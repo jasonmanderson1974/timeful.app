@@ -31,7 +31,7 @@ Internal identifiers (Go module `schej.it/server`, Mongo DB `schej-it`, prod ema
 - MongoDB backup/restore: `mongodump --host=localhost:27017 --db=schej-it` / `mongorestore --uri mongodb://localhost:27017 ./dump --drop`.
 
 ### Required env vars for local server boot
-`SESSION_SECRET` (≥32 chars) is enforced at startup. `CLIENT_ID`/`CLIENT_SECRET` (Google OAuth) and `ENCRYPTION_KEY` are required for most flows. See `server/.env.template` and `DEPLOYMENT.md` for the full list (Stripe, Microsoft, Listmonk, Slack, Discord, Gmail, etc.).
+`SESSION_SECRET` (≥32 chars) is enforced at startup. `CLIENT_ID`/`CLIENT_SECRET` (Google OAuth) and `ENCRYPTION_KEY` are required for most flows. `STRIPE_API_KEY` is used in `main.go` but not present in `.env.template`. See `server/.env.template` and `DEPLOYMENT.md` for the full list (Microsoft, Listmonk, Slack, Discord, Gmail, etc.).
 
 For local frontend → local backend, set `CORS_ORIGINS=http://localhost:8080` in `server/.env`.
 
@@ -52,9 +52,9 @@ For local frontend → local backend, set `CORS_ORIGINS=http://localhost:8080` i
 
 ### Frontend (Vue 2 SPA)
 - `src/router/index.js` — routes (`Landing`, `Home`, `Event`, `Group`, `Friends`, `Settings`, `SignIn`/`SignUp`/`Auth`, `StripeRedirect`, etc. — see `src/views/`).
-- `src/store/index.js` — single Vuex store (auth user, events, snackbar, dialogs).
+- `src/store/index.js` — single (non-modular) Vuex store holding auth user, events, folders, feature flags (`groupsEnabled`, `daysOnlyEnabled`, `overlayAvailabilitiesEnabled`, `enablePaywall`, etc.), and dialog/snackbar state.
 - `src/components/` — organized by feature folder (`event/`, `groups/`, `home/`, `landing/`, `pricing/`, `settings/`, `schedule_overlap/`, `calendar_permission_dialogs/`, `sign_up_form/`, `general/`) plus top-level shared components.
-- `src/utils/` — date math (`date_utils.js`, uses `dayjs`/`moment`/`spacetime`), `fetch_utils.js` (API client), `plugin_utils.js` (handles the postMessage plugin API — see `PLUGIN_API_README.md`), `sign_in_utils.js`, `location_utils.js`, `services/` (calendar-provider abstractions on the client side).
+- `src/utils/` — date math (`date_utils.js`, uses `dayjs`/`moment`/`spacetime`), `fetch_utils.js` (API client), `plugin_utils.js` (handles the postMessage plugin API — see `PLUGIN_API_README.md`), `sign_in_utils.js`, `location_utils.js`, `services/` (`EventService.js`, `FolderService.js` — thin wrappers over `fetch_utils` for event and folder API calls).
 - Tailwind + Vuetify coexist; `tailwind.config.js` purges `src/**/*.{vue,js,...}`.
 - Service worker is registered via `register-service-worker`; `kill-sw.js` at the repo root is a kill switch script if needed.
 
