@@ -37,6 +37,25 @@ Captured 2026-06-20 (user-reported during review — for future sessions):
       for the Tools row) for grey surfaces — possibly Vuetify `theme--dark` default surface
       (rgb 30,30,30) or a missed `tw-bg-*` / explicit background. Logged-in review finding.
 
+Captured 2026-06-20 (batch 2):
+- [ ] **Remove YouTube videos.** The landing "The proceedings, in motion" section
+      (`Landing.vue` ~154-173, the `youtube.com/embed/...` iframe) AND the `HowItWorksDialog.vue`
+      YouTube embed (and any other YouTube embeds — grep `youtube` under `frontend/src`).
+- [ ] **Remove these links:** "Privacy Policy" (footer `Footer.vue`; also the sign-in
+      "agree to our privacy policy" link in `SignIn.vue`/`SignInDialog.vue` — confirm scope),
+      "The Manner of It" (landing nav → opens HowItWorksDialog) and "The Chronicle" (landing
+      nav → `/blog`), both in `Landing.vue` header nav (and the `LandingPageHeader` mobile menu).
+- [ ] **Remove landing hero text** "No dues · no login required." (`Landing.vue` hero, under the
+      "Call a Gathering" button).
+
+## Next-session discussion (not a code task yet)
+- **Restrict sign-up / access to an allowlist (invite-only, NOT public).** User has a list of
+  **names, email addresses, and phone numbers**; members added infrequently but manually; the
+  site must not be open to the general public. Need to design this next session — see
+  [[project-fellowship-access-control]]. Covers: Google OAuth sign-in + the email/OTP path,
+  and guest (no-login) event responses. Decide allowlist storage + matching key (email most
+  reliable; phone for SMS-OTP?), admin flow to add members, and what unauthorized users see.
+
 ---
 
 ## 1. Goal & scope (decided 2026-06-20)
