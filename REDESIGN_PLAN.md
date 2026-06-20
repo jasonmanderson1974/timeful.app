@@ -33,7 +33,7 @@ Captured 2026-06-20 (user-reported during review — for future sessions):
 - [x] **Login bug: Google/Outlook buttons white-on-white — FIXED 2026-06-20.** Added global
       `.v-application .v-btn.tw-bg-white { color: #1c1410 }` in index.css → dark labels on all
       white brand buttons (login + Apple/ICS autofill). Deployed & verified on /sign-in.
-- [ ] **/home: grey backgrounds wash out text** around the **Dashboard** and **Tools** sections.
+- [x] **/home: grey backgrounds wash out text** DONE 2026-06-20: around the **Dashboard** and **Tools** sections.
       Currently grey (likely a leftover Vuetify default / unconverted surface) → low contrast on
       the light text. Re-tone to wood/leather (or transparent over the damask) so text reads.
       Look in `views/Home.vue` + `components/home/Dashboard.vue` (and any section wrapper/cards
@@ -41,16 +41,16 @@ Captured 2026-06-20 (user-reported during review — for future sessions):
       (rgb 30,30,30) or a missed `tw-bg-*` / explicit background. Logged-in review finding.
 
 Captured 2026-06-20 (batch 2):
-- [ ] **Remove YouTube videos.** The landing "The proceedings, in motion" section
+- [x] **Remove YouTube videos.** DONE 2026-06-20: The landing "The proceedings, in motion" section
       (`Landing.vue` ~154-173, the `youtube.com/embed/...` iframe) AND the `HowItWorksDialog.vue`
       YouTube embed (and any other YouTube embeds — grep `youtube` under `frontend/src`).
-- [ ] **Remove these links:** "Privacy Policy" (footer `Footer.vue`; also the sign-in
+- [x] **Remove these links:** DONE 2026-06-20 (standalone links; inline sign-in 'agree to privacy policy' kept): "Privacy Policy" (footer `Footer.vue`; also the sign-in
       "agree to our privacy policy" link in `SignIn.vue`/`SignInDialog.vue` — confirm scope),
       "The Manner of It" (landing nav → opens HowItWorksDialog) and "The Chronicle" (landing
       nav → `/blog`), both in `Landing.vue` header nav (and the `LandingPageHeader` mobile menu).
-- [ ] **Remove landing hero text** "No dues · no login required." (`Landing.vue` hero, under the
+- [x] **Remove landing hero text** DONE 2026-06-20: "No dues · no login required." (`Landing.vue` hero, under the
       "Call a Gathering" button).
-- [ ] **Site icon still shows the OLD green icon** (confirmed by user across cleared cache +
+- [x] **Site icon** DONE 2026-06-20 (regenerated binary favicons from crest + cache-bust ?v=2): (confirmed by user across cleared cache +
       different browser/computer). Cause: only `favicon.svg` was rebranded; browsers/bookmarks
       still fetch the binary `public/favicon.ico` + `favicon-16x16.png` + `favicon-32x32.png`,
       which are the old green Timeful calendar. FIX: regenerate those from the crest — render
