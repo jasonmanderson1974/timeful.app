@@ -36,7 +36,7 @@
                 <div class="tw-flex tw-w-full">
                   <div
                     v-for="day in daysOfWeek"
-                    class="tw-flex-1 tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-dark-gray"
+                    class="tw-flex-1 tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-parchment-dim"
                   >
                     {{ day }}
                   </div>
@@ -78,7 +78,7 @@
                     class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
                   >
                     <div
-                      class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
+                      class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-leather tw-p-2 tw-px-[7px] tw-text-sm tw-text-parchment-dim"
                     >
                       <div class="tw-flex tw-items-center tw-gap-1">
                         <v-icon small>mdi-information-outline</v-icon>
@@ -122,7 +122,7 @@
               >
                 <div
                   :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-                  class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
+                  class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-wood-deep sm:tw-top-16 sm:tw-ml-0"
                 >
                   <div
                     :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
@@ -191,7 +191,7 @@
                         ? undefined
                         : 'tw-sticky tw-top-14'
                     "
-                    class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-white sm:tw-top-16"
+                    class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-wood-deep sm:tw-top-16"
                   >
                     <template v-for="(day, i) in days">
                       <div
@@ -199,11 +199,11 @@
                         :style="{ width: `${SPLIT_GAP_WIDTH}px` }"
                         :key="`${i}-gap`"
                       ></div>
-                      <div :key="i" class="tw-flex-1 tw-bg-white">
+                      <div :key="i" class="tw-flex-1 tw-bg-wood-deep">
                         <div class="tw-text-center">
                           <div
                             v-if="isSpecificDates || isGroup"
-                            class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
+                            class="tw-text-[12px] tw-font-light tw-capitalize tw-text-parchment-dim sm:tw-text-xs"
                           >
                             {{ day.dateString }}
                           </div>
@@ -230,7 +230,7 @@
                           class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                         >
                           <v-progress-circular
-                            class="tw-text-green"
+                            class="tw-text-brass"
                             indeterminate
                           />
                         </div>
@@ -464,7 +464,7 @@
                     class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
                   >
                     <div
-                      class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
+                      class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-leather tw-p-2 tw-px-[7px] tw-text-sm tw-text-parchment-dim"
                     >
                       <div class="tw-flex tw-items-center tw-gap-1">
                         <v-icon small>mdi-information-outline</v-icon>
@@ -484,7 +484,7 @@
                       !loadingResponses.loading
                     "
                   >
-                    <div class="tw-mt-2 tw-text-sm tw-text-dark-gray">
+                    <div class="tw-mt-2 tw-text-sm tw-text-parchment-dim">
                       Note: There's no time when all
                       {{ respondents.length }} respondents are available.
                     </div>
@@ -519,7 +519,7 @@
               <div
                 v-if="!calendarOnly"
                 :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-                class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16"
+                class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-wood-deep sm:tw-top-16"
               >
                 <div
                   :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
@@ -545,7 +545,7 @@
               <div class="tw-mb-2 tw-text-lg tw-text-black">Slots</div>
               <div v-if="!isOwner" class="tw-mb-3 tw-flex tw-flex-col">
                 <div
-                  class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-3 tw-text-xs tw-italic tw-text-dark-gray"
+                  class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-leather tw-p-3 tw-text-xs tw-italic tw-text-parchment-dim"
                 >
                   <div v-if="!authUser || alreadyRespondedToSignUpForm">
                     <a class="tw-underline" :href="`mailto:${event.ownerId}`"
@@ -591,7 +591,7 @@
                       !addingAvailabilityAsGuest
                     )
                   "
-                  class="tw-flex tw-flex-wrap tw-items-baseline tw-gap-1 tw-text-sm tw-italic tw-text-dark-gray"
+                  class="tw-flex tw-flex-wrap tw-items-baseline tw-gap-1 tw-text-sm tw-italic tw-text-parchment-dim"
                 >
                   {{
                     (userHasResponded && !addingAvailabilityAsGuest) ||
@@ -689,7 +689,7 @@
                     </template>
                   </v-switch>
 
-                  <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
+                  <div class="tw-mt-2 tw-text-xs tw-text-parchment-dim">
                     View everyone's availability while inputting your own
                   </div>
                 </div>
@@ -778,7 +778,7 @@
 
                     <v-card>
                       <v-card-title>Are you sure?</v-card-title>
-                      <v-card-text class="tw-text-sm tw-text-dark-gray"
+                      <v-card-text class="tw-text-sm tw-text-parchment-dim"
                         >Are you sure you want to
                         {{
                           !isGroup
@@ -882,7 +882,7 @@
             <template v-if="hintTextShown">
               <div :key="hintText">
                 <div
-                  :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-very-dark-gray`"
+                  :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-leather tw-px-2 tw-py-2 tw-text-sm tw-text-parchment-dim`"
                 >
                   <div
                     :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`"
@@ -3079,7 +3079,7 @@ export default {
       // Fill style
 
       if (this.isSignUp) {
-        c += "tw-bg-light-gray "
+        c += "tw-bg-leather "
         return { class: c, style: s }
       }
 
@@ -3277,7 +3277,7 @@ export default {
         }
       } else {
         classStyle = {
-          class: "tw-bg-off-white tw-text-gray ",
+          class: "tw-bg-leather tw-text-gray ",
           style: {},
         }
       }

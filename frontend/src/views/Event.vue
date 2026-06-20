@@ -1,8 +1,5 @@
 <template>
   <span>
-    <FormerlyKnownAs
-      class="tw-mx-auto tw-mb-10 tw-mt-3 tw-max-w-6xl tw-pl-4 sm:tw-pl-12"
-    />
     <div v-if="event" class="tw-mt-8 tw-h-full">
       <!-- Mark availability option dialog -->
       <MarkAvailabilityDialog
@@ -100,7 +97,7 @@
         <div class="tw-mx-auto tw-max-w-5xl tw-flex-1">
           <div v-if="!isSettingSpecificTimes" class="tw-mx-4">
             <!-- Title and copy link -->
-            <div class="tw-flex tw-items-center tw-text-black">
+            <div class="tw-flex tw-items-center tw-text-parchment">
               <div>
                 <div
                   class="sm:mb-2 tw-flex tw-flex-wrap tw-items-center tw-gap-x-4 tw-gap-y-2"
@@ -109,7 +106,7 @@
                     class="tw-text-xl sm:tw-text-3xl"
                     :class="
                       canEdit &&
-                      '-tw-mx-2 -tw-my-1 tw-cursor-pointer tw-rounded tw-px-2 tw-py-1 tw-transition-all hover:tw-bg-light-gray'
+                      '-tw-mx-2 -tw-my-1 tw-cursor-pointer tw-rounded tw-px-2 tw-py-1 tw-transition-all hover:tw-bg-leather'
                     "
                     @click="canEdit && editEvent()"
                   >
@@ -119,14 +116,14 @@
                     v-if="event.when2meetHref?.length > 0"
                     :href="`https://when2meet.com${event.when2meetHref}`"
                     :small="isPhone"
-                    class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-light-gray tw-px-2 tw-font-medium sm:tw-px-3"
+                    class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-leather tw-px-2 tw-font-medium sm:tw-px-3"
                     >Imported from when2meet</v-chip
                   >
                   <template v-if="isGroup">
                     <div class="">
                       <v-chip
                         :small="isPhone"
-                        class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-light-gray tw-px-2 tw-font-medium sm:tw-px-3"
+                        class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-leather tw-px-2 tw-font-medium sm:tw-px-3"
                         @click="helpDialog = true"
                         >Availability group</v-chip
                       >
@@ -143,7 +140,7 @@
                 </div>
                 <div class="tw-flex tw-items-baseline tw-gap-1">
                   <div
-                    class="tw-text-sm tw-font-normal tw-text-very-dark-gray sm:tw-text-base"
+                    class="tw-text-sm tw-font-normal tw-text-parchment-dim sm:tw-text-base"
                   >
                     {{ dateString }}
                   </div>
@@ -151,7 +148,7 @@
                     <v-btn
                       id="edit-event-btn"
                       @click="editEvent"
-                      class="tw-px-2 tw-text-sm tw-text-green"
+                      class="tw-px-2 tw-text-sm tw-text-brass"
                       text
                     >
                       Edit {{ isGroup ? "group" : "event" }}
@@ -168,7 +165,7 @@
                     "
                     :icon="isPhone"
                     text
-                    class="tw-mr-1 tw-text-very-dark-gray sm:tw-mr-2.5"
+                    class="tw-mr-1 tw-text-parchment-dim sm:tw-mr-2.5"
                     @click="resetWeekOffset"
                   >
                     <v-icon class="sm:tw-mr-2">mdi-calendar-today</v-icon>
@@ -177,29 +174,29 @@
                   <v-btn
                     :icon="isPhone"
                     :outlined="!isPhone"
-                    class="tw-text-green"
+                    class="tw-text-brass"
                     @click="refreshCalendar"
                     :loading="loading"
                   >
                     <v-icon class="tw-mr-1" v-if="!isPhone">mdi-refresh</v-icon>
                     <span v-if="!isPhone" class="tw-mr-2">Refresh</span>
-                    <v-icon class="tw-text-green" v-else>mdi-refresh</v-icon>
+                    <v-icon class="tw-text-brass" v-else>mdi-refresh</v-icon>
                   </v-btn>
                 </div>
                 <div v-else>
                   <v-btn
                     :icon="isPhone"
                     :outlined="!isPhone"
-                    class="tw-text-green"
+                    class="tw-text-brass"
                     @click="copyLink"
                   >
-                    <span v-if="!isPhone" class="tw-mr-2 tw-text-green"
+                    <span v-if="!isPhone" class="tw-mr-2 tw-text-brass"
                       >Copy link</span
                     >
-                    <v-icon class="tw-text-green" v-if="!isPhone"
+                    <v-icon class="tw-text-brass" v-if="!isPhone"
                       >mdi-content-copy</v-icon
                     >
-                    <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
+                    <v-icon class="tw-text-brass" v-else>mdi-share</v-icon>
                   </v-btn>
                 </div>
                 <div
@@ -210,7 +207,7 @@
                     <v-btn
                       v-if="!isGroup && !authUser && selectedGuestRespondent"
                       min-width="10.25rem"
-                      class="tw-bg-green tw-text-white tw-transition-opacity"
+                      class="tw-bg-brass tw-text-wood-deep tw-transition-opacity"
                       :style="{ opacity: availabilityBtnOpacity }"
                       @click="editGuestAvailability"
                     >
@@ -224,7 +221,7 @@
                       v-else
                       width="10.25rem"
                       class="tw-text-white tw-transition-opacity"
-                      :class="'tw-bg-green'"
+                      :class="'tw-bg-brass'"
                       :disabled="loading && !userHasResponded"
                       :style="{ opacity: availabilityBtnOpacity }"
                       @click="() => addAvailability()"
@@ -242,7 +239,7 @@
                     </v-btn>
                     <v-btn
                       class="tw-w-20 tw-text-white"
-                      :class="'tw-bg-green'"
+                      :class="'tw-bg-brass'"
                       @click="() => saveChanges()"
                     >
                       Save
@@ -343,7 +340,7 @@
         <div
           class="tw-flex tw-h-[4rem] tw-w-full tw-items-center tw-px-4"
           :class="`${isIOS ? 'tw-pb-2' : ''} ${
-            isScheduling ? 'tw-bg-blue' : 'tw-bg-green'
+            isScheduling ? 'tw-bg-blue' : 'tw-bg-brass'
           }`"
         >
           <template v-if="!isEditing && !isScheduling">
@@ -357,7 +354,7 @@
             <v-spacer />
             <v-btn
               v-if="!isGroup && !authUser && selectedGuestRespondent"
-              class="tw-bg-white tw-text-green tw-transition-opacity"
+              class="tw-bg-white tw-text-brass tw-transition-opacity"
               :style="{ opacity: availabilityBtnOpacity }"
               @click="editGuestAvailability"
             >
@@ -365,7 +362,7 @@
             </v-btn>
             <v-btn
               v-else
-              class="tw-bg-white tw-text-green tw-transition-opacity"
+              class="tw-bg-white tw-text-brass tw-transition-opacity"
               :disabled="loading && !userHasResponded"
               :style="{ opacity: availabilityBtnOpacity }"
               @click="() => addAvailability()"
@@ -379,7 +376,7 @@
             </v-btn>
             <v-spacer />
             <v-btn
-              class="tw-bg-white tw-text-green"
+              class="tw-bg-white tw-text-brass"
               @click="() => saveChanges()"
             >
               Save
