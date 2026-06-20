@@ -110,21 +110,20 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
       `GuestDialog`, `SignUpForSlotDialog`, day/time pickers, toolbar (`ToolRow.vue`).
 - [ ] Test event for review: **`/e/FE2dd`** ("The Inaugural Gathering").
 
-### Phase 3 — Auth + creation flows
-- [ ] **ROOT-CAUSE FIRST — dialogs render LIGHT.** The create dialog (`NewEvent.vue`,
-      a plain `<v-card>` with no explicit white bg) renders white, so Vuetify's dark
-      theme isn't reaching dialog overlays / `solo` text-fields / `v-date-picker`.
-      Fix this globally (likely `$vuetify`/v-app theme propagation to detached overlays,
-      or a global CSS override for `.v-dialog .v-card`, `.v-text-field--solo`,
-      `.v-picker`) BEFORE per-dialog work — it fixes every dialog at once. NOTE: the
-      primary `color="primary"` buttons (e.g. "Create event") DO already render brass,
-      and `MarkAvailabilityDialog` renders dark — so it's specific surfaces (card bg,
-      solo fields, date picker) that stay light.
-- [ ] `SignIn.vue` / `SignUp.vue` / `Auth.vue`, `SignInDialog.vue`.
-- [ ] `NewEvent.vue` / `NewGroup.vue` / `NewSignUp.vue` create dialogs: dark card, brass
-      tabs ("Dates and times/Dates only"), archaic header ("New event"→"Call a Gathering"),
-      `tw-text-black`→parchment.
-- [ ] Google OAuth button styling (keep Google brand req's on the button itself).
+### Phase 3 — Auth + creation flows  *(create dialogs done; deployed)*
+- [x] RESOLVED the "dialogs render light" red herring: dialogs were ALWAYS dark via
+      the theme (`theme--dark`, rgb 30,30,30) — my earlier white screenshot was a flash
+      of unstyled content during load. Real gaps were just accents + tone.
+- [x] `NewEvent`/`NewGroup`/`NewSignUp`/`NewDialog`: parchment text, brass accents/tabs,
+      brass primary buttons, archaic headers ("Call a Gathering"/"Amend the Gathering").
+- [x] `SlideToggle.vue`: green active → brass (fixes create-dialog tabs everywhere).
+- [x] `index.css`: global tint of `.v-dialog/.v-menu` card surfaces → wood + brass keyline.
+- [x] `App.vue` global elevated-button rule: green box-shadow/border → brass (was the
+      green halo on the "Call a Gathering" button + all primary buttons).
+- [x] `AvailabilityTypeToggle.vue` LEFT green/amber on purpose (semantic, matches grid).
+- [ ] `SignIn.vue` / `SignUp.vue` / `Auth.vue`, `SignInDialog.vue` (Google OAuth button:
+      keep Google brand styling on the button itself).
+- [ ] Archaic copy pass on the create dialogs' field labels.
 
 ### Phase 4 — Logged-in app
 - [ ] `Home.vue` dashboard + `home/` components, `EventItem.vue`, `EventType.vue`.
