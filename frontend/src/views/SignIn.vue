@@ -1,19 +1,19 @@
 <template>
   <div
-    class="tw-flex tw-min-h-screen tw-items-center tw-justify-center tw-bg-light-gray tw-px-4"
+    class="tw-flex tw-min-h-screen tw-items-center tw-justify-center tw-bg-transparent tw-px-4"
   >
     <div class="tw-w-full tw-max-w-[420px]">
-      <!-- Logo -->
+      <!-- Crest -->
       <div class="tw-mb-8 tw-flex tw-justify-center">
-        <router-link :to="{ name: 'landing' }">
-          <v-img
-            alt="Timeful Logo"
-            class="shrink tw-cursor-pointer"
-            contain
-            src="@/assets/timeful_logo_with_text.png"
-            transition="fade-transition"
-            width="160"
-          />
+        <router-link
+          :to="{ name: 'landing' }"
+          class="tw-flex tw-flex-col tw-items-center tw-gap-2 tw-no-underline"
+        >
+          <SirThomasFoolery :size="72" />
+          <span
+            class="tw-font-display tw-text-lg tw-font-bold tw-tracking-[0.16em] tw-text-parchment"
+            >THE FELLOWSHIP</span
+          >
         </router-link>
       </div>
 
@@ -21,12 +21,12 @@
         <!-- Main sign-in screen -->
         <template v-if="step === 'select'">
           <v-card-title class="tw-flex tw-flex-col tw-items-center tw-pb-0">
-            <div class="tw-text-2xl tw-font-medium">
-              {{ isSignUp ? "Create an account" : "Welcome back" }}
+            <div class="tw-font-head tw-text-3xl tw-text-parchment">
+              {{ isSignUp ? "Join the Fellowship" : "Welcome Back, Good Sir" }}
             </div>
-            <div class="tw-mt-1 tw-text-sm tw-font-normal tw-text-dark-gray">
+            <div class="tw-mt-1 tw-text-sm tw-font-normal tw-text-parchment-dim">
               {{
-                isSignUp ? "Sign up to get started" : "Sign in to your account"
+                isSignUp ? "Establish your standing" : "Resume your standing"
               }}
             </div>
           </v-card-title>
@@ -69,7 +69,7 @@
 
               <div class="tw-my-2 tw-flex tw-items-center tw-gap-3">
                 <v-divider />
-                <span class="tw-text-xs tw-text-gray">or</span>
+                <span class="tw-text-xs tw-text-parchment-dim">or</span>
                 <v-divider />
               </div>
 
@@ -101,7 +101,7 @@
             <div class="tw-text-center tw-text-xs">
               By continuing, you agree to our
               <router-link
-                class="tw-text-blue"
+                class="tw-text-brass"
                 :to="{ name: 'privacy-policy' }"
               >
                 privacy policy
@@ -119,7 +119,7 @@
             What's your name?
           </v-card-title>
           <v-card-text>
-            <p class="tw-mb-4 tw-text-sm tw-text-dark-gray">
+            <p class="tw-mb-4 tw-text-sm tw-text-parchment-dim">
               We just need a couple details to set up your account.
             </p>
             <div class="tw-mb-1 tw-text-sm tw-font-medium">First name</div>
@@ -151,7 +151,7 @@
               solo
               hide-details="auto"
               disabled
-              background-color="#f5f5f5"
+              background-color="#2e2117"
               class="tw-mb-3"
             />
             <v-btn
@@ -180,7 +180,7 @@
             Enter verification code
           </v-card-title>
           <v-card-text>
-            <p class="tw-mb-4 tw-text-sm tw-text-dark-gray">
+            <p class="tw-mb-4 tw-text-sm tw-text-parchment-dim">
               Enter the 6-digit code sent to
               <strong>{{ email }}</strong>
             </p>
@@ -226,22 +226,22 @@
       </v-card>
 
       <div
-        class="tw-mt-4 tw-rounded-xl tw-bg-light-gray-stroke/50 tw-py-4 tw-text-center tw-text-sm tw-text-dark-gray"
+        class="tw-mt-4 tw-rounded-xl tw-border tw-border-brass-dim tw-bg-leather/60 tw-py-4 tw-text-center tw-text-sm tw-text-parchment-dim"
       >
         <template v-if="isSignUp">
-          Already have an account?
+          Already a member?
           <router-link
-            class="tw-font-medium tw-text-green"
+            class="tw-font-medium tw-text-brass"
             :to="{ name: 'sign-in', query: $route.query }"
-            >Log in</router-link
+            >Enter</router-link
           >
         </template>
         <template v-else>
-          Don't have an account?
+          Not yet a member?
           <router-link
-            class="tw-font-medium tw-text-green"
+            class="tw-font-medium tw-text-brass"
             :to="{ name: 'sign-up', query: $route.query }"
-            >Sign up</router-link
+            >Seek admittance</router-link
           >
         </template>
       </div>
@@ -253,7 +253,7 @@
 import { authTypes, calendarTypes } from "@/constants"
 import { post, signInGoogle, signInOutlook } from "@/utils"
 import { mapMutations } from "vuex"
-import Logo from "@/components/Logo.vue"
+import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
 
 export default {
   name: "SignIn",
@@ -264,12 +264,14 @@ export default {
 
   metaInfo() {
     return {
-      title: this.isSignUp ? "Sign Up - Timeful" : "Sign In - Timeful",
+      title: this.isSignUp
+        ? "Join · The Fellowship"
+        : "Enter · The Fellowship",
     }
   },
 
   components: {
-    Logo,
+    SirThomasFoolery,
   },
 
   computed: {

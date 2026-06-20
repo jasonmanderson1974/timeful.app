@@ -48,7 +48,7 @@
 
             <div class="tw-my-2 tw-flex tw-items-center tw-gap-3">
               <v-divider />
-              <span class="tw-text-gray-500 tw-text-xs">or</span>
+              <span class="tw-text-parchment-dim tw-text-xs">or</span>
               <v-divider />
             </div>
 
@@ -77,7 +77,7 @@
           </div>
           <div class="tw-text-center tw-text-xs">
             By continuing, you agree to our
-            <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }"
+            <router-link class="tw-text-brass" :to="{ name: 'privacy-policy' }"
               >privacy policy</router-link
             >
           </div>
@@ -93,7 +93,7 @@
           What's your name?
         </v-card-title>
         <v-card-text>
-          <p class="tw-text-gray-600 tw-mb-4 tw-text-sm">
+          <p class="tw-text-parchment-dim tw-mb-4 tw-text-sm">
             We just need a couple details to set up your account.
           </p>
           <div class="tw-mb-1 tw-text-sm tw-font-medium">First name</div>
@@ -152,7 +152,7 @@
           Enter verification code
         </v-card-title>
         <v-card-text>
-          <p class="tw-text-gray-600 tw-mb-4 tw-text-sm">
+          <p class="tw-text-parchment-dim tw-mb-4 tw-text-sm">
             Enter the 6-digit code sent to
             <strong>{{ email }}</strong>
           </p>
