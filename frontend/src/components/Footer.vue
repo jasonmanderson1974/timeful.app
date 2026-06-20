@@ -20,12 +20,6 @@
         <br />
         Eric the Hare, of the Eric &amp; Eloise Collection
       </p>
-      <router-link
-        :to="{ name: 'privacy-policy' }"
-        class="tw-mt-2 tw-font-display tw-text-xs tw-tracking-widest tw-text-brass-dim hover:tw-text-brass"
-      >
-        Privacy Policy
-      </router-link>
     </div>
   </footer>
 </template>

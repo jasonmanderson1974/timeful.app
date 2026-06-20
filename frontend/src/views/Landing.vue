@@ -20,18 +20,6 @@
           <v-spacer />
 
           <LandingPageHeader>
-            <v-btn
-              text
-              class="tw-font-display tw-tracking-widest tw-text-brass"
-              @click="openHowItWorksDialog"
-              >The Manner of It</v-btn
-            >
-            <v-btn
-              text
-              class="tw-font-display tw-tracking-widest tw-text-brass"
-              href="/blog"
-              >The Chronicle</v-btn
-            >
             <div v-if="authUser" class="tw-ml-2">
               <AuthUserMenu />
             </div>
@@ -69,12 +57,6 @@
           >
             {{ authUser ? "To the Club Room" : "Call a Gathering" }}
           </button>
-          <div
-            v-if="!authUser"
-            class="tw-text-center tw-text-sm tw-text-parchment-dim"
-          >
-            No dues &middot; no login required.
-          </div>
         </div>
       </div>
     </div>
@@ -114,25 +96,6 @@
       />
     </div>
 
-    <!-- The proceedings, in motion -->
-    <div
-      class="tw-flex tw-justify-center tw-bg-green-felt tw-px-4 tw-pb-12 tw-pt-24 md:tw-pb-16"
-    >
-      <div class="flw-panel tw-max-w-3xl tw-flex-1 tw-p-2 sm:tw-p-3">
-        <div class="tw-h-[300px] sm:tw-h-[400px] md:tw-h-[450px]">
-          <iframe
-            class="tw-h-full tw-w-full tw-rounded"
-            src="https://www.youtube.com/embed/vFkBC8BrkOk?si=pF64JAIyDhom_1do"
-            title="The Fellowship demo"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
-    </div>
-
     <!-- FAQ -->
     <div class="tw-flex tw-justify-center tw-pt-12">
       <div class="tw-mx-4 tw-mb-12 tw-max-w-3xl tw-flex-1 sm:tw-mx-16">
@@ -167,12 +130,6 @@
 
     <!-- New event dialog -->
     <NewDialog v-model="newDialog" no-tabs @signIn="signIn" />
-
-    <!-- Add the dialog component -->
-    <HowItWorksDialog
-      v-if="showHowItWorksDialog"
-      v-model="showHowItWorksDialog"
-    />
   </div>
 </template>
 
@@ -203,7 +160,6 @@ import Logo from "@/components/Logo.vue"
 import GithubButton from "vue-github-button"
 import SignInDialog from "@/components/SignInDialog.vue"
 import { calendarTypes } from "@/constants"
-import HowItWorksDialog from "@/components/HowItWorksDialog.vue"
 import { vueVimeoPlayer } from "vue-vimeo-player"
 import Footer from "@/components/Footer.vue"
 import { mapState, mapMutations } from "vuex"
@@ -229,7 +185,6 @@ export default {
     GithubButton,
     Logo,
     SignInDialog,
-    HowItWorksDialog,
     vueVimeoPlayer,
     Footer,
     AuthUserMenu,
@@ -299,7 +254,6 @@ export default {
         authRequired: true,
       },
     ],
-    showHowItWorksDialog: false,
     isVideoPlaying: false,
   }),
 
@@ -331,10 +285,6 @@ export default {
     },
     signIn() {
       this.$router.push({ name: "sign-in" })
-    },
-    openHowItWorksDialog() {
-      this.showHowItWorksDialog = true
-      this.$posthog.capture("how_it_works_clicked")
     },
     onPlay() {
       setTimeout(() => {

@@ -31,11 +31,11 @@
       </v-fade-transition>
 
       <div
-        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
+        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-leather/40"
         v-if="!loading || eventsNotEmpty"
       >
         <div
-          class="tw-mb-3 tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
+          class="tw-mb-3 tw-text-xl tw-font-medium tw-text-parchment sm:tw-text-2xl"
         >
           Tools
         </div>
@@ -61,14 +61,6 @@
         ></div>
       </div>
 
-      <div class="tw-flex tw-flex-col tw-items-center tw-justify-between">
-        <router-link
-          class="tw-text-xs tw-font-medium tw-text-gray"
-          :to="{ name: 'privacy-policy' }"
-        >
-          Privacy Policy
-        </router-link>
-      </div>
 
       <!-- FAB -->
       <BottomFab

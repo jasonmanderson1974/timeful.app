@@ -309,25 +309,9 @@
           >
             Donate
           </v-btn> -->
-          <div
-            class="tw-w-full tw-border-t tw-border-solid tw-border-gray"
-          ></div>
-          <v-btn class="tw-h-16" block text :to="{ name: 'privacy-policy' }">
-            Privacy Policy
-          </v-btn>
         </div>
       </template>
 
-      <div
-        class="tw-mb-16 tw-hidden tw-flex-col tw-items-center tw-justify-between sm:tw-flex"
-      >
-        <router-link
-          class="tw-text-xs tw-font-medium tw-text-parchment-dim"
-          :to="{ name: 'privacy-policy' }"
-        >
-          Privacy Policy
-        </router-link>
-      </div>
 
       <div
         class="tw-h-8"

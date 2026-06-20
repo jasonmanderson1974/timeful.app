@@ -2,7 +2,7 @@
 <template>
   <div class="tw-mb-5">
     <div
-      class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
+      class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-text-xl tw-font-medium tw-text-parchment sm:tw-text-2xl"
     >
       <div class="tw-flex tw-flex-col">
         {{ eventType.header }}
