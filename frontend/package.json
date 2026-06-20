@@ -9,7 +9,6 @@
     "test:unit:watch": "vitest"
   },
   "dependencies": {
-    "@gtm-support/vue2-gtm": "^2.0.0",
     "@rive-app/canvas": "^2.10.0",
     "bson-objectid": "^2.0.4",
     "canvas-confetti": "^1.9.3",

@@ -806,19 +806,6 @@
                 </div>
               </div>
               <template v-else>
-                <PubliftAd
-                  :showAd="showAds"
-                  fuseId="meet_incontent"
-                  class="-tw-mx-4 tw-my-4 tw-block !tw-rounded-none sm:tw-hidden"
-                >
-                  <div class="tw-h-[375px] publift-m:tw-h-[90px]">
-                    <div
-                      id="meet_incontent"
-                      data-fuse="meet_incontent"
-                      class="tw-flex tw-items-center tw-justify-center"
-                    ></div>
-                  </div>
-                </PubliftAd>
                 <RespondentsList
                   ref="respondentsList"
                   :event="event"
@@ -888,7 +875,7 @@
         <div
           v-if="isPhone && !calendarOnly"
           class="tw-fixed tw-z-20 tw-w-full"
-          :style="{ bottom: showAds ? 'calc(4rem + 115px)' : '4rem' }"
+          :style="{ bottom: '4rem' }"
         >
           <!-- Hint text (mobile) -->
           <v-expand-transition>
@@ -1061,7 +1048,6 @@ import { mapMutations, mapActions, mapState, mapGetters } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import Advertisement from "@/components/event/Advertisement.vue"
-import PubliftAd from "@/components/event/PubliftAd.vue"
 import SignUpBlock from "@/components/sign_up_form/SignUpBlock.vue"
 import SignUpCalendarBlock from "@/components/sign_up_form/SignUpCalendarBlock.vue"
 import SignUpBlocksList from "@/components/sign_up_form/SignUpBlocksList.vue"
@@ -1249,10 +1235,6 @@ export default {
   computed: {
     ...mapState(["authUser", "overlayAvailabilitiesEnabled"]),
     ...mapGetters(["isPremiumUser"]),
-    showAds() {
-      // Ads (Publift/Fuse) disabled on this self-hosted instance
-      return false
-    },
     /** Returns the width of the right side of the calendar */
     rightSideWidth() {
       if (this.isPhone) return "100%"
@@ -4645,7 +4627,6 @@ export default {
     CalendarAccounts,
     RespondentsList,
     Advertisement,
-    PubliftAd,
     GCalWeekSelector,
     WorkingHoursToggle,
     SignUpBlock,

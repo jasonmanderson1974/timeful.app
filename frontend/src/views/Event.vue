@@ -3,8 +3,6 @@
     <FormerlyKnownAs
       class="tw-mx-auto tw-mb-10 tw-mt-3 tw-max-w-6xl tw-pl-4 sm:tw-pl-12"
     />
-    <!-- Video Ad (desktop only, when ads enabled) -->
-    <div v-if="!isPhone && showAds" ref="videoAdContainer"></div>
     <div v-if="event" class="tw-mt-8 tw-h-full">
       <!-- Mark availability option dialog -->
       <MarkAvailabilityDialog
@@ -99,21 +97,6 @@
       <div
         class="tw-mx-auto tw-mt-4 lg:tw-flex lg:tw-items-start lg:tw-justify-center lg:tw-gap-6"
       >
-        <PubliftAd
-          :showAd="showAds"
-          fuseId="meet_vrec_lhs"
-          class="tw-hidden publift-l:tw-block"
-        >
-          <div
-            class="tw-h-[600px] publift-l:tw-w-[160px] publift-xl:tw-w-[300px]"
-          >
-            <div
-              id="meet_vrec_lhs"
-              data-fuse="meet_vrec_lhs"
-              class="tw-flex tw-items-center tw-justify-center"
-            ></div>
-          </div>
-        </PubliftAd>
         <div class="tw-mx-auto tw-max-w-5xl tw-flex-1">
           <div v-if="!isSettingSpecificTimes" class="tw-mx-4">
             <!-- Title and copy link -->
@@ -300,38 +283,8 @@
             @signUpForBlock="initiateSignUpFlow"
           />
         </div>
-        <PubliftAd
-          :showAd="showAds"
-          fuseId="meet_vrec_rhs"
-          class="tw-hidden publift-l:tw-block"
-        >
-          <div
-            class="tw-h-[600px] publift-l:tw-w-[160px] publift-xl:tw-w-[300px]"
-          >
-            <div
-              id="meet_vrec_rhs"
-              data-fuse="meet_vrec_rhs"
-              class="tw-flex tw-items-center tw-justify-center"
-            ></div>
-          </div>
-        </PubliftAd>
       </div>
 
-      <PubliftAd
-        :showAd="showAds"
-        fuseId="meet_incontent_md"
-        class="tw-my-4 tw-hidden !tw-rounded-none sm:tw-block publift-l:tw-hidden"
-      >
-        <div class="tw-h-[300px] publift-m:tw-h-[90px]">
-          <div
-            id="meet_incontent_md"
-            data-fuse="meet_incontent_md"
-            class="tw-flex tw-items-center tw-justify-center"
-          ></div>
-        </div>
-      </PubliftAd>
-
-      <!-- <CarbonAd :ownerIsPremium="ownerIsPremium" /> -->
 
       <template v-if="showFeedbackBtn">
         <div class="tw-w-full tw-border-t tw-border-solid tw-border-gray"></div>
@@ -380,13 +333,12 @@
       </div>
 
       <div
-        :class="isPhone ? (showAds ? 'tw-h-[125px]' : 'tw-h-8') : 'tw-h-8'"
+        class="tw-h-8"
       ></div>
       <!-- Bottom bar for phones -->
       <div
         v-if="!isSettingSpecificTimes && isPhone && (!isSignUp || canEdit)"
         class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-w-full tw-flex-col"
-        :style="showAds ? { bottom: '115px' } : {}"
       >
         <div
           class="tw-flex tw-h-[4rem] tw-w-full tw-items-center tw-px-4"
@@ -447,26 +399,6 @@
             </v-btn>
           </template>
         </div>
-        <PubliftAd
-          :showAd="showAds"
-          fuseId=""
-          class="tw-h-[115px] tw-w-full !tw-rounded-none !tw-p-0"
-        >
-          <div class="tw-h-[115px]"></div>
-        </PubliftAd>
-      </div>
-      <!-- Fixed bottom ad for desktop -->
-      <div
-        v-if="!isPhone && showAds"
-        class="tw-fixed tw-bottom-0 tw-left-0 tw-z-20 tw-w-full"
-      >
-        <PubliftAd
-          :showAd="showAds"
-          fuseId=""
-          class="tw-h-[115px] tw-w-full !tw-rounded-none !tw-p-0"
-        >
-          <div class="tw-h-[115px]"></div>
-        </PubliftAd>
       </div>
     </div>
   </span>
@@ -528,8 +460,6 @@ import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import HelpDialog from "@/components/HelpDialog.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
 import FormerlyKnownAs from "@/components/FormerlyKnownAs.vue"
-import CarbonAd from "@/components/event/CarbonAd.vue"
-import PubliftAd from "@/components/event/PubliftAd.vue"
 export default {
   name: "Event",
 
@@ -553,8 +483,6 @@ export default {
     HelpDialog,
     EventDescription,
     FormerlyKnownAs,
-    CarbonAd,
-    PubliftAd,
   },
 
   data: () => ({
@@ -576,7 +504,6 @@ export default {
     scheduleOverlapComponentLoaded: false,
 
     ownerIsPremium: false,
-    ownerPremiumChecked: false,
 
     curGuestId: "", // Id of the current guest being edited
     calendarPermissionGranted: true,
@@ -603,18 +530,11 @@ export default {
     if (this.linkApple) {
       this.choiceDialog = true
     }
-    // window.enableStickyFooter = true
-    // this.initFusetag()
-    this.loadVideoAd()
   },
 
   computed: {
     ...mapState(["authUser", "events"]),
     ...mapGetters(["isPremiumUser"]),
-    showAds() {
-      // Ads (Publift/Fuse + Primis video) disabled on this self-hosted instance
-      return false
-    },
     allowScheduleEvent() {
       return this.scheduleOverlapComponent?.allowScheduleEvent
     },
@@ -698,36 +618,6 @@ export default {
   methods: {
     ...mapActions(["showError", "showInfo", "getEvents"]),
     ...mapMutations(["setAuthUser"]),
-
-    loadVideoAd() {
-      if (!this.isPhone && this.showAds && this.$refs.videoAdContainer) {
-        const script = document.createElement("script")
-        script.type = "text/javascript"
-        script.src =
-          "https://live.primis.tech/live/liveView.php?s=122130&schain=1.0,1!publift.com,01KF27H3XMWD7H1S0HYBGVB3BR,1"
-        this.$refs.videoAdContainer.appendChild(script)
-      }
-    },
-
-    initFusetag() {
-      console.log("initFusetag called, blockingFuseIds: ", [
-        "meet_vrec_lhs",
-        "meet_vrec_rhs",
-        "meet_incontent",
-        "meet_incontent_md",
-      ])
-      const fusetag = window.fusetag || (window.fusetag = { que: [] })
-      fusetag.que.push(function () {
-        fusetag.pageInit({
-          blockingFuseIds: [
-            "meet_vrec_lhs",
-            "meet_vrec_rhs",
-            "meet_incontent",
-            "meet_incontent_md",
-          ],
-        })
-      })
-    },
 
     /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
     addAvailability() {
@@ -839,7 +729,6 @@ export default {
           this.ownerIsPremium = false
         }
       }
-      this.ownerPremiumChecked = true
     },
 
     setAvailabilityAutomatically(calendarType = calendarTypes.GOOGLE) {
@@ -1920,12 +1809,6 @@ export default {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
         })
         document.title = `${this.event.name} - Timeful`
-      }
-    },
-    ownerPremiumChecked(val) {
-      if (this.showAds) {
-        window.enableStickyFooter = true
-        this.initFusetag()
       }
     },
     scheduleOverlapComponent() {
