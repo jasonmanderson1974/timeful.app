@@ -21,8 +21,8 @@
             text
             small
             @click="() => (tab = t.type)"
-            :class="`tw-text-xs tw-text-dark-gray tw-transition-all ${
-              t.type == tab ? 'tw-bg-ligher-green tw-text-green' : ''
+            :class="`tw-text-xs tw-text-parchment-dim tw-transition-all ${
+              t.type == tab ? 'tw-bg-brass/10 tw-text-brass' : ''
             }`"
           >
             {{ t.title }}

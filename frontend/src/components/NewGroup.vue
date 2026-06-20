@@ -11,7 +11,7 @@
         </div>
         <div
           v-if="dialog && showHelp"
-          class="tw-text-xs tw-font-normal tw-italic tw-text-dark-gray"
+          class="tw-text-xs tw-font-normal tw-italic tw-text-parchment-dim"
         >
           Ideal for viewing weekly calendar availability
         </div>
@@ -54,7 +54,7 @@
         />
 
         <div>
-          <div class="tw-mb-2 tw-text-lg tw-text-black">Time range</div>
+          <div class="tw-mb-2 tw-text-lg tw-text-parchment">Time range</div>
           <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
             <v-select
               v-model="startTime"
@@ -75,7 +75,7 @@
         </div>
 
         <div>
-          <div class="tw-mb-2 tw-text-lg tw-text-black">Day range</div>
+          <div class="tw-mb-2 tw-text-lg tw-text-parchment">Day range</div>
           <v-input
             v-model="selectedDaysOfWeek"
             hide-details="auto"
@@ -99,7 +99,7 @@
           </v-input>
           <v-checkbox class="tw-mt-2" v-model="startOnMonday" hide-details>
             <template v-slot:label>
-              <span class="tw-text-sm tw-text-very-dark-gray">
+              <span class="tw-text-sm tw-text-parchment-dim">
                 Start on Monday
               </span>
             </template>
@@ -114,7 +114,7 @@
           @requestContactsAccess="requestContactsAccess"
         >
           <template v-slot:header>
-            <div class="tw-mb-2 tw-text-lg tw-text-black">Members</div>
+            <div class="tw-mb-2 tw-text-lg tw-text-parchment">Members</div>
           </template>
         </EmailInput>
         <!-- </div> -->
@@ -147,7 +147,7 @@
           block
           :loading="loading"
           color="primary"
-          class="tw-mt-4 tw-bg-green"
+          class="tw-mt-4 tw-bg-brass tw-text-wood-deep"
           @click="submit"
         >
           {{ edit ? "Save edits" : "Create group" }}

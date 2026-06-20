@@ -11,7 +11,7 @@
         </div>
         <div
           v-if="dialog && showHelp"
-          class="tw-text-xs tw-font-normal tw-italic tw-text-dark-gray"
+          class="tw-text-xs tw-font-normal tw-italic tw-text-parchment-dim"
         >
           Ideal for events with sign up slots
         </div>
@@ -65,7 +65,7 @@
         <div>
           <v-expand-transition>
             <div v-if="!daysOnly">
-              <div class="tw-mb-2 tw-text-lg tw-text-black">
+              <div class="tw-mb-2 tw-text-lg tw-text-parchment">
                 What times might work?
               </div>
               <div
@@ -94,7 +94,7 @@
             </div>
           </v-expand-transition>
 
-          <div class="tw-mb-2 tw-text-lg tw-text-black">
+          <div class="tw-mb-2 tw-text-lg tw-text-parchment">
             What
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
             might work?
@@ -110,7 +110,7 @@
 
           <v-expand-transition>
             <div v-if="selectedDateOption === dateOptions.SPECIFIC || daysOnly">
-              <div class="tw-mb-2 tw-text-xs tw-text-dark-gray">
+              <div class="tw-mb-2 tw-text-xs tw-text-parchment-dim">
                 Drag to select multiple dates
               </div>
               <v-input
@@ -151,7 +151,7 @@
               </v-input>
               <v-checkbox class="tw-mt-2" v-model="startOnMonday" hide-details>
                 <template v-slot:label>
-                  <span class="tw-text-sm tw-text-very-dark-gray">
+                  <span class="tw-text-sm tw-text-parchment-dim">
                     Start on Monday
                   </span>
                 </template>
@@ -162,7 +162,7 @@
 
         <v-checkbox v-model="notificationsEnabled" hide-details class="tw-mt-2">
           <template v-slot:label>
-            <span class="tw-text-sm tw-text-very-dark-gray"
+            <span class="tw-text-sm tw-text-parchment-dim"
               >Email me each time someone signs up</span
             >
           </template>
@@ -170,7 +170,7 @@
 
         <v-checkbox v-model="collectEmails">
           <template v-slot:label>
-            <span class="tw-text-sm tw-text-very-dark-gray">
+            <span class="tw-text-sm tw-text-parchment-dim">
               Collect email address on sign up
             </span>
           </template>
@@ -188,13 +188,13 @@
                 v-show="authUser"
                 ref="emailInput"
                 @requestContactsAccess="requestContactsAccess"
-                labelColor="tw-text-very-dark-gray"
+                labelColor="tw-text-parchment-dim"
                 :addedEmails="addedEmails"
                 @update:emails="(newEmails) => (emails = newEmails)"
               >
                 <template v-slot:header>
                   <div class="tw-flex tw-gap-1">
-                    <div class="tw-text-very-dark-gray">
+                    <div class="tw-text-parchment-dim">
                       Remind people to fill out the event
                     </div>
 
@@ -232,13 +232,13 @@
                 messages="Only show attendees to sign up creator"
               >
                 <template v-slot:label>
-                  <span class="tw-text-sm tw-text-black">
+                  <span class="tw-text-sm tw-text-parchment">
                     Hide attendees from each other
                   </span>
                 </template>
                 <template v-slot:message="{ key, message }">
                   <div
-                    class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+                    class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-parchment-dim"
                   >
                     {{ message }}
                   </div>
@@ -257,10 +257,10 @@
                 </template>
                 <template v-slot:message="{ key, message }">
                   <div
-                    class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+                    class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-parchment-dim"
                   >
                     {{ message }}
-                    <span class="tw-font-medium tw-text-very-dark-gray"
+                    <span class="tw-font-medium tw-text-parchment-dim"
                       ><a @click="$emit('signIn')">Sign in</a>
                       to use this feature
                     </span>
@@ -275,7 +275,7 @@
                 <template v-slot:label>
                   <div
                     :class="!sendEmailAfterXResponsesEnabled && 'tw-opacity-50'"
-                    class="tw-flex tw-items-center tw-gap-x-2 tw-text-sm tw-text-very-dark-gray"
+                    class="tw-flex tw-items-center tw-gap-x-2 tw-text-sm tw-text-parchment-dim"
                   >
                     <div>Email me after</div>
                     <v-text-field
@@ -311,7 +311,7 @@
           block
           :loading="loading"
           color="primary"
-          class="tw-mt-4 tw-bg-green"
+          class="tw-mt-4 tw-bg-brass tw-text-wood-deep"
           @click="submit"
         >
           {{ edit ? "Save edits" : "Create event" }}
