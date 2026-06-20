@@ -81,27 +81,34 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
 
 ## 4. Phased task list
 
-### Phase 1 — Foundation + Landing + global chrome  *(in progress)*
+### Phase 1 — Foundation + Landing + global chrome  *(mostly done; deployed)*
 - [x] Fonts, palette, Vuetify dark theme, global CSS, `flw-*` classes, crest.
 - [x] Landing header + hero.
-- [ ] Landing: How-it-works section (NumberBullet, "It's that simple", `schej_character.png`).
-- [ ] Landing: Reddit testimonials block (cards → `.flw-panel`, dark).
-- [ ] Landing: `FAQ.vue` (expansion panels → dark/brass).
-- [ ] `Footer.vue` → dark wood, brass links, crest, archaic columns; drop Reddit/socials as desired.
-- [ ] Global chrome in `App.vue`: replace `<Logo>` header w/ crest + wordmark; dark menus.
-- [ ] `LandingPageCalendar.vue` (the demo calendar) — restyle or replace.
-- [ ] Swap hero demo media (the light app screenshot/Vimeo) for something on-theme.
+- [x] Landing: How-it-works section (archaic steps; crest replaces `schej_character.png`).
+- [x] Landing: Reddit testimonials block — REMOVED (external SaaS social proof, N/A for club).
+- [x] Landing: `FAQ.vue` (dark/brass panels) + rebranded/archaic FAQ + how-it-works copy.
+- [x] `Footer.vue` → club colophon (crest, THE FELLOWSHIP, Sir Thomas Foolery, Privacy).
+- [x] Global chrome in `App.vue`: crest + wordmark header, dark wood bar, archaic buttons.
+- [x] Deployed to VM (commit `9c61b34`); landing reads coherently end-to-end.
+- [ ] `NumberBullet.vue` still green → make brass (visible on landing how-it-works).
+- [ ] Swap hero demo media (still old light Timeful screenshot/Vimeo) for something on-theme.
+- [ ] `LandingPageCalendar.vue` (demo calendar) — restyle or replace (if still used).
 - [ ] `HowItWorksDialog.vue` content + style.
 
-### Phase 2 — Event / availability page (core guest screen)
-- [ ] `src/views/Event.vue` shell + headings + buttons + archaic copy.
-- [ ] `src/components/schedule_overlap/ScheduleOverlap.vue` — the availability
-      grid/heatmap (BIG; uses `avail-green`). Re-map availability colors to a brass/
-      green-felt scale that reads on dark. This is the hardest, most important screen.
+### Phase 2 — Event / availability page (core guest screen)  *(in progress; deployed)*
+- [x] `src/views/Event.vue` shell: parchment title/text, brass accents+buttons,
+      leather chips; removed FormerlyKnownAs. Verified on live test event `/e/FE2dd`.
+- [x] `ScheduleOverlap.vue` chrome: parchment text, brass accents, dark wood
+      day-header strips, leather surfaces. The EMPTY grid reads great on dark.
+- [ ] Heatmap CELL colors (green `#00994C`+alpha / red `#E52323` / yellow if-needed)
+      around ScheduleOverlap.vue:3060-3290 — verify/re-map WITH a response present
+      (add availability on `/e/FE2dd` to see the green shading on dark; map to brass
+      or a felt-green→bright scale; red→oxblood). ~5 `tw-bg-white` cell states remain.
+- [ ] Archaic copy pass on Event.vue (buttons "Add availability"→? , "this Timeful"→
+      "this Gathering", doc title `... - Timeful`→`The Fellowship`).
 - [ ] `RespondentsList.vue`, `MarkAvailabilityDialog.vue`, calendar-permission dialogs,
       `GuestDialog`, `SignUpForSlotDialog`, day/time pickers, toolbar (`ToolRow.vue`).
-- [ ] Note: mock shows simple vote tallies, but real model is a per-person availability
-      grid — keep the grid, theme it; the ◆/brass treatment goes on chrome around it.
+- [ ] Test event for review: **`/e/FE2dd`** ("The Inaugural Gathering").
 
 ### Phase 3 — Auth + creation flows
 - [ ] `SignIn.vue` / `SignUp.vue` / `Auth.vue`, `SignInDialog.vue`.
