@@ -121,9 +121,11 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
 - [x] `App.vue` global elevated-button rule: green box-shadow/border → brass (was the
       green halo on the "Call a Gathering" button + all primary buttons).
 - [x] `AvailabilityTypeToggle.vue` LEFT green/amber on purpose (semantic, matches grid).
-- [ ] `SignIn.vue` / `SignUp.vue` / `Auth.vue`, `SignInDialog.vue` (Google OAuth button:
-      keep Google brand styling on the button itself).
-- [ ] Archaic copy pass on the create dialogs' field labels.
+- [x] `SignIn.vue` (also covers SignUp via prop): crest+wordmark, dark page, brass
+      links/buttons, archaic copy ("Welcome Back, Good Sir"/"Join the Fellowship"/
+      "Seek admittance"). `SignInDialog.vue` brass accents. `Auth.vue` already fine.
+      Google/Outlook brand buttons kept white. Deployed & verified.
+- [ ] Archaic copy pass on the create dialogs' field labels (deferred to Phase 5 copy pass).
 
 ### Phase 4 — Logged-in app
 - [ ] `Home.vue` dashboard + `home/` components, `EventItem.vue`, `EventType.vue`.
