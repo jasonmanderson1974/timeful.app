@@ -100,10 +100,10 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
       leather chips; removed FormerlyKnownAs. Verified on live test event `/e/FE2dd`.
 - [x] `ScheduleOverlap.vue` chrome: parchment text, brass accents, dark wood
       day-header strips, leather surfaces. The EMPTY grid reads great on dark.
-- [ ] Heatmap CELL colors (green `#00994C`+alpha / red `#E52323` / yellow if-needed)
-      around ScheduleOverlap.vue:3060-3290 — verify/re-map WITH a response present
-      (add availability on `/e/FE2dd` to see the green shading on dark; map to brass
-      or a felt-green→bright scale; red→oxblood). ~5 `tw-bg-white` cell states remain.
+- [x] Heatmap CELL colors VERIFIED OK on dark (checked in edit mode on `/e/FE2dd`):
+      green `#00994C` "available" reads well on dark; red→maroon "unavailable" lands
+      on-theme (oxblood-ish); single `#00994C88` visible. NO remap needed. The
+      Available/If-needed toggle + legend panel already theme correctly.
 - [ ] Archaic copy pass on Event.vue (buttons "Add availability"→? , "this Timeful"→
       "this Gathering", doc title `... - Timeful`→`The Fellowship`).
 - [ ] `RespondentsList.vue`, `MarkAvailabilityDialog.vue`, calendar-permission dialogs,
@@ -111,8 +111,19 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
 - [ ] Test event for review: **`/e/FE2dd`** ("The Inaugural Gathering").
 
 ### Phase 3 — Auth + creation flows
+- [ ] **ROOT-CAUSE FIRST — dialogs render LIGHT.** The create dialog (`NewEvent.vue`,
+      a plain `<v-card>` with no explicit white bg) renders white, so Vuetify's dark
+      theme isn't reaching dialog overlays / `solo` text-fields / `v-date-picker`.
+      Fix this globally (likely `$vuetify`/v-app theme propagation to detached overlays,
+      or a global CSS override for `.v-dialog .v-card`, `.v-text-field--solo`,
+      `.v-picker`) BEFORE per-dialog work — it fixes every dialog at once. NOTE: the
+      primary `color="primary"` buttons (e.g. "Create event") DO already render brass,
+      and `MarkAvailabilityDialog` renders dark — so it's specific surfaces (card bg,
+      solo fields, date picker) that stay light.
 - [ ] `SignIn.vue` / `SignUp.vue` / `Auth.vue`, `SignInDialog.vue`.
-- [ ] `NewEvent.vue` / `NewGroup.vue` / `NewSignUp.vue` create dialogs.
+- [ ] `NewEvent.vue` / `NewGroup.vue` / `NewSignUp.vue` create dialogs: dark card, brass
+      tabs ("Dates and times/Dates only"), archaic header ("New event"→"Call a Gathering"),
+      `tw-text-black`→parchment.
 - [ ] Google OAuth button styling (keep Google brand req's on the button itself).
 
 ### Phase 4 — Logged-in app
