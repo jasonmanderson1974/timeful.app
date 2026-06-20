@@ -27,10 +27,9 @@ Captured 2026-06-20 (user-reported during review — for future sessions):
 - [ ] **Remove the Reddit upvote message** shown on /home (and anywhere): `UpvoteRedditSnackbar.vue`
       — "Enjoying the Fellowship? Help us reach more people by upvoting our Reddit post and
       leaving a comment with your thoughts :)". Remove the component + its usage in App.vue.
-- [ ] **Login bug: Google/Outlook buttons are white-text-on-white-background.** The brand
-      buttons (`tw-bg-white`) in `SignIn.vue` + `SignInDialog.vue` have invisible labels under
-      the dark theme (v-btn default text went light). Give them dark text (`tw-text-wood-deep`
-      or `tw-text-black`) so "Continue with Google/Outlook" is readable. Quick + visible fix.
+- [x] **Login bug: Google/Outlook buttons white-on-white — FIXED 2026-06-20.** Added global
+      `.v-application .v-btn.tw-bg-white { color: #1c1410 }` in index.css → dark labels on all
+      white brand buttons (login + Apple/ICS autofill). Deployed & verified on /sign-in.
 - [ ] **/home: grey backgrounds wash out text** around the **Dashboard** and **Tools** sections.
       Currently grey (likely a leftover Vuetify default / unconverted surface) → low contrast on
       the light text. Re-tone to wood/leather (or transparent over the damask) so text reads.
