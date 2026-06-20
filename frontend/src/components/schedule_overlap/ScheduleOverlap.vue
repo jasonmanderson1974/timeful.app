@@ -2269,7 +2269,7 @@ export default {
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
-    ...mapActions(["showInfo", "showError", "showUpgradeDialog"]),
+    ...mapActions(["showInfo", "showError"]),
 
     // -----------------------------------
     //#region Date

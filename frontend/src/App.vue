@@ -15,11 +15,6 @@
       :no-tabs="newDialogOptions.eventOnly"
       :folder-id="newDialogOptions.folderId"
     />
-    <UpgradeDialog
-      :value="upgradeDialogVisible"
-      @input="handleUpgradeDialogInput"
-    />
-    <UpvoteRedditSnackbar />
     <div
       v-if="showHeader"
       class="tw-fixed tw-z-40 tw-h-14 tw-w-screen tw-border-b tw-border-brass-dim tw-bg-wood-deep sm:tw-h-16"
@@ -38,14 +33,6 @@
             >THE FELLOWSHIP</span
           >
         </router-link>
-        <v-expand-x-transition>
-          <span
-            v-if="isPremiumUser"
-            class="tw-ml-2 tw-cursor-default tw-rounded-md tw-border tw-border-brass-dim tw-bg-green-felt tw-px-2 tw-py-1 tw-font-display tw-text-xs tw-tracking-wider tw-text-brass"
-          >
-            Premium
-          </span>
-        </v-expand-x-transition>
 
         <v-spacer />
 
@@ -238,23 +225,18 @@ import {
   isPhone,
   signInGoogle,
   signInOutlook,
-  isPremiumUser,
 } from "@/utils"
 import {
   authTypes,
   calendarTypes,
   eventTypes,
-  numFreeEvents,
-  upgradeDialogTypes,
 } from "@/constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
-import UpvoteRedditSnackbar from "@/components/UpvoteRedditSnackbar.vue"
 import Logo from "@/components/Logo.vue"
 import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
-import UpgradeDialog from "@/components/pricing/UpgradeDialog.vue"
 import SignInDialog from "@/components/SignInDialog.vue"
 import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
 
@@ -273,9 +255,7 @@ export default {
     AuthUserMenu,
     SignInNotSupportedDialog,
     NewDialog,
-    UpvoteRedditSnackbar,
     Logo,
-    UpgradeDialog,
     SignInDialog,
   },
 
@@ -288,15 +268,7 @@ export default {
   }),
 
   computed: {
-    ...mapGetters(["isPremiumUser"]),
-    ...mapState([
-      "authUser",
-      "error",
-      "info",
-      "enablePaywall",
-      "upgradeDialogVisible",
-      "newDialogOptions",
-    ]),
+    ...mapState(["authUser", "error", "info", "newDialogOptions"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -330,13 +302,10 @@ export default {
       "setAuthUser",
       "setSignUpFormEnabled",
       "setPricingPageConversion",
-      "setEnablePaywall",
       "setFeatureFlagsLoaded",
     ]),
     ...mapActions([
       "getEvents",
-      "showUpgradeDialog",
-      "hideUpgradeDialog",
       "createNew",
     ]),
     handleScroll(e) {
@@ -419,11 +388,6 @@ export default {
     },
     trackFeedbackClick() {
       this.$posthog.capture("give_feedback_button_clicked")
-    },
-    handleUpgradeDialogInput(value) {
-      if (!value) {
-        this.hideUpgradeDialog()
-      }
     },
   },
 

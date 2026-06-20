@@ -206,10 +206,8 @@ import { calendarTypes } from "@/constants"
 import HowItWorksDialog from "@/components/HowItWorksDialog.vue"
 import { vueVimeoPlayer } from "vue-vimeo-player"
 import Footer from "@/components/Footer.vue"
-import PronunciationMenu from "@/components/PronunciationMenu.vue"
 import { mapState, mapMutations } from "vuex"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
-import FormerlyKnownAs from "@/components/FormerlyKnownAs.vue"
 import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
 
 export default {
@@ -234,9 +232,7 @@ export default {
     HowItWorksDialog,
     vueVimeoPlayer,
     Footer,
-    PronunciationMenu,
     AuthUserMenu,
-    FormerlyKnownAs,
   },
 
   data: () => ({
@@ -303,52 +299,6 @@ export default {
         authRequired: true,
       },
     ],
-    redditComments: [
-      {
-        text: "Genuinely the <span class='rdt-h'>best lightweight version of this kind of website</span> that I've come across so far, exceptional.",
-        author: "u/voipClock",
-        link: "https://www.reddit.com/r/opensource/comments/1klu471/comment/mt4l2ab",
-        picture:
-          "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png",
-      },
-      {
-        text: "It's almost <span class='rdt-h'>comically easy</span> to schedule meetings with Timeful.",
-        author: "u/stuffingmybrain",
-        link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8rvty",
-        picture:
-          "https://styles.redditmedia.com/t5_qqojf/styles/profileIcon_snooa54a8eae-bc7f-406f-9778-b3b9dfb818e5-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=a0a91575ff7cfc3b6698cac69da6c012c7deb8d6",
-      },
-      {
-        text: "Timeful is everything I've ever wanted and more. On top of that, <span class='rdt-h'>community support is the best I've seen</span> of any app or software, ever.",
-        author: "u/DMODD",
-        link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8udud",
-        picture:
-          "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_6.png",
-      },
-      {
-        text: "With Timeful, <span class='rdt-h'>I'm very quickly able to figure out the optimal time</span> to schedule online extra help sessions before an exam.",
-        author: "u/crackwurst",
-        link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb9dmbe",
-        picture:
-          "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_3.png",
-      },
-      {
-        text: "Exactly what I was looking for! Clear and clean interface, also on mobile (<span class='rdt-h'>Doodle is a disaster</span>).",
-        author: "u/Willem1976",
-        link: "https://www.reddit.com/r/opensource/comments/1dlol7r/comment/lkn7sle",
-        picture:
-          "https://styles.redditmedia.com/t5_c0qtc/styles/profileIcon_snooa9d429ce-e3d9-458a-be9e-1b6dd157a209-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=7eba44ea268928b969bcf73ee8667357412132ca",
-      },
-      // {
-      //   text: "Thank you very much! My workplace cannot seem to pick between when2meet and Doodle and I feel like this brings the best of each into one.\n\nWell done <3",
-      //   author: "u/jadiepants",
-      //   link: "https://www.reddit.com/r/opensource/comments/1dlol7r/comment/m6bf3li",
-      //   picture:
-      //     "https://styles.redditmedia.com/t5_d7myp/styles/profileIcon_snoof50f1128-f439-433b-a6b2-8e987630e506-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=94077bf80603c2855747f1bfc0b9dd1539fae75c",
-      // },
-    ],
-    rive: null,
-    showSchejy: false,
     showHowItWorksDialog: false,
     isVideoPlaying: false,
   }),
@@ -362,27 +312,6 @@ export default {
 
   methods: {
     ...mapMutations(["setAuthUser"]),
-    loadRiveAnimation() {
-      // if (!this.rive) {
-      //   this.rive = new Rive({
-      //     src: "/rive/schej.riv",
-      //     canvas: document.querySelector("canvas"),
-      //     autoplay: false,
-      //     stateMachines: "wave",
-      //     onLoad: () => {
-      //       // r.resizeDrawingSurfaceToCanvas()
-      //     },
-      //   })
-      //   setTimeout(() => {
-      //     this.showSchejy = true
-      //     setTimeout(() => {
-      //       this.rive.play("wave")
-      //     }, 1000)
-      //   }, 4000)
-      // } else {
-      //   this.rive.play("wave")
-      // }
-    },
     _signIn(calendarType) {
       if (calendarType === calendarTypes.GOOGLE) {
         signInGoogle({ state: null, selectAccount: true })
@@ -414,23 +343,6 @@ export default {
     },
     openDashboard() {
       this.$router.push({ name: "home" })
-    },
-  },
-
-  beforeDestroy() {
-    this.rive?.cleanup()
-  },
-
-  watch: {
-    [`$vuetify.breakpoint.name`]: {
-      immediate: true,
-      handler() {
-        if (this.$vuetify.breakpoint.mdAndUp) {
-          setTimeout(() => {
-            this.loadRiveAnimation()
-          }, 0)
-        }
-      },
     },
   },
 }

@@ -456,7 +456,6 @@ import MarkAvailabilityDialog from "@/components/calendar_permission_dialogs/Mar
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import HelpDialog from "@/components/HelpDialog.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
-import FormerlyKnownAs from "@/components/FormerlyKnownAs.vue"
 export default {
   name: "Event",
 
@@ -479,7 +478,6 @@ export default {
     InvitationDialog,
     HelpDialog,
     EventDescription,
-    FormerlyKnownAs,
   },
 
   data: () => ({
