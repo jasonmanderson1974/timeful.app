@@ -117,27 +117,26 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
 "Call a Gathering" (Create event), "To the Club Room" (Open dashboard),
 "No dues · no login required."
 
-## 3. Current state (as of 2026-06-20, end of session)
+## 3. Current state (updated 2026-06-20)
 
-**DONE & deployed to live URL (WIP) for review:**
-- Foundation: fonts, palette, dark Vuetify theme (`src/plugins/vuetify.js`,
-  `dark: true`, brass primary), global damask CSS + `flw-*` classes, crest component.
-- Landing **header** (crest + THE FELLOWSHIP wordmark, brass Cinzel nav) and
-  **hero** (THE GATHERING title, ◆ rule, archaic subtitle, brass CALL A GATHERING
-  button, felt-green spotlight + brass-framed hero portrait). See `src/views/Landing.vue`.
-- Committed as `6a25536` on branch `redesign/fellowship-phase1` (pushed to origin).
+**The redesign is FUNCTIONALLY COMPLETE and deployed** on branch
+`redesign/fellowship-phase1` (VM tracks this branch; live at gathering.sirthomasfoolery.com).
+The whole app is on the dark Fellowship theme — landing, event/availability page, create
+dialogs, sign-in/auth, the logged-in app (dashboard/groups/friends/settings), sub-dialogs,
+plus meta title/description, SVG+binary crest favicons, and the OG link-share image.
 
-**Deploy/branch state:**
-- Branch `redesign/fellowship-phase1` is pushed to origin AND checked out on the VM.
-- **VM is on the redesign branch, NOT `main`** — must `git checkout main` on the VM
-  (and redeploy) when we abandon/merge, or keep deploying the branch during the redesign.
-- Live at gathering.sirthomasfoolery.com (frontend rebuilt, server restarted).
+- **All Parking-Lot review items (1–8) done** (Schej refs, paywall, Reddit snackbar, login
+  button contrast, /home grey bg, YouTube, links, hero "No dues", site icon).
+- **Additional user-requested removals done:** the "Send Word" feedback button, the /home
+  **Tools** section (+ When2meet/Timeful import dialogs), and the boba "calendar sipping a
+  drink" animation. Hero product-demo media removed (no on-theme replacement wanted).
 
-**NOT yet converted (still old light Timeful style):**
-- Landing below the hero: How-it-works, "It's that simple", Reddit testimonials,
-  FAQ, Footer.
-- Hero embedded demo media still shows the old light Timeful app screenshot/video.
-- Global `App.vue` chrome (logged-in header/logo), all other pages & dialogs.
+**Invite-only access control:** separate effort, see **`ACCESS_CONTROL_PLAN.md`**. **Phase A
+DONE & deployed** (allowlist + sign-in gate, fail-open while empty ⇒ currently dormant).
+Phases B–E pending (B = Gmail SMTP for the OTP email).
+
+**Branch/VM state:** VM is on `redesign/fellowship-phase1`, **NOT `main` — not yet merged**.
+Finalize = merge to `main` + `git checkout main` on the VM + redeploy, when ready.
 
 ## 4. Phased task list
 
@@ -187,10 +186,11 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
       Google/Outlook brand buttons kept white. Deployed & verified.
 - [ ] Archaic copy pass on the create dialogs' field labels (deferred to Phase 5 copy pass).
 
-### Phase 4 — Logged-in app
-- [ ] `Home.vue` dashboard + `home/` components, `EventItem.vue`, `EventType.vue`.
-- [ ] Groups (`groups/`), Friends, `Settings` + `settings/` components.
-- [ ] `AuthUserMenu.vue`, snackbars, global dialogs.
+### Phase 4 — Logged-in app  *(DONE; deployed; user-reviewed)*
+- [x] `Home.vue` dashboard + `home/Dashboard.vue`, `EventItem.vue`, `EventType.vue`.
+- [x] Groups (`groups/`), Friends, `Settings` + `settings/` components, `AuthUserMenu.vue`.
+- [x] Converted via the repo-wide token sweep; user reviewed while logged in and reported
+      issues (grey /home bg, etc.) which were fixed in the Parking-Lot pass.
 
 ### Phase 5 — Misc & cross-cutting  *(meta/favicon/OG done; deployed)*
 - [x] index.html meta defaults → Fellowship title/description, dark theme-color.
@@ -206,15 +206,17 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
       logo buttons kept white). Build clean, deployed, event page re-verified.
 - [x] User-facing "Timeful" copy rebranded (Import a Gathering, Seek admittance, Fellowship
       account, etc.). Unused redditComments data in Landing.vue still says Timeful (not rendered).
-- [ ] Accessibility/contrast audit on dark; mobile pass at 390px.
-- [ ] Phase 4 logged-in screens: VISUAL REVIEW pending (converted blind — need login).
-- [ ] LOW PRIORITY: pricing/UpgradeDialog tier cards still bg-white+light-green border
-      (paywall disabled, rarely shown). Old binary favicons (.ico/.png) — SVG covers modern.
+- [x] Old binary favicons regenerated from the crest (Parking-Lot #8): favicon-16/32 PNGs,
+      multi-size `favicon.ico`, apple-touch-icon, `?v=2` cache-bust.
+- [x] Phase 4 logged-in screens VISUALLY REVIEWED by user; issues fixed.
+- [ ] Accessibility/contrast audit on dark; mobile pass at 390px (not done — optional).
 
-### Phase 6 — Finalize
-- [ ] Replace remaining `schej_*`/`timeful_*` image assets with Fellowship art.
-- [ ] Decide hero media (custom illustration / crest animation?).
-- [ ] Merge `redesign/fellowship-phase1` → `main`; switch VM back to `main`; deploy.
+### Phase 6 — Finalize  *(pending)*
+- [x] `schej_*` assets removed (Parking-Lot #1). Hero media removed (no product demo wanted).
+- [ ] Remaining `timeful_*` image assets (e.g. `Logo.vue` / `timeful_logo_with_text.png`) —
+      `Logo.vue` is now unused (replaced by the crest everywhere); delete if desired.
+- [ ] **Merge `redesign/fellowship-phase1` → `main`; `git checkout main` on the VM; redeploy.**
+      (Deferred — keep deploying the branch while access-control phases B–E land, then merge once.)
 
 ## 5. Conventions & gotchas
 
