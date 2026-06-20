@@ -14,19 +14,22 @@ Items the user dropped as "btw ..." asides (see [[feedback-btw-asides-are-todos]
 Acted-on items get checked off; open ones get surfaced at the next checkpoint.
 
 Captured 2026-06-20 (user-reported during review — for future sessions):
-- [ ] **Remove all front-end "Schej" references.** User-facing only — leave backend/internal
+- [x] **Remove all front-end "Schej" references.** DONE 2026-06-20 (commit deployed):
+      deleted FormerlyKnownAs/PronunciationMenu + schej_logo*/schej_character/schejie
+      assets + schej_pronunciation.mp3; schejie mascot → crest on AccessDenied/PageNotFound;
+      dropped unused redditComments data + dead Rive schej.riv. Backend schej.it/schej-it kept. User-facing only — leave backend/internal
       identifiers (Go module `schej.it`, Mongo `schej-it`) per repo convention. Covers:
       `schej_logo*`/`schej_character.png` assets, any "Schej"/"formerly Schej" copy,
       `FormerlyKnownAs.vue` (already removed from Landing+Event templates; delete component
       + remaining imports), alt text, the index.html title still has "(formerly Schej)"? (no —
       already "The Fellowship · The Gathering"). Grep `-i schej` under `frontend/src` + `public`.
-- [ ] **Remove paywall items (front-end).** `pricing/UpgradeDialog.vue` + `pricing/*`,
-      Premium badge in `App.vue` header, `isPremiumUser`/`enablePaywall`-gated UI,
-      "Fellowship Premium" copy, `StripeRedirect.vue`, upgrade dialogs/dialog triggers.
-      (Paywall already effectively disabled — Stripe not configured — but remove the UI.)
-- [ ] **Remove the Reddit upvote message** shown on /home (and anywhere): `UpvoteRedditSnackbar.vue`
-      — "Enjoying the Fellowship? Help us reach more people by upvoting our Reddit post and
-      leaving a comment with your thoughts :)". Remove the component + its usage in App.vue.
+- [x] **Remove paywall items (front-end).** DONE 2026-06-20 (deployed): deleted pricing/
+      (UpgradeDialog + AlreadyDonated/StudentProof), StripeRedirect (+route), Test.vue (+route);
+      removed createNew paywall gate, App Premium badge + UpgradeDialog, Dashboard + EventType
+      free-events/upgrade UI, Settings billing portal, and the orphaned store plumbing
+      (enablePaywall, upgradeDialog*, show/hideUpgradeDialog). isPremiumUser getter kept (inert).
+- [x] **Remove the Reddit upvote message** DONE 2026-06-20 (deployed): deleted
+      `UpvoteRedditSnackbar.vue` + its `App.vue` usage.
 - [x] **Login bug: Google/Outlook buttons white-on-white — FIXED 2026-06-20.** Added global
       `.v-application .v-btn.tw-bg-white { color: #1c1410 }` in index.css → dark labels on all
       white brand buttons (login + Apple/ICS autofill). Deployed & verified on /sign-in.
