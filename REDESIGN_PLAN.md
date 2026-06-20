@@ -13,7 +13,24 @@ men's event-planning club). Branch: `redesign/fellowship-phase1`.
 Items the user dropped as "btw ..." asides (see [[feedback-btw-asides-are-todos]]).
 Acted-on items get checked off; open ones get surfaced at the next checkpoint.
 
-- _(none yet)_
+Captured 2026-06-20 (user-reported during review — for future sessions):
+- [ ] **Remove all front-end "Schej" references.** User-facing only — leave backend/internal
+      identifiers (Go module `schej.it`, Mongo `schej-it`) per repo convention. Covers:
+      `schej_logo*`/`schej_character.png` assets, any "Schej"/"formerly Schej" copy,
+      `FormerlyKnownAs.vue` (already removed from Landing+Event templates; delete component
+      + remaining imports), alt text, the index.html title still has "(formerly Schej)"? (no —
+      already "The Fellowship · The Gathering"). Grep `-i schej` under `frontend/src` + `public`.
+- [ ] **Remove paywall items (front-end).** `pricing/UpgradeDialog.vue` + `pricing/*`,
+      Premium badge in `App.vue` header, `isPremiumUser`/`enablePaywall`-gated UI,
+      "Fellowship Premium" copy, `StripeRedirect.vue`, upgrade dialogs/dialog triggers.
+      (Paywall already effectively disabled — Stripe not configured — but remove the UI.)
+- [ ] **Remove the Reddit upvote message** shown on /home (and anywhere): `UpvoteRedditSnackbar.vue`
+      — "Enjoying the Fellowship? Help us reach more people by upvoting our Reddit post and
+      leaving a comment with your thoughts :)". Remove the component + its usage in App.vue.
+- [ ] **Login bug: Google/Outlook buttons are white-text-on-white-background.** The brand
+      buttons (`tw-bg-white`) in `SignIn.vue` + `SignInDialog.vue` have invisible labels under
+      the dark theme (v-btn default text went light). Give them dark text (`tw-text-wood-deep`
+      or `tw-text-black`) so "Continue with Google/Outlook" is readable. Quick + visible fix.
 
 ---
 
