@@ -742,21 +742,6 @@ export default {
       },
       immediate: true,
     },
-    value: {
-      handler() {
-        if (this.value) {
-          post("/analytics/upgrade-dialog-viewed", {
-            userId: this.authUser?._id ?? this.$posthog?.get_distinct_id(),
-            price: this.pricesShown,
-            type: this.upgradeDialogType,
-          })
-          this.$posthog.capture("upgrade_dialog_viewed", {
-            price: this.pricesShown,
-            type: this.upgradeDialogType,
-          })
-        }
-      },
-    },
   },
 }
 </script>

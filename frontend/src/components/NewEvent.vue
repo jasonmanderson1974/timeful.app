@@ -734,7 +734,6 @@ export default {
         collectEmails: this.collectEmails,
         startOnMonday: this.startOnMonday,
         timeIncrement: this.timeIncrement,
-        creatorPosthogId: this.$posthog?.get_distinct_id(),
       }
 
       const posthogPayload = {

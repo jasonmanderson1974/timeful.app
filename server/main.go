@@ -131,7 +131,6 @@ func main() {
 	routes.InitUser(apiRouter)
 	routes.InitUsers(apiRouter)
 	routes.InitEvents(apiRouter)
-	routes.InitAnalytics(apiRouter)
 	routes.InitStripe(apiRouter)
 	routes.InitFolders(apiRouter)
 	slackbot.InitSlackbot(apiRouter)

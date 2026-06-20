@@ -231,9 +231,7 @@ html {
 import { mapMutations, mapState, mapActions, mapGetters } from "vuex"
 import {
   get,
-  getLocation,
   isPhone,
-  post,
   signInGoogle,
   signInOutlook,
   isPremiumUser,
@@ -457,30 +455,6 @@ export default {
   },
 
   watch: {
-    $route: {
-      immediate: true,
-      async handler() {
-        const originalHref = window.location.href
-        if (this.$route.name) {
-          this.$posthog?.capture("$pageview")
-        }
-
-        // Check for poster query parameter
-        if (this.$route.query.p) {
-          let location = null
-          try {
-            location = await getLocation()
-          } catch (e) {
-            // User probably has adblocker
-          }
-
-          post("/analytics/scanned-poster", {
-            url: originalHref,
-            location,
-          })
-        }
-      },
-    },
     authUser: {
       immediate: true,
       handler() {

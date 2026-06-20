@@ -340,7 +340,6 @@ export default {
           attendees,
           type,
           startOnMonday,
-          creatorPosthogId: this.$posthog?.get_distinct_id(),
         })
           .then(async ({ eventId, shortId }) => {
             if (this.authUser) {
