@@ -53,12 +53,17 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 
 ## 4. Build phases
 
-### Phase A — Allowlist + the gate  *(core; do first)*
-- [ ] `allowlist` Mongo collection + `db/` accessor (IsAllowlisted(email), Add, Remove, List).
-- [ ] Gate in `checkEmail`: if email not allowlisted → return a distinct response (e.g.
-      `{ invited: false }` / 403) so `SignIn.vue` shows "by invitation only" and does NOT send a code.
-- [ ] Gate the **Google callback** (`signInHelper`): reject non-allowlisted Google emails (no account).
-- [ ] `SignIn.vue`: handle the "not invited" response with the club message.
+### Phase A — Allowlist + the gate  *(DONE 2026-06-20, deployed `5853a06`, verified live)*
+- [x] `allowlist` collection (unique email index, `db/init.go`) + `db/allowlist.go` accessors
+      (IsAllowlisted, **IsAccessAllowed** [fail-open when empty], Add/Remove/GetAllowlist).
+- [x] `errs.NotInvited` + sentinel `errs.ErrNotInvited`.
+- [x] Gate `checkEmail` → `{invited:false}` (200) when blocked; `sendOtp` → 403; OAuth
+      `signInHelper` returns `ErrNotInvited` before account creation; `signIn`/`signInMobile`
+      callers return 403 `not-invited`.
+- [x] `SignIn.vue` shows "by invitation only" on the email path + via `?notInvited=1` query;
+      `Auth.vue` bounces a not-invited Google login to `/sign-in?notInvited=1`.
+- [x] VERIFIED live: empty list ⇒ fail-open (no lockout); add 1 email ⇒ enforces (listed=invited,
+      others=invited:false); cleared ⇒ dormant. **Allowlist is currently EMPTY (dormant).**
 
 ### Phase B — Gmail SMTP for the codes
 - [ ] Replace the Listmonk send in `sendOtp` with Gmail SMTP (host `smtp.gmail.com:587` STARTTLS).
@@ -82,8 +87,11 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 
 ## 5. Status / progress  (update each session)
 
-- 2026-06-20: Design finalized + documented. **Not started building.** Awaiting kickoff.
-- Phases A–E: ☐ not started.
+- 2026-06-20: Design finalized + documented.
+- 2026-06-20: **Phase A DONE & deployed** (`5853a06`) — allowlist + sign-in gate, fail-open while
+  empty, verified live. Allowlist currently EMPTY ⇒ gate dormant, site behaves as before.
+- Phases B–E: ☐ not started. **Next = Phase B** (Listmonk→Gmail SMTP for the OTP code email;
+  needs the user's Gmail app password in `server/.env`).
 
 ## 6. Needs-from-user / manual steps
 
