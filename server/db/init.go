@@ -22,6 +22,7 @@ var AttendeesCollection *mongo.Collection
 var FoldersCollection *mongo.Collection
 var FolderEventsCollection *mongo.Collection
 var OtpCodesCollection *mongo.Collection
+var AllowlistCollection *mongo.Collection
 
 func Init() func() {
 	// Establish mongodb connection
@@ -49,6 +50,7 @@ func Init() func() {
 	FoldersCollection = Db.Collection("folders")
 	FolderEventsCollection = Db.Collection("folderEvents")
 	OtpCodesCollection = Db.Collection("otpCodes")
+	AllowlistCollection = Db.Collection("allowlist")
 
 	// Create TTL index so expired OTP docs are auto-deleted
 	otpIndexModel := mongo.IndexModel{
@@ -56,6 +58,13 @@ func Init() func() {
 		Options: options.Index().SetExpireAfterSeconds(0),
 	}
 	OtpCodesCollection.Indexes().CreateOne(context.Background(), otpIndexModel)
+
+	// Unique index on allowlist email so an address can only be listed once
+	allowlistIndexModel := mongo.IndexModel{
+		Keys:    bson.M{"email": 1},
+		Options: options.Index().SetUnique(true),
+	}
+	AllowlistCollection.Indexes().CreateOne(context.Background(), allowlistIndexModel)
 
 	// Return a function to close the connection
 	return func() {

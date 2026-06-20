@@ -334,6 +334,11 @@ export default {
       this.sending = true
       try {
         const res = await post("/auth/otp/check-email", { email: this.email })
+        if (res.invited === false) {
+          this.emailError =
+            "The Fellowship is by invitation only — this address isn't on the roll. Speak to a member to be added."
+          return
+        }
         this.isNewUser = res.isNewUser
         if (this.isNewUser) {
           this.step = "onboarding"
@@ -444,6 +449,14 @@ export default {
         }
       }, 1000)
     },
+  },
+
+  created() {
+    // Bounced here from a Google sign-in that wasn't on the invite roll
+    if (this.$route.query.notInvited) {
+      this.emailError =
+        "The Fellowship is by invitation only — that account isn't on the roll. Speak to a member to be added."
+    }
   },
 
   beforeDestroy() {

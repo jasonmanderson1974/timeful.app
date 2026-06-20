@@ -158,6 +158,9 @@ export default {
       }
     } catch (err) {
       console.error(err)
+      if (err?.parsed?.error === "not-invited") {
+        this.$router.replace({ name: "sign-in", query: { notInvited: "1" } })
+      }
     }
   },
 }

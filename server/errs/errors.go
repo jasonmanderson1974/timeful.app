@@ -2,6 +2,7 @@ package errs
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -22,7 +23,13 @@ const (
 	OtpInvalidCode        string = "otp-invalid-code"
 	OtpTooManyAttempts    string = "otp-too-many-attempts"
 	InvalidIdToken        string = "invalid-id-token"
+	// NotInvited: the email is not on the invite-only allowlist
+	NotInvited string = "not-invited"
 )
+
+// Sentinel error returned by signInHelper when an email is not allowlisted, so
+// callers can distinguish it from other sign-in failures and return NotInvited.
+var ErrNotInvited = errors.New(NotInvited)
 
 type GoogleAPIError struct {
 	Code    int         `json:"code"`

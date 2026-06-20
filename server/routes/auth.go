@@ -66,6 +66,10 @@ func signIn(c *gin.Context) {
 	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), payload.CalendarType)
 
 	user, err := signInHelper(c, tokens, models.WEB, payload.CalendarType, *payload.TimezoneOffset)
+	if err == errs.ErrNotInvited {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotInvited})
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.InvalidIdToken})
 		return
@@ -118,6 +122,10 @@ func signInMobile(c *gin.Context) {
 		payload.CalendarType,
 		payload.TimezoneOffset,
 	)
+	if err == errs.ErrNotInvited {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotInvited})
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.InvalidIdToken})
 		return
@@ -170,6 +178,12 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 		picture = ""
 	}
 	email = utils.NormalizeEmail(email)
+
+	// Invite-only gate: reject non-allowlisted emails before any account is
+	// created or updated. Callers surface this as a NotInvited response.
+	if !db.IsAccessAllowed(email) {
+		return models.User{}, errs.ErrNotInvited
+	}
 
 	primaryAccountKey := utils.GetCalendarAccountKey(email, calendarType)
 
@@ -345,9 +359,15 @@ func checkEmail(c *gin.Context) {
 	}
 
 	email := strings.ToLower(strings.TrimSpace(payload.Email))
-	isNewUser := db.GetUserByEmail(email) == nil
 
-	c.JSON(http.StatusOK, gin.H{"isNewUser": isNewUser})
+	// Invite-only gate: only allowlisted emails may sign in / register.
+	if !db.IsAccessAllowed(email) {
+		c.JSON(http.StatusOK, gin.H{"invited": false})
+		return
+	}
+
+	isNewUser := db.GetUserByEmail(email) == nil
+	c.JSON(http.StatusOK, gin.H{"invited": true, "isNewUser": isNewUser})
 }
 
 // @Summary Sends an OTP code to the given email
@@ -366,6 +386,12 @@ func sendOtp(c *gin.Context) {
 	}
 
 	email := strings.ToLower(strings.TrimSpace(payload.Email))
+
+	// Invite-only gate: never send a code to a non-allowlisted email
+	if !db.IsAccessAllowed(email) {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotInvited})
+		return
+	}
 
 	// Delete any existing OTP codes for this email
 	db.OtpCodesCollection.DeleteMany(context.Background(), bson.M{"email": email})
