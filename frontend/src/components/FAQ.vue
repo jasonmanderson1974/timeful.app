@@ -1,20 +1,22 @@
 <template>
   <div
-    class="tw-flex tw-w-full tw-cursor-pointer tw-flex-col tw-overflow-hidden tw-rounded-md tw-border-[1px] tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition-all sm:tw-p-6"
-    :class="{
-      'tw-border-green': toggled,
-      'tw-border-light-gray-stroke': !toggled,
-    }"
+    class="flw-panel tw-flex tw-w-full tw-cursor-pointer tw-flex-col tw-p-4 tw-text-left tw-transition-all sm:tw-p-6"
+    :class="{ 'tw-border-brass-bright': toggled }"
     @click="() => (toggled = !toggled)"
   >
     <div
       class="tw-flex tw-flex-row tw-content-center tw-justify-between tw-text-base"
     >
-      <div class="tw-mr-4 tw-font-medium" v-html="question"></div>
+      <div
+        class="tw-mr-4 tw-font-head tw-text-lg tw-text-parchment"
+        v-html="question"
+      ></div>
       <v-icon
         size="x-large"
         :class="`${
-          toggled ? 'tw-rotate-45 tw-text-green' : 'tw-rotate-0 tw-text-gray'
+          toggled
+            ? 'tw-rotate-45 tw-text-brass-bright'
+            : 'tw-rotate-0 tw-text-brass-dim'
         }`"
         >mdi-plus</v-icon
       >
@@ -22,7 +24,7 @@
 
     <v-expand-transition>
       <div v-if="toggled">
-        <div class="tw-pt-4 tw-text-sm sm:tw-pt-6">
+        <div class="tw-pt-4 tw-font-body tw-text-base tw-text-parchment-dim sm:tw-pt-6">
           <div v-html="answer"></div>
           <div class="tw-flex tw-flex-col tw-gap-2">
             <div
@@ -30,7 +32,7 @@
               class="tw-flex tw-items-center"
             >
               <div
-                class="tw-mr-2 tw-flex tw-h-5 tw-w-5 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-green tw-text-white"
+                class="tw-mr-2 tw-flex tw-h-5 tw-w-5 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-brass tw-font-display tw-text-xs tw-text-wood-deep"
               >
                 {{ index + 1 }}
               </div>
@@ -39,11 +41,11 @@
           </div>
           <div
             v-if="authRequired"
-            class="tw-mt-6 tw-text-sm tw-font-medium tw-text-dark-gray"
+            class="tw-mt-6 tw-text-sm tw-font-medium tw-text-parchment-dim"
           >
             *
-            <a @click.stop="$emit('signIn')" class="tw-text-green tw-underline"
-              >Sign in</a
+            <a @click.stop="$emit('signIn')" class="tw-text-brass tw-underline"
+              >Enter</a
             >
             to use this feature
           </div>

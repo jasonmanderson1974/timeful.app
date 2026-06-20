@@ -22,19 +22,26 @@
     <UpvoteRedditSnackbar />
     <div
       v-if="showHeader"
-      class="tw-fixed tw-z-40 tw-h-14 tw-w-screen tw-bg-white sm:tw-h-16"
+      class="tw-fixed tw-z-40 tw-h-14 tw-w-screen tw-border-b tw-border-brass-dim tw-bg-wood-deep sm:tw-h-16"
       dark
     >
       <div
         class="tw-relative tw-m-auto tw-flex tw-h-full tw-max-w-6xl tw-items-center tw-justify-center tw-px-4"
       >
-        <router-link :to="{ name: 'home' }">
-          <Logo type="timeful" />
+        <router-link
+          :to="{ name: 'home' }"
+          class="tw-flex tw-items-center tw-gap-2 tw-no-underline"
+        >
+          <SirThomasFoolery :size="36" />
+          <span
+            class="tw-font-display tw-text-base tw-font-bold tw-tracking-[0.16em] tw-text-parchment sm:tw-text-lg"
+            >THE FELLOWSHIP</span
+          >
         </router-link>
         <v-expand-x-transition>
           <span
             v-if="isPremiumUser"
-            class="tw-ml-2 tw-cursor-default tw-rounded-md tw-bg-[linear-gradient(-25deg,#0a483d,#00994c,#126045,#0a483d)] tw-px-2 tw-py-1 tw-text-sm tw-font-semibold tw-text-white tw-opacity-80"
+            class="tw-ml-2 tw-cursor-default tw-rounded-md tw-border tw-border-brass-dim tw-bg-green-felt tw-px-2 tw-py-1 tw-font-display tw-text-xs tw-tracking-wider tw-text-brass"
           >
             Premium
           </span>
@@ -46,44 +53,41 @@
           v-if="$route.name === 'event'"
           id="top-right-create-btn"
           text
+          class="tw-font-display tw-tracking-widest tw-text-brass"
           @click="() => _createNew(true)"
         >
-          Create an event
+          Call a Gathering
         </v-btn>
         <v-btn
           v-if="showFeedbackBtn"
           id="feedback-btn"
           text
+          class="tw-font-display tw-tracking-widest tw-text-brass"
           href="https://forms.gle/A96i4TTWeKgH3P1W6"
           target="_blank"
           @click="trackFeedbackClick"
         >
-          Give feedback
+          Send Word
         </v-btn>
-        <!-- <v-btn
-          v-if="!isPhone"
-          text
-          href="https://www.paypal.com/donate/?hosted_button_id=KWCH6LGJCP6E6"
-          target="_blank"
-        >
-          Donate
-        </v-btn> -->
         <v-btn
           v-if="$route.name === 'home' && !isPhone"
           color="primary"
-          class="tw-mx-2 tw-rounded-md"
-          :style="{
-            boxShadow: '0px 2px 8px 0px #00994C80 !important',
-          }"
+          class="tw-mx-2 tw-rounded-md tw-font-display tw-tracking-widest tw-text-wood-deep"
           @click="() => _createNew()"
         >
-          + Create new
+          + Call a Gathering
         </v-btn>
         <div v-if="authUser" class="sm:tw-ml-4">
           <AuthUserMenu />
         </div>
-        <v-btn v-else id="top-right-sign-in-btn" text @click="signIn">
-          Sign in
+        <v-btn
+          v-else
+          id="top-right-sign-in-btn"
+          text
+          class="tw-font-display tw-tracking-widest tw-text-brass"
+          @click="signIn"
+        >
+          Enter
         </v-btn>
       </div>
     </div>
@@ -252,6 +256,7 @@ import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
 import UpgradeDialog from "@/components/pricing/UpgradeDialog.vue"
 import SignInDialog from "@/components/SignInDialog.vue"
+import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
 
 export default {
   name: "App",
@@ -263,6 +268,7 @@ export default {
   },
 
   components: {
+    SirThomasFoolery,
     AutoSnackbar,
     AuthUserMenu,
     SignInNotSupportedDialog,

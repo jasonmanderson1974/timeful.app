@@ -116,107 +116,56 @@
       </div>
     </div>
 
-    <!-- How it works -->
+    <!-- How a Gathering comes to pass -->
     <div
       id="how-it-works"
-      class="tw-grid tw-place-content-center tw-px-4 tw-pt-12"
+      class="tw-grid tw-place-content-center tw-px-4 tw-pt-16"
     >
-      <div class="tw-mx-auto tw-flex tw-flex-col tw-gap-4">
-        <div
-          class="tw-mb-4 tw-text-center tw-text-2xl tw-font-medium sm:tw-text-3xl lg:tw-text-4xl"
-        >
-          How it works
-        </div>
+      <div class="tw-mb-8 tw-text-center">
+        <p class="flw-eyebrow tw-mb-2">The Order of Things</p>
+        <h2 class="flw-title tw-text-3xl sm:tw-text-4xl">
+          How a Gathering Comes to Pass
+        </h2>
+        <div class="flw-rule tw-mt-4"><span>&#9670;</span></div>
+      </div>
+      <div class="tw-mx-auto tw-flex tw-max-w-xl tw-flex-col tw-gap-4">
         <div
           v-for="(step, i) in howItWorksSteps"
           :key="i"
-          class="tw-flex tw-items-center tw-gap-2"
+          class="tw-flex tw-items-center tw-gap-3"
         >
           <NumberBullet>{{ i + 1 }}</NumberBullet>
-          <div class="tw-text-base tw-font-medium md:tw-text-xl">
+          <div class="tw-font-head tw-text-lg tw-text-parchment md:tw-text-xl">
             <div v-html="step"></div>
           </div>
         </div>
       </div>
       <div
-        class="tw-mb-6 tw-mt-10 tw-text-center tw-text-3xl tw-font-medium md:tw-mb-12 md:tw-mt-20 md:tw-text-6xl"
+        class="flw-sub tw-mb-6 tw-mt-12 tw-text-center tw-text-3xl tw-text-brass md:tw-mb-12 md:tw-mt-16 md:tw-text-5xl"
       >
-        It's that simple.
+        And so, &rsquo;tis done.
       </div>
-      <v-img
-        alt="schej character"
-        src="@/assets/schej_character.png"
-        :height="isPhone ? 200 : 300"
-        transition="fade-transition"
-        contain
-        class="-tw-mb-12"
+      <SirThomasFoolery
+        :size="isPhone ? 150 : 210"
+        class="tw-mx-auto -tw-mb-12"
       />
     </div>
 
-    <!-- Video -->
+    <!-- The proceedings, in motion -->
     <div
-      class="tw-flex tw-justify-center tw-bg-green tw-px-4 tw-pb-12 tw-pt-24 md:tw-pb-16"
+      class="tw-flex tw-justify-center tw-bg-green-felt tw-px-4 tw-pb-12 tw-pt-24 md:tw-pb-16"
     >
-      <div
-        class="tw-h-[300px] tw-max-w-3xl tw-flex-1 sm:tw-h-[400px] md:tw-h-[450px]"
-      >
-        <iframe
-          class="tw-h-full tw-w-full"
-          src="https://www.youtube.com/embed/vFkBC8BrkOk?si=pF64JAIyDhom_1do"
-          title="Timeful demo"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </div>
-
-    <!-- Reddit Testimonials -->
-    <div class="tw-flex tw-justify-center tw-bg-light-gray tw-py-12">
-      <div class="tw-mx-4 tw-max-w-3xl tw-flex-1 sm:tw-mx-16">
-        <div class="tw-text-center">
-          <Header> People love us on Reddit! </Header>
-          <div
-            class="tw-mt-8 tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-2"
-          >
-            <div
-              v-for="(comment, index) in redditComments"
-              :key="index"
-              class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-p-4 tw-shadow-md"
-              :class="{
-                'sm:tw-col-span-2 sm:tw-mx-auto sm:tw-max-w-md':
-                  redditComments.length % 2 !== 0 &&
-                  index === redditComments.length - 1,
-              }"
-            >
-              <div class="tw-flex tw-flex-1 tw-items-center">
-                <div
-                  class="reddit-comment tw-text-left tw-text-sm tw-text-very-dark-gray"
-                  v-html="comment.text.replace(/\n/g, '<br />')"
-                ></div>
-              </div>
-              <div
-                class="tw-my-4 tw-h-px tw-w-full tw-bg-light-gray-stroke"
-              ></div>
-              <div class="tw-flex tw-items-center tw-justify-between">
-                <div class="tw-text-right">
-                  <a
-                    :href="comment.link"
-                    target="_blank"
-                    class="tw-text-sm tw-font-medium tw-text-dark-gray hover:tw-underline"
-                  >
-                    {{ comment.author }}
-                  </a>
-                </div>
-                <div class="tw-flex tw-items-center tw-gap-2">
-                  <v-avatar size="24">
-                    <v-img :src="comment.picture" />
-                  </v-avatar>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="flw-panel tw-max-w-3xl tw-flex-1 tw-p-2 sm:tw-p-3">
+        <div class="tw-h-[300px] sm:tw-h-[400px] md:tw-h-[450px]">
+          <iframe
+            class="tw-h-full tw-w-full tw-rounded"
+            src="https://www.youtube.com/embed/vFkBC8BrkOk?si=pF64JAIyDhom_1do"
+            title="The Fellowship demo"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          ></iframe>
         </div>
       </div>
     </div>
@@ -225,9 +174,13 @@
     <div class="tw-flex tw-justify-center tw-pt-12">
       <div class="tw-mx-4 tw-mb-12 tw-max-w-3xl tw-flex-1 sm:tw-mx-16">
         <div id="faq-section" class="tw-text-center lg:tw-pt-3">
-          <Header> Frequently Asked Questions </Header>
+          <p class="flw-eyebrow tw-mb-2">Should You Wonder</p>
+          <h2 class="flw-title tw-text-3xl sm:tw-text-4xl">
+            Matters of Procedure
+          </h2>
+          <div class="flw-rule tw-mb-8 tw-mt-4"><span>&#9670;</span></div>
           <div
-            class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
+            class="tw-grid tw-grid-cols-1 tw-gap-3 tw-text-left sm:tw-text-xl lg:tw-text-2xl"
           >
             <FAQ
               v-for="faq in faqs"
@@ -328,62 +281,62 @@ export default {
     newDialog: false,
     githubSnackbar: true,
     howItWorksSteps: [
-      "Create a Timeful event",
-      "Share the Timeful link with your group for them to fill out",
-      "See where everybody's availability overlaps!",
+      "Call a Gathering and propose the candidate evenings",
+      "Circulate the summons, that each man may mark his availability",
+      "Behold where the whole Order's free hours align &mdash; and set the date",
     ],
     faqs: [
       {
-        question: "Does Timeful support timezones?",
+        question: "Does the Fellowship account for timezones?",
         answer:
-          "Yes! Timeful automatically converts all times to the viewer's local timezone. There's also a timezone selector at the bottom of every meeting poll if you would like to manually change it.",
+          "Indeed, good sir. All hours are rendered in each viewer's own timezone automatically. Should you wish to set it yourself, a timezone selector awaits at the foot of every Gathering.",
       },
       {
-        question: "How many people can respond to an event?",
+        question: "How many men may answer a summons?",
         answer:
-          "Unlimited! We've tested events with over 500+ responses and it works great.",
+          "As many as you please — we have tested Gatherings with upwards of 500 respondents, and it holds firm.",
       },
       {
-        question: "What calendars does Timeful integrate with?",
+        question: "Which calendars may I consult?",
         answer:
-          "Timeful allows you to autofill your availability from your Google Calendar, Outlook, Apple Calendar, or an ICS feed URL. We are working on adding more calendar types soon!",
+          "You may draw your availability from Google Calendar, Outlook, Apple Calendar, or an ICS feed URL. Further provisions are forthcoming.",
       },
       {
-        question: "Is calendar access required in order to use Timeful?",
+        question: "Must I grant calendar access to take part?",
         answer:
-          "Nope! You can manually input your availability, but we highly recommend allowing calendar access in order to view your calendar events while doing so.",
+          "Not at all. You may enter your availability by hand — though we heartily recommend granting access, that you may consult your engagements as you mark them.",
       },
       {
-        question: "Will other people be able to see my calendar events?",
+        question: "Will others spy upon my calendar?",
         answer:
-          "Nope! All other users will be able to see is the availability that you enter for an event.",
+          "Never. Your fellows see only the availability you choose to enter for a given Gathering — nothing more.",
       },
       {
-        question: "How do I edit my availability?",
+        question: "How do I amend my availability?",
         answer:
-          'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, hover over your name and click the pencil icon next to it.',
+          'If you are signed in, simply press the "Edit availability" button. Should you have answered as a guest, hover upon your name and press the pencil beside it.',
       },
       {
-        question: "How is Timeful different from Lettucemeet or When2meet?",
+        question: "What sets the Fellowship apart from lesser tools?",
         points: [
-          "Much better UI (web and mobile)",
-          "Seamless and working calendar integration",
-          "A slew of other features that we don't have space to list here",
+          "A far more handsome interface, on desk and in pocket alike",
+          "Seamless, dependable calendar integration",
+          "A great many further conveniences too numerous to set down here",
         ],
       },
       {
-        question: `I want it so that only I can see people's responses.`,
-        answer: `Just check "Only show responses to event creator" under Advanced Options when creating your event! Other respondees will not be able to see each other's names or availability.`,
+        question: `I should like only myself to see the replies.`,
+        answer: `But of course — tick "Only show responses to event creator" under Advanced Options when calling your Gathering, and your fellows shall see neither names nor availability of one another.`,
         authRequired: true,
       },
       {
-        question: `Can I receive emails when someone fills out my event?`,
-        answer: `Absolutely! Check "Email me each time someone joins my event" when creating an event. <br><br>To receive email notifications after a specific number (X) of responses are added, check "Email me after X responses" in Advanced Options.`,
+        question: `May I be notified when a man answers?`,
+        answer: `Most certainly. Tick "Email me each time someone joins my event" when calling a Gathering. <br><br>For word only after a certain number (X) of replies, tick "Email me after X responses" under Advanced Options.`,
         authRequired: true,
       },
       {
-        question: `How do I send reminders to people to fill out an event?`,
-        answer: `Open the "Email Reminders" section when creating an event and input everybody's email address. Reminder emails will be sent the day of event creation, one day after, and three days after. <br><br>You will also receive an email once everybody has filled out the Timeful.`,
+        question: `How do I prompt the laggards to reply?`,
+        answer: `Open the "Email Reminders" section when calling your Gathering and enter each man's address. Reminders are dispatched on the day of creation, the day following, and three days hence. <br><br>You shall also be notified once the whole Order has answered.`,
         authRequired: true,
       },
     ],
