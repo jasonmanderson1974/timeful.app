@@ -132,13 +132,18 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
 - [ ] Groups (`groups/`), Friends, `Settings` + `settings/` components.
 - [ ] `AuthUserMenu.vue`, snackbars, global dialogs.
 
-### Phase 5 — Misc & cross-cutting
+### Phase 5 — Misc & cross-cutting  *(meta/favicon/OG done; deployed)*
+- [x] index.html meta defaults → Fellowship title/description, dark theme-color.
+- [x] SVG crest favicon (`public/favicon.svg`); old `favicon.ico`/`-16`/`-32` PNGs
+      remain (need binary art) — SVG covers modern browsers.
+- [x] OG image regenerated (`public/img/ogImage.png`) via Playwright render of the crest.
+- [x] Removed obsolete `public/ads.txt`.
 - [ ] `PrivacyPolicy.vue`, error/empty states, `AutoSnackbar`, tooltips.
-- [ ] Favicon, PWA manifest (`public/`), OG image (`/img/ogImage.png`) → Fellowship crest.
-- [ ] Meta titles/descriptions (also the Go `NoRoute` OG-tag injector in `server/main.go`
-      sets per-route titles — update those strings for the rebrand).
+- [ ] Per-view metaInfo titles still saying "Timeful" (Home, etc.) — sweep to Fellowship.
 - [ ] Full archaic-voice copy pass once layouts are settled.
 - [ ] Accessibility/contrast audit on dark; mobile pass at 390px.
+- [ ] Phase 4 logged-in screens: VISUAL REVIEW pending (converted blind — need login).
+- [ ] Old binary favicons (.ico/.png) → regenerate from crest if desired.
 
 ### Phase 6 — Finalize
 - [ ] Replace remaining `schej_*`/`timeful_*` image assets with Fellowship art.
