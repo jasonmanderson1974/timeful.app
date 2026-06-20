@@ -138,12 +138,18 @@ in `index.css`), brass keyline frames, ◆ diamond rule dividers.
       remain (need binary art) — SVG covers modern browsers.
 - [x] OG image regenerated (`public/img/ogImage.png`) via Playwright render of the crest.
 - [x] Removed obsolete `public/ads.txt`.
-- [ ] `PrivacyPolicy.vue`, error/empty states, `AutoSnackbar`, tooltips.
-- [ ] Per-view metaInfo titles still saying "Timeful" (Home, etc.) — sweep to Fellowship.
-- [ ] Full archaic-voice copy pass once layouts are settled.
+- [x] Per-view metaInfo titles → "· The Fellowship" (Home/Settings/PrivacyPolicy/404,
+      Event doc.title). `PrivacyPolicy.vue` was a thin wrapper, inherits dark theme.
+- [x] Repo-wide GUARDED token sweep across the long-tail components (event sub-components,
+      sign-up forms, calendar/permission dialogs, misc): parchment/brass/leather. Settings
+      switch, mobile speed-dial, sign-up borders → brass. Card bg-white → leather (brand
+      logo buttons kept white). Build clean, deployed, event page re-verified.
+- [x] User-facing "Timeful" copy rebranded (Import a Gathering, Seek admittance, Fellowship
+      account, etc.). Unused redditComments data in Landing.vue still says Timeful (not rendered).
 - [ ] Accessibility/contrast audit on dark; mobile pass at 390px.
 - [ ] Phase 4 logged-in screens: VISUAL REVIEW pending (converted blind — need login).
-- [ ] Old binary favicons (.ico/.png) → regenerate from crest if desired.
+- [ ] LOW PRIORITY: pricing/UpgradeDialog tier cards still bg-white+light-green border
+      (paywall disabled, rarely shown). Old binary favicons (.ico/.png) — SVG covers modern.
 
 ### Phase 6 — Finalize
 - [ ] Replace remaining `schej_*`/`timeful_*` image assets with Fellowship art.
