@@ -1,105 +1,90 @@
 <template>
-  <div class="tw-bg-light-gray">
+  <div class="tw-bg-transparent">
     <div
       class="tw-relative tw-m-auto tw-mb-12 tw-flex tw-max-w-6xl tw-flex-col tw-px-4 sm:tw-mb-20"
     >
       <!-- Header -->
-      <div class="tw-mb-16 sm:tw-mb-28">
+      <div class="tw-mb-12 sm:tw-mb-20">
         <div class="tw-flex tw-items-center tw-pt-5">
-          <Logo type="timeful" />
+          <router-link
+            :to="{ name: 'landing' }"
+            class="tw-flex tw-items-center tw-gap-3 tw-no-underline"
+          >
+            <SirThomasFoolery :size="44" />
+            <span
+              class="tw-font-display tw-text-lg tw-font-bold tw-tracking-[0.16em] tw-text-parchment sm:tw-text-xl"
+              >THE FELLOWSHIP</span
+            >
+          </router-link>
 
           <v-spacer />
 
           <LandingPageHeader>
-            <v-btn text @click="openHowItWorksDialog">How it works</v-btn>
-            <v-btn text href="/blog">Blog</v-btn>
+            <v-btn
+              text
+              class="tw-font-display tw-tracking-widest tw-text-brass"
+              @click="openHowItWorksDialog"
+              >The Manner of It</v-btn
+            >
+            <v-btn
+              text
+              class="tw-font-display tw-tracking-widest tw-text-brass"
+              href="/blog"
+              >The Chronicle</v-btn
+            >
             <div v-if="authUser" class="tw-ml-2">
               <AuthUserMenu />
             </div>
-            <v-btn v-else text :to="{ name: 'sign-in' }">Sign in</v-btn>
+            <v-btn
+              v-else
+              text
+              class="tw-font-display tw-tracking-widest tw-text-brass"
+              :to="{ name: 'sign-in' }"
+              >Enter</v-btn
+            >
           </LandingPageHeader>
         </div>
-
-        <FormerlyKnownAs />
       </div>
 
       <div class="tw-flex tw-flex-col tw-items-center">
-        <div
-          class="tw-mb-6 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none"
-        >
-          <div
-            class="tw-mb-4 tw-flex tw-select-none tw-items-center tw-rounded-full tw-border tw-border-light-gray-stroke tw-bg-white/70 tw-px-2.5 tw-py-1.5 tw-text-sm tw-text-dark-gray"
-          >
-            We're open source!
-            <github-button
-              v-once
-              class="-tw-mb-1 tw-ml-2"
-              href="https://github.com/schej-it/timeful.app"
-              data-show-count="true"
-              aria-label="Star timeful.app on GitHub"
-              >Star</github-button
-            >
-          </div>
-          <div
+        <header class="tw-mb-8 tw-flex tw-flex-col tw-items-center tw-text-center">
+          <SirThomasFoolery :size="104" class="tw-mb-4" />
+          <p class="flw-eyebrow tw-mb-2">The Fellowship Presents</p>
+          <h1
             id="header"
-            class="tw-mb-4 tw-text-center tw-text-2xl tw-font-medium sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
+            class="flw-title tw-text-5xl sm:tw-text-6xl xl:tw-text-7xl"
           >
-            <h1>Find a time to meet</h1>
-          </div>
+            The Gathering
+          </h1>
+          <div class="flw-rule tw-mt-4"><span>&#9670;</span></div>
+          <p class="flw-sub tw-mt-5 tw-text-xl sm:tw-text-2xl">
+            Cast thy vote, good sir &mdash; when shall we convene?
+          </p>
+        </header>
 
-          <div
-            class="lg:tw-text-md tw-text-left tw-text-center tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
-          >
-            Coordinate group meetings without the back and forth.
-            <br class="tw-hidden sm:tw-block" />
-            Integrates with your
-            <v-tooltip
-              top
-              content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <span
-                  class="tw-cursor-pointer tw-border-b tw-border-dashed tw-border-dark-gray"
-                  v-bind="attrs"
-                  v-on="on"
-                  >calendar</span
-                >
-              </template>
-              <span
-                >Timeful allows you to autofill your availability from Google
-                Calendar,<br class="tw-hidden sm:tw-block" />
-                Outlook, Apple Calendar, or an ICS feed URL.</span
-              > </v-tooltip
-            >.
-          </div>
-        </div>
-
-        <div class="tw-mb-12 tw-space-y-2">
-          <v-btn
-            class="tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
-            dark
+        <div class="tw-mb-12 tw-flex tw-flex-col tw-items-center tw-gap-2">
+          <button
+            class="flw-btn tw-text-sm sm:tw-text-base"
             @click="authUser ? openDashboard() : (newDialog = true)"
-            large
-            :x-large="$vuetify.breakpoint.mdAndUp"
           >
-            {{ authUser ? "Open dashboard" : "Create event" }}
-          </v-btn>
+            {{ authUser ? "To the Club Room" : "Call a Gathering" }}
+          </button>
           <div
             v-if="!authUser"
-            class="tw-text-center tw-text-xs tw-text-dark-gray sm:tw-text-sm"
+            class="tw-text-center tw-text-sm tw-text-parchment-dim"
           >
-            It's free! No login required.
+            No dues &middot; no login required.
           </div>
         </div>
         <div class="tw-relative tw-w-full">
-          <!-- Green background -->
+          <!-- Felt-green spotlight behind the club portrait -->
           <div
-            class="tw-absolute -tw-bottom-12 tw-left-1/2 tw-h-[85%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:-tw-bottom-20"
+            class="tw-absolute -tw-bottom-12 tw-left-1/2 tw-h-[85%] tw-w-screen -tw-translate-x-1/2 tw-bg-green-felt sm:-tw-bottom-20"
           ></div>
 
-          <!-- Hero video -->
+          <!-- Hero portrait, framed in brass -->
           <div
-            class="tw-relative tw-z-20 tw-w-full tw-rounded-lg tw-border tw-border-light-gray-stroke tw-bg-white tw-shadow-xl sm:tw-rounded-xl md:tw-mx-auto md:tw-w-fit"
+            class="flw-panel tw-relative tw-z-20 tw-w-full tw-p-2 sm:tw-p-3 md:tw-mx-auto md:tw-w-fit"
           >
             <div
               class="tw-relative tw-mx-4 tw-aspect-square md:tw-size-[700px] lg:tw-size-[800px]"
@@ -309,15 +294,17 @@ import PronunciationMenu from "@/components/PronunciationMenu.vue"
 import { mapState, mapMutations } from "vuex"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import FormerlyKnownAs from "@/components/FormerlyKnownAs.vue"
+import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
 
 export default {
   name: "Landing",
 
   metaInfo: {
-    title: "Timeful (formerly Schej) - Find a time to meet",
+    title: "The Fellowship · The Gathering",
   },
 
   components: {
+    SirThomasFoolery,
     LandingPageCalendar,
     FAQ,
     Header,

@@ -1,3 +1,142 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   THE FELLOWSHIP — global theme foundation
+   Vintage gentleman's club · dark mode · brass & green
+   (palette + serif fonts defined in tailwind.config.js)
+   ============================================================ */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Vuetify's root (<v-app>) gets the walnut + damask backdrop */
+  body,
+  .v-application {
+    font-family: "EB Garamond", serif;
+    color: #ede4d3; /* parchment */
+    background-color: #1c1410; /* wood-deep */
+  }
+
+  .v-application {
+    /* --- CSS-only crest glow + damask diamond lattice + wood --- */
+    background-image:
+      radial-gradient(
+        ellipse 60% 50% at 50% 12%,
+        rgba(201, 164, 76, 0.1),
+        transparent 70%
+      ),
+      repeating-linear-gradient(
+        45deg,
+        rgba(201, 164, 76, 0.045) 0 2px,
+        transparent 2px 38px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        rgba(201, 164, 76, 0.045) 0 2px,
+        transparent 2px 38px
+      ),
+      radial-gradient(
+        circle at center,
+        rgba(201, 164, 76, 0.07) 1.5px,
+        transparent 2px
+      ),
+      linear-gradient(180deg, #211710 0%, #1c1410 45%, #150f0b 100%);
+    background-size: 100% 100%, 54px 54px, 54px 54px, 54px 54px, 100% 100%;
+    background-position: center top, 0 0, 0 0, 27px 27px, center;
+    background-attachment: fixed;
+  }
+
+  /* Default serif voice for the app's running text */
+  .v-application p {
+    font-family: "EB Garamond", serif;
+  }
+}
+
+@layer components {
+  /* Spaced all-caps brass label (the "eyebrow") */
+  .flw-eyebrow {
+    @apply tw-font-display tw-uppercase tw-text-brass;
+    font-size: 0.72rem;
+    letter-spacing: 0.42em;
+    padding-left: 0.42em; /* optical centering for tracking */
+  }
+
+  /* Big spaced display title */
+  .flw-title {
+    @apply tw-font-display tw-font-bold tw-text-parchment;
+    line-height: 1.05;
+    text-shadow: 0 2px 0 #0c0805, 0 0 28px rgba(201, 164, 76, 0.18);
+  }
+
+  /* Ornamental italic subtitle / lead */
+  .flw-sub {
+    @apply tw-font-head tw-italic tw-text-parchment-dim;
+  }
+
+  /* Brass-keyline wood panel (card) */
+  .flw-panel {
+    @apply tw-relative tw-border tw-border-brass-dim;
+    background: linear-gradient(
+      180deg,
+      rgba(46, 33, 23, 0.92),
+      rgba(36, 26, 19, 0.96)
+    );
+    border-radius: 4px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  }
+  /* inner brass keyline */
+  .flw-panel::after {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border: 1px solid rgba(201, 164, 76, 0.28);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* Ornamental centered rule w/ diamond: <div class="flw-rule"><span>◆</span></div> */
+  .flw-rule {
+    @apply tw-mx-auto tw-flex tw-items-center tw-justify-center tw-text-brass;
+    gap: 0.75rem;
+    max-width: 320px;
+  }
+  .flw-rule::before,
+  .flw-rule::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #8a7333);
+  }
+  .flw-rule::after {
+    transform: scaleX(-1);
+  }
+
+  /* Primary brass call-to-action */
+  .flw-btn {
+    @apply tw-font-display tw-font-semibold tw-uppercase tw-text-wood-deep;
+    letter-spacing: 0.18em;
+    background: linear-gradient(180deg, #e3c578, #c9a44c);
+    border: 1px solid #e3c578;
+    border-radius: 3px;
+    padding: 0.85rem 1.4rem;
+    cursor: pointer;
+    transition: filter 0.18s ease, transform 0.1s ease;
+  }
+  .flw-btn:hover {
+    filter: brightness(1.08);
+  }
+  .flw-btn:active {
+    transform: translateY(1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

@@ -12,10 +12,29 @@ module.exports = {
       fontSize: {
         xs: ["0.813rem", "1rem"],
       },
+      fontFamily: {
+        // The Fellowship — all-serif gentleman's-club type
+        display: ['"Cinzel"', "serif"], // spaced all-caps titles
+        head: ['"Cormorant Garamond"', "serif"], // ornamental italic heads
+        body: ['"EB Garamond"', "serif"], // running text
+      },
     },
     colors: {
       transparent: "transparent",
       current: "currentColor",
+      // ---- The Fellowship palette (vintage club · brass & green) ----
+      "wood-deep": "#1c1410", // near-black walnut, page base
+      wood: "#241a13", // panel wood
+      leather: "#2e2117", // raised surfaces
+      "green-felt": "#16261d", // billiard-table green accent
+      "green-deep": "#0f1c15",
+      brass: "#c9a44c", // primary gold/brass
+      "brass-bright": "#e3c578", // highlight gold
+      "brass-dim": "#8a7333", // hairlines, borders
+      parchment: "#ede4d3", // primary text
+      "parchment-dim": "#b8ad97", // secondary text
+      oxblood: "#6e2b2b", // rare warning/danger
+      // ---- legacy Timeful tokens (retained during phased reskin) ----
       "pale-green": "#CDEBDC",
       "light-green": "#29BC68",
       "ligher-green": "#EBF7EF",
