@@ -47,13 +47,13 @@
             @click="convertW2M"
             class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-parchment-dim tw-underline"
           >
-            Convert When2meet to Timeful
+            Convert When2meet to a Gathering
           </div>
           <div
             @click="importTimeful"
             class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-parchment-dim tw-underline"
           >
-            Import Timeful Event
+            Import a Gathering
           </div>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default {
   name: "Home",
 
   metaInfo: {
-    title: "Home - Timeful",
+    title: "Home · The Fellowship",
   },
 
   components: {

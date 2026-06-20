@@ -1,7 +1,7 @@
 <template>
   <div
-    class="tw-h-full tw-w-full tw-cursor-pointer tw-overflow-hidden tw-rounded-md tw-border-2 tw-border-solid tw-bg-white"
-    :class="unsaved ? 'tw-border-light-green' : 'tw-border-gray'"
+    class="tw-h-full tw-w-full tw-cursor-pointer tw-overflow-hidden tw-rounded-md tw-border-2 tw-border-solid tw-bg-leather"
+    :class="unsaved ? 'tw-border-brass' : 'tw-border-gray'"
   >
     <div
       class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-p-1 tw-text-xs"
@@ -60,7 +60,7 @@ export default {
     fontColor() {
       return this.numberResponses == this.signUpBlock?.capacity && !this.unsaved
         ? "tw-text-white"
-        : "tw-text-dark-gray"
+        : "tw-text-parchment-dim"
     },
   },
 

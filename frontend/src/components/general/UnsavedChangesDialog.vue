@@ -13,7 +13,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text @click="$emit('input', false)" class="tw-text-green"
+        <v-btn text @click="$emit('input', false)" class="tw-text-brass"
           >Cancel</v-btn
         >
         <v-btn text @click="$emit('leave')">Leave page</v-btn>

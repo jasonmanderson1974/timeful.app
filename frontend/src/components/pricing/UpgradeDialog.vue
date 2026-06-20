@@ -23,10 +23,10 @@
           Upgrade to
           <span
             class="tw-bg-gradient-to-r tw-from-darkest-green tw-to-light-green tw-bg-clip-text tw-text-transparent"
-            >Timeful Premium</span
+            >Fellowship Premium</span
           >
         </h2>
-        <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
+        <div class="tw-text-sm tw-font-medium tw-text-parchment-dim">
           <template
             v-if="upgradeDialogType === upgradeDialogTypes.CREATE_EVENT"
           >
@@ -37,7 +37,7 @@
           <template
             v-else-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
           >
-            Upgrade to schedule events with Timeful. Your payment helps us keep
+            Upgrade to call Gatherings with the Fellowship. Your payment helps us keep
             the site running.
           </template>
           <template
@@ -45,7 +45,7 @@
               upgradeDialogType === upgradeDialogTypes.UPGRADE_MANUALLY
             "
           >
-            Create unlimited events with Timeful Premium. Your payment helps us
+            Create unlimited events with Fellowship Premium. Your payment helps us
             keep the site running.
           </template>
         </div>
@@ -69,7 +69,7 @@
                   ? formattedPrice(monthlyStudentPrice)
                   : formattedPrice(monthlyPrice)
               }}</span>
-              <span class="tw-text-dark-gray">USD</span>
+              <span class="tw-text-parchment-dim">USD</span>
             </div>
             <v-fade-transition>
               <div
@@ -78,7 +78,7 @@
               ></div>
             </v-fade-transition>
           </div>
-          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
+          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-parchment-dim">
             Per month.<br />Billed monthly.
           </div>
           <v-btn
@@ -115,12 +115,12 @@
           class="tw-relative tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green tw-bg-white tw-p-4 tw-shadow-lg"
         >
           <div
-            class="tw-absolute -tw-top-3 tw-rounded-full tw-bg-light-green tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
+            class="tw-absolute -tw-top-3 tw-rounded-full tw-bg-brass tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
           >
             Save {{ yearlyDiscount }}%
           </div>
           <div
-            class="tw-inline-block tw-w-fit tw-rounded tw-bg-light-green/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
+            class="tw-inline-block tw-w-fit tw-rounded tw-bg-brass/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
           >
             Yearly
           </div>
@@ -131,7 +131,7 @@
                   ? formattedPrice(yearlyStudentPrice)
                   : formattedPrice(yearlyPrice)
               }}</span>
-              <span class="tw-text-dark-gray">USD</span>
+              <span class="tw-text-parchment-dim">USD</span>
             </div>
             <v-fade-transition>
               <div
@@ -140,7 +140,7 @@
               ></div>
             </v-fade-transition>
           </div>
-          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
+          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-parchment-dim">
             Per month.<br />Billed annually.
           </div>
           <v-btn
@@ -176,18 +176,18 @@
           class="tw-relative tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green tw-bg-white tw-p-4 tw-shadow-lg"
         >
           <div
-            class="tw-absolute -tw-top-3 tw-rounded-full tw-bg-light-green tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
+            class="tw-absolute -tw-top-3 tw-rounded-full tw-bg-brass tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
           >
             Limited time offer
           </div>
           <div
-            class="tw-inline-block tw-w-fit tw-rounded tw-bg-light-green/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
+            class="tw-inline-block tw-w-fit tw-rounded tw-bg-brass/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
           >
             Lifetime access
           </div>
           <div class="tw-relative">
             <div class="tw-font-medium">
-              <span class="tw-mr-1 tw-text-dark-gray tw-line-through"
+              <span class="tw-mr-1 tw-text-parchment-dim tw-line-through"
                 >$100</span
               >
               <span class="tw-mr-1 tw-text-4xl">{{
@@ -195,7 +195,7 @@
                   ? formattedPrice(lifetimeStudentPrice)
                   : formattedPrice(lifetimePrice)
               }}</span>
-              <span class="tw-text-dark-gray">USD</span>
+              <span class="tw-text-parchment-dim">USD</span>
             </div>
             <v-fade-transition>
               <div
@@ -204,7 +204,7 @@
               ></div>
             </v-fade-transition>
           </div>
-          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
+          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-parchment-dim">
             One-time payment.<br />No subscription.
           </div>
           <v-btn
@@ -248,10 +248,10 @@
         </v-checkbox>
         <label
           for="student-checkbox"
-          class="tw-flex tw-cursor-pointer tw-select-none tw-flex-col tw-text-sm tw-text-very-dark-gray"
+          class="tw-flex tw-cursor-pointer tw-select-none tw-flex-col tw-text-sm tw-text-parchment-dim"
         >
           <span class="tw-text-sm">I'm a student</span>
-          <span v-if="isStudent" class="tw-text-xs tw-text-dark-gray">
+          <span v-if="isStudent" class="tw-text-xs tw-text-parchment-dim">
             Pinky promise that you're actually a student?
           </span>
         </label>
@@ -278,10 +278,10 @@
           Upgrade to
           <span
             class="tw-bg-gradient-to-r tw-from-darkest-green tw-to-light-green tw-bg-clip-text tw-text-transparent"
-            >Timeful Premium</span
+            >Fellowship Premium</span
           >
         </h2>
-        <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
+        <div class="tw-text-sm tw-font-medium tw-text-parchment-dim">
           <template
             v-if="upgradeDialogType === upgradeDialogTypes.CREATE_EVENT"
           >
@@ -292,7 +292,7 @@
           <template
             v-else-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
           >
-            Upgrade to schedule events with Timeful. Your payment helps us keep
+            Upgrade to call Gatherings with the Fellowship. Your payment helps us keep
             the site running.
           </template>
           <template
@@ -301,7 +301,7 @@
             Upgrade to remove ads. Your payment helps us keep the site running.
           </template>
           <template v-else>
-            Create unlimited events with Timeful Premium. Your payment helps us
+            Create unlimited events with Fellowship Premium. Your payment helps us
             keep the site running.
           </template>
         </div>
@@ -319,7 +319,7 @@
             <span class="tw-line-clamp-1">Yearly</span>
             <span
               v-if="yearlyDiscount > 0"
-              class="tw-whitespace-nowrap tw-rounded-full tw-bg-light-green tw-px-1.5 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
+              class="tw-whitespace-nowrap tw-rounded-full tw-bg-brass tw-px-1.5 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
               >{{ yearlyDiscount }}% OFF</span
             >
           </template>
@@ -332,28 +332,28 @@
       >
         <!-- Free plan -->
         <div
-          class="tw-flex tw-flex-1 tw-flex-col tw-rounded-lg tw-border tw-border-light-gray-stroke tw-p-5"
+          class="tw-flex tw-flex-1 tw-flex-col tw-rounded-lg tw-border tw-border-brass-dim tw-p-5"
         >
           <div class="tw-mb-1 tw-text-xl tw-font-medium">Free</div>
-          <div class="tw-mb-4 tw-text-xs tw-font-medium tw-text-dark-gray">
+          <div class="tw-mb-4 tw-text-xs tw-font-medium tw-text-parchment-dim">
             Limited use
           </div>
           <div class="tw-mb-1 tw-text-4xl tw-font-medium">$0</div>
-          <div class="tw-mb-5 tw-text-xs tw-text-dark-gray">Free, forever</div>
+          <div class="tw-mb-5 tw-text-xs tw-text-parchment-dim">Free, forever</div>
           <ul class="tw-m-0 tw-mb-5 tw-list-none tw-space-y-2.5 tw-p-0">
             <li
               v-for="item in freeFeatures"
               :key="item"
-              class="tw-flex tw-items-start tw-text-sm tw-text-very-dark-gray"
+              class="tw-flex tw-items-start tw-text-sm tw-text-parchment-dim"
             >
-              <v-icon small class="tw-mr-2 tw-mt-0.5 tw-text-gray"
+              <v-icon small class="tw-mr-2 tw-mt-0.5 tw-text-parchment-dim"
                 >mdi-check</v-icon
               >
               {{ item }}
             </li>
           </ul>
           <v-btn depressed disabled class="tw-mt-auto">
-            <span class="tw-text-very-dark-gray">Your current plan</span>
+            <span class="tw-text-parchment-dim">Your current plan</span>
           </v-btn>
         </div>
 
@@ -366,7 +366,7 @@
           }"
         >
           <!-- <div
-            class="tw-absolute -tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-whitespace-nowrap tw-rounded-full tw-bg-light-green tw-px-3 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
+            class="tw-absolute -tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-whitespace-nowrap tw-rounded-full tw-bg-brass tw-px-3 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
           >
             Recommended
           </div> -->
@@ -376,21 +376,21 @@
               >Premium</span
             >
           </div>
-          <div class="tw-mb-4 tw-text-xs tw-font-medium tw-text-dark-gray">
+          <div class="tw-mb-4 tw-text-xs tw-font-medium tw-text-parchment-dim">
             Unlock everything
           </div>
           <div class="tw-relative tw-mb-1 tw-flex tw-items-baseline tw-gap-1.5">
             <span
               v-if="v2BillingCycle === 'yearly' && v2MonthlyPrice"
-              class="tw-text-lg tw-text-dark-gray tw-line-through"
+              class="tw-text-lg tw-text-parchment-dim tw-line-through"
               >{{ formattedPrice(v2MonthlyPrice) }}</span
             >
             <span class="tw-text-4xl tw-font-medium">{{
               v2ActivePrice ? formattedPrice(v2ActivePrice) : "..."
             }}</span>
-            <span class="tw-text-sm tw-text-dark-gray">/mo</span>
+            <span class="tw-text-sm tw-text-parchment-dim">/mo</span>
           </div>
-          <div class="tw-mb-5 tw-text-xs tw-text-dark-gray">
+          <div class="tw-mb-5 tw-text-xs tw-text-parchment-dim">
             {{
               v2BillingCycle === "yearly" ? "Billed annually" : "Billed monthly"
             }}
@@ -400,7 +400,7 @@
             <li
               v-for="item in premiumFeatures"
               :key="item.text"
-              class="tw-flex tw-items-start tw-text-sm tw-text-very-dark-gray"
+              class="tw-flex tw-items-start tw-text-sm tw-text-parchment-dim"
             >
               <v-icon small class="tw-mr-2 tw-mt-0.5 tw-text-light-green"
                 >mdi-check</v-icon
@@ -433,10 +433,10 @@
         </v-checkbox>
         <label
           for="student-checkbox-v2"
-          class="tw-flex tw-cursor-pointer tw-select-none tw-flex-col tw-text-sm tw-text-very-dark-gray"
+          class="tw-flex tw-cursor-pointer tw-select-none tw-flex-col tw-text-sm tw-text-parchment-dim"
         >
           <span class="tw-text-sm">I'm a student</span>
-          <span v-if="isStudent" class="tw-text-xs tw-text-dark-gray">
+          <span v-if="isStudent" class="tw-text-xs tw-text-parchment-dim">
             Pinky promise that you're actually a student?
           </span>
         </label>

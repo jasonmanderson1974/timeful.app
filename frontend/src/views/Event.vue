@@ -68,7 +68,7 @@
           <v-card-text
             ><span class="tw-font-medium"
               >You're about to add your availability without filling out all
-              pages of this Timeful.</span
+              pages of this Gathering.</span
             >
             Click the left and right arrows at the top to switch between
             pages.</v-card-text
@@ -295,7 +295,7 @@
             href="https://forms.gle/A96i4TTWeKgH3P1W6"
             target="_blank"
           >
-            Give feedback to Timeful team
+            Send word to the Fellowship
           </v-btn>
           <!-- <div
             class="tw-w-full tw-border-t tw-border-solid tw-border-gray"
@@ -322,7 +322,7 @@
         class="tw-mb-16 tw-hidden tw-flex-col tw-items-center tw-justify-between sm:tw-flex"
       >
         <router-link
-          class="tw-text-xs tw-font-medium tw-text-gray"
+          class="tw-text-xs tw-font-medium tw-text-parchment-dim"
           :to="{ name: 'privacy-policy' }"
         >
           Privacy Policy
@@ -354,7 +354,7 @@
             <v-spacer />
             <v-btn
               v-if="!isGroup && !authUser && selectedGuestRespondent"
-              class="tw-bg-white tw-text-brass tw-transition-opacity"
+              class="tw-bg-leather tw-text-brass tw-transition-opacity"
               :style="{ opacity: availabilityBtnOpacity }"
               @click="editGuestAvailability"
             >
@@ -362,7 +362,7 @@
             </v-btn>
             <v-btn
               v-else
-              class="tw-bg-white tw-text-brass tw-transition-opacity"
+              class="tw-bg-leather tw-text-brass tw-transition-opacity"
               :disabled="loading && !userHasResponded"
               :style="{ opacity: availabilityBtnOpacity }"
               @click="() => addAvailability()"
@@ -376,7 +376,7 @@
             </v-btn>
             <v-spacer />
             <v-btn
-              class="tw-bg-white tw-text-brass"
+              class="tw-bg-leather tw-text-brass"
               @click="() => saveChanges()"
             >
               Save
@@ -389,7 +389,7 @@
             <v-spacer />
             <v-btn
               :disabled="!allowScheduleEvent"
-              class="tw-bg-white tw-text-blue"
+              class="tw-bg-leather tw-text-brass"
               @click="confirmScheduleEvent"
             >
               Schedule
@@ -1805,7 +1805,7 @@ export default {
         this.$nextTick(() => {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
         })
-        document.title = `${this.event.name} - Timeful`
+        document.title = `${this.event.name} · The Fellowship`
       }
     },
     scheduleOverlapComponent() {

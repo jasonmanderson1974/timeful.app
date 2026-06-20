@@ -13,8 +13,8 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
-      <v-card-text class="tw-text-very-dark-gray">
-        Teams are only available on the Timeful organization plan. Book a call
+      <v-card-text class="tw-text-parchment-dim">
+        Teams are only available on the Fellowship organization plan. Book a call
         with the founder to learn about how to upgrade.
       </v-card-text>
       <v-card-actions>

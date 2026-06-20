@@ -1,7 +1,7 @@
 <template>
   <v-container
     @click="$emit('click')"
-    class="tw-flex tw-justify-between tw-rounded-md tw-bg-light-gray tw-py-2 tw-align-middle tw-text-black"
+    class="tw-flex tw-justify-between tw-rounded-md tw-bg-leather tw-py-2 tw-align-middle tw-text-parchment"
   >
     <div class="tw-mt-2 tw-flex">
       <div class="tw-mr-3">
@@ -19,7 +19,7 @@
           Currently
           <span
             v-if="this.user.status == 'free'"
-            class="tw-font-bold tw-text-green"
+            class="tw-font-bold tw-text-brass"
             >free</span
           ><span v-else>
             in

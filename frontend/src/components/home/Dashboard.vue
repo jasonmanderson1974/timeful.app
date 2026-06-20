@@ -178,7 +178,7 @@
             hide-details
           ></v-text-field>
           <div class="tw-mt-4">
-            <span class="tw-text-gray-500 tw-text-sm">Color</span>
+            <span class="tw-text-parchment-dim tw-text-sm">Color</span>
             <div class="tw-mt-2 tw-flex tw-gap-x-3">
               <div
                 v-for="color in folderColors"

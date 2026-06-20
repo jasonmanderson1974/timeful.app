@@ -27,7 +27,7 @@
 
     <div class="tw-text-md tw-mb-4 tw-font-medium">These permissions will</div>
     <div
-      class="tw-mb-8 tw-flex tw-flex-col tw-gap-4 tw-text-sm tw-text-very-dark-gray"
+      class="tw-mb-8 tw-flex tw-flex-col tw-gap-4 tw-text-sm tw-text-parchment-dim"
     >
       <div>Allow us to display the names/times of your calendar events</div>
       <div>
@@ -41,7 +41,7 @@
       <v-btn v-if="cancelLabel != ''" @click="$emit('cancel')" text class="tw-mr-2 tw-flex-1">
         {{ cancelLabel }}
       </v-btn>
-      <v-btn @click="$emit('allow')" class="tw-flex-1 tw-bg-green" dark>
+      <v-btn @click="$emit('allow')" class="tw-flex-1 tw-bg-brass" dark>
         {{ allowLabel }}
       </v-btn>
     </div>

@@ -31,7 +31,7 @@ export default {
         return "Betterwhen2meet Logo"
       }
 
-      return "Timeful Logo"
+      return "The Fellowship Logo"
     },
     src() {
       switch (this.type) {

@@ -16,12 +16,12 @@
         </div>
       </div>
       <div class="tw-flex tw-flex-col tw-gap-2">
-        <div class="tw-text-sm tw-text-very-dark-gray">
+        <div class="tw-text-sm tw-text-parchment-dim">
           Generate an
-          <span class="tw-font-medium tw-text-black"
+          <span class="tw-font-medium tw-text-parchment"
             >app-specific password</span
           >
-          to use with Timeful at
+          to use with the Fellowship at
           <a
             href="https://appleid.apple.com/account/manage"
             target="_blank"
@@ -29,7 +29,7 @@
             >https://appleid.apple.com/account/manage</a
           >. Copy and paste the generated app password below.
         </div>
-        <div class="tw-text-sm tw-text-very-dark-gray">
+        <div class="tw-text-sm tw-text-parchment-dim">
           Your credentials will be stored and encrypted.
         </div>
       </div>

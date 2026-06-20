@@ -13,9 +13,9 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
-      <v-card-text class="tw-text-very-dark-gray">
-        You've caught us a bit early! We're considering adding folders to
-        Timeful, and will do so once we get enough demand from users.
+      <v-card-text class="tw-text-parchment-dim">
+        You've caught us a bit early! We're considering adding folders to the Fellowship
+        and will do so once we get enough demand from users.
         <v-textarea
           v-model="folderUsageFeedback"
           label="What would you like to use folders for?"

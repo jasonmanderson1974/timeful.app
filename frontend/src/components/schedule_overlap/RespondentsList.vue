@@ -82,7 +82,7 @@
       <template v-if="isPhone">
         <v-spacer />
         <div
-          class="tw-mt-2 tw-text-sm tw-font-normal tw-text-dark-gray"
+          class="tw-mt-2 tw-text-sm tw-font-normal tw-text-parchment-dim"
           :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
         >
           * if needed
@@ -91,7 +91,7 @@
     </div>
     <div
       v-if="isOwner && !isPhone && event.blindAvailabilityEnabled"
-      class="tw-mb-2 tw-mt-1 tw-text-xs tw-italic tw-text-very-dark-gray"
+      class="tw-mb-2 tw-mt-1 tw-text-xs tw-italic tw-text-parchment-dim"
     >
       Responses are only visible to {{ isOwner ? "you" : "event creator" }}
     </div>
@@ -117,12 +117,12 @@
       >
         <div v-if="respondents.length === 0" class="tw-mb-6">
           <span
-            class="tw-text-very-dark-gray"
+            class="tw-text-parchment-dim"
             v-if="!isOwner && event.blindAvailabilityEnabled"
           >
             No response yet!
           </span>
-          <span class="tw-text-very-dark-gray" v-else>No responses yet!</span>
+          <span class="tw-text-parchment-dim" v-else>No responses yet!</span>
         </div>
         <template v-else>
           <transition-group
@@ -175,7 +175,7 @@
                 </div>
                 <div
                   v-if="isOwner && event.collectEmails"
-                  class="email-hover-target tw-flex tw-items-center tw-rounded-sm tw-p-px tw-text-xs tw-text-dark-gray tw-transition-all hover:tw-bg-light-gray"
+                  class="email-hover-target tw-flex tw-items-center tw-rounded-sm tw-p-px tw-text-xs tw-text-parchment-dim tw-transition-all hover:tw-bg-leather"
                   :class="respondentClass(user._id)"
                   @mouseover.stop
                   @click.stop="copyEmailToClipboard(user.email)"
@@ -260,7 +260,7 @@
 
       <div
         v-if="!isPhone && respondents.length > 0"
-        class="tw-col-span-full tw-mb-2 tw-mt-1 tw-text-sm tw-text-dark-gray"
+        class="tw-col-span-full tw-mb-2 tw-mt-1 tw-text-sm tw-text-parchment-dim"
         :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
       >
         * if needed
@@ -318,7 +318,7 @@
           hide-details
         >
           <template v-slot:label>
-            <div class="tw-text-sm tw-text-black">
+            <div class="tw-text-sm tw-text-parchment">
               Show best {{ event.daysOnly ? "days" : "times" }}
             </div>
           </template>
@@ -346,7 +346,7 @@
 
     <div
       v-if="(!isOwner || isPhone) && event.blindAvailabilityEnabled"
-      class="tw-mt-2 tw-text-xs tw-italic tw-text-very-dark-gray"
+      class="tw-mt-2 tw-text-xs tw-italic tw-text-parchment-dim"
     >
       Responses are only visible to {{ isOwner ? "you" : "event creator" }}
     </div>
@@ -354,7 +354,7 @@
     <v-dialog v-model="deleteAvailabilityDialog" width="500" persistent>
       <v-card>
         <v-card-title>Are you sure?</v-card-title>
-        <v-card-text class="tw-text-sm tw-text-dark-gray"
+        <v-card-text class="tw-text-sm tw-text-parchment-dim"
           >Are you sure you want to delete
           <strong>{{ userToDelete?.firstName }}</strong
           >'s availability from this
@@ -388,7 +388,7 @@
       hide-details
     >
       <template v-slot:label>
-        <div class="tw-text-sm tw-text-black">Overlay calendar events</div>
+        <div class="tw-text-sm tw-text-parchment">Overlay calendar events</div>
       </template>
     </v-switch>
 
@@ -603,7 +603,7 @@ export default {
       if (/*this.curRespondent == id ||*/ this.curRespondentsSet.has(id)) {
         // c.push("tw-font-bold")
       } else if (this.curRespondents.length > 0) {
-        c.push("tw-text-gray")
+        c.push("tw-text-parchment-dim")
       }
 
       if (
@@ -615,7 +615,7 @@ export default {
 
       if (!this.curTimeslotAvailability[id]) {
         c.push("tw-line-through")
-        c.push("tw-text-gray")
+        c.push("tw-text-parchment-dim")
       }
       return c
     },

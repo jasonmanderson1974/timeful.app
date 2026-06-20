@@ -24,7 +24,7 @@
         >Join with Google Calendar</v-btn
       >
       <div class="tw-text-center tw-text-parchment-dim">
-        Already have a Timeful account?
+        Already a member of the Fellowship?
         <a @click="signIn" class="tw-underline">Sign in</a>
       </div>
 

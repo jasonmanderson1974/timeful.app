@@ -186,7 +186,7 @@
 </style>
 <style>
 .rdt-h {
-  @apply tw-rounded tw-bg-light-green/20 tw-px-px tw-text-black;
+  @apply tw-rounded tw-bg-brass/20 tw-px-px tw-text-parchment;
 }
 </style>
 

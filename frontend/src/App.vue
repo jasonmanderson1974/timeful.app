@@ -169,7 +169,7 @@ html {
 }
 
 .v-btn.v-btn--is-elevated.tw-bg-blue,
-.v-btn.v-btn--is-elevated.tw-bg-white.tw-text-blue {
+.v-btn.v-btn--is-elevated.tw-bg-white.tw-text-brass {
   -webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
   -moz-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
   box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
@@ -202,7 +202,7 @@ html {
   transform: scale(80%) !important;
 }
 .v-input--switch__track.primary--text {
-  border: 2px theme("colors.light-green") solid !important;
+  border: 2px theme("colors.brass") solid !important;
 }
 .v-input--switch__track {
   border: 2px theme("colors.gray") solid !important;

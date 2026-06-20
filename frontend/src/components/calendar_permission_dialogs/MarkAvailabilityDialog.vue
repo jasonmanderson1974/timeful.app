@@ -12,7 +12,7 @@
             How would you like to add <br class="tw-block sm:tw-hidden" />
             your availability?
           </div>
-          <div class="tw-pb-4 tw-text-center tw-text-xs tw-text-dark-gray">
+          <div class="tw-pb-4 tw-text-center tw-text-xs tw-text-parchment-dim">
             You can always manually edit after autofilling
           </div>
           <div class="tw-flex tw-flex-col tw-gap-2">
@@ -71,7 +71,7 @@
             <div class="tw-flex tw-items-center tw-gap-3">
               <v-divider />
               <div
-                class="tw-text-center tw-text-xs tw-font-medium tw-text-dark-gray"
+                class="tw-text-center tw-text-xs tw-font-medium tw-text-parchment-dim"
               >
                 or
               </div>

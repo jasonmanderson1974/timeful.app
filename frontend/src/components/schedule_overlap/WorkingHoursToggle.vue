@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="tw-mb-1 tw-text-sm tw-text-black">Working hours</div>
-    <div class="tw-mb-2 tw-text-xs tw-text-dark-gray">
+    <div class="tw-mb-1 tw-text-sm tw-text-parchment">Working hours</div>
+    <div class="tw-mb-2 tw-text-xs tw-text-parchment-dim">
       Only autofill availability between working hours
     </div>
     <v-switch
@@ -12,7 +12,7 @@
       hide-details
     >
       <template v-slot:label>
-        <div class="tw-text-sm tw-text-black">
+        <div class="tw-text-sm tw-text-parchment">
           <div class="tw-flex tw-items-center tw-gap-2">
             <v-select
               menu-props="auto"

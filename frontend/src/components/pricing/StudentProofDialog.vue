@@ -9,7 +9,7 @@
       <div class="tw-mb-4">
         <h2 class="tw-text-lg tw-font-medium">Student Verification</h2>
       </div>
-      <p class="tw-mb-6 tw-text-sm tw-text-dark-gray">
+      <p class="tw-mb-6 tw-text-sm tw-text-parchment-dim">
         Please email
         <span class="tw-font-medium tw-text-dark-green tw-underline"
           >contact@timeful.app</span

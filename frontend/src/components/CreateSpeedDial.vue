@@ -12,10 +12,10 @@
           <v-icon v-else> mdi-plus </v-icon>
         </v-btn>
       </template>
-      <v-btn fab small dark class="tw-bg-dark-gray">
+      <v-btn fab small dark class="tw-bg-leather">
         <v-icon small>mdi-account-group</v-icon>
       </v-btn>
-      <v-btn fab small dark class="tw-bg-dark-gray">
+      <v-btn fab small dark class="tw-bg-leather">
         <v-icon small>mdi-calendar-cursor</v-icon>
       </v-btn>
     </v-speed-dial>

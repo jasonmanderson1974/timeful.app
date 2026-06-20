@@ -91,7 +91,7 @@
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
             outlined
-            class="tw-w-full tw-text-blue"
+            class="tw-w-full tw-text-brass"
             @click="(e) => $emit('scheduleEvent', e)"
           >
             <v-icon small>mdi-calendar-check</v-icon>

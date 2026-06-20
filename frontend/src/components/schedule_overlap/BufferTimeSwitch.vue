@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="tw-mb-1 tw-text-sm tw-text-black">Buffer time</div>
-    <div class="tw-mb-2 tw-text-xs tw-text-dark-gray">
+    <div class="tw-mb-1 tw-text-sm tw-text-parchment">Buffer time</div>
+    <div class="tw-mb-2 tw-text-xs tw-text-parchment-dim">
       Add time around calendar events
     </div>
     <v-switch
@@ -14,7 +14,7 @@
     >
       <template v-slot:label>
         <div
-          class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-black"
+          class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-parchment"
         >
           <v-select
             menu-props="auto"

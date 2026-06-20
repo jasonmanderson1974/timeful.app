@@ -5,7 +5,7 @@
       <v-card-title>Google sign in not supported</v-card-title>
       <v-card-text>
         <p>
-          This usually happens when you open a Timeful link from Instagram or
+          This usually happens when you open a Fellowship link from Instagram or
           Messenger.
         </p>
         <p>
@@ -15,7 +15,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text class="tw-text-green" @click="$emit('input', false)">
+        <v-btn text class="tw-text-brass" @click="$emit('input', false)">
           Ok
         </v-btn>
       </v-card-actions>

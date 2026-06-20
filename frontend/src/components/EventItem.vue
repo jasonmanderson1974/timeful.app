@@ -39,7 +39,7 @@
       <div class="tw-min-w-max">
         <div
           v-if="isGroup && !userHasResponded"
-          class="tw-inline-block tw-text-sm tw-italic tw-text-gray"
+          class="tw-inline-block tw-text-sm tw-italic tw-text-parchment-dim"
         >
           Invited
         </div>

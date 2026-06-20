@@ -2,7 +2,7 @@
   <v-chip
     :key="user.email"
     size="x-small"
-    class="tw-flex tw-w-fit tw-items-center tw-bg-light-gray tw-text-very-dark-gray"
+    class="tw-flex tw-w-fit tw-items-center tw-bg-leather tw-text-parchment-dim"
   >
     <v-avatar class="bg-accent text-uppercase tw-mr-2" start
       ><img

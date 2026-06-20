@@ -1,6 +1,6 @@
 <template>
   <div class="tw-flex tw-flex-col tw-gap-4 tw-pr-2 lg:tw-pr-0">
-    <div class="tw-text-sm tw-italic tw-text-dark-gray">
+    <div class="tw-text-sm tw-italic tw-text-parchment-dim">
       Click and drag on the grid to select the potential meeting times
     </div>
 

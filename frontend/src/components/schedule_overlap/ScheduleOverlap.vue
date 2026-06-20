@@ -542,7 +542,7 @@
           >
             <!-- Show section on the right depending on some if conditions -->
             <template v-if="isSignUp">
-              <div class="tw-mb-2 tw-text-lg tw-text-black">Slots</div>
+              <div class="tw-mb-2 tw-text-lg tw-text-parchment">Slots</div>
               <div v-if="!isOwner" class="tw-mb-3 tw-flex tw-flex-col">
                 <div
                   class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-leather tw-p-3 tw-text-xs tw-italic tw-text-parchment-dim"
@@ -683,7 +683,7 @@
                     hide-details
                   >
                     <template v-slot:label>
-                      <div class="tw-text-sm tw-text-black">
+                      <div class="tw-text-sm tw-text-parchment">
                         Overlay availabilities
                       </div>
                     </template>
@@ -901,7 +901,7 @@
           <!-- Fixed pos availability toggle (mobile) -->
           <v-expand-transition>
             <div v-if="!isGroup && editing && !isSignUp">
-              <div class="tw-bg-white tw-p-4">
+              <div class="tw-bg-leather tw-p-4">
                 <AvailabilityTypeToggle
                   class="tw-w-full"
                   v-model="availabilityType"
@@ -927,7 +927,7 @@
           <!-- Respondents list -->
           <v-expand-transition>
             <div v-if="delayedShowStickyRespondents">
-              <div class="tw-bg-white tw-p-4">
+              <div class="tw-bg-leather tw-p-4">
                 <RespondentsList
                   :max-height="100"
                   :event="event"
@@ -969,7 +969,7 @@
           <v-expand-transition>
             <div
               v-if="state === states.SET_SPECIFIC_TIMES"
-              class="-tw-mb-16 tw-bg-white tw-p-4"
+              class="-tw-mb-16 tw-bg-leather tw-p-4"
             >
               <SpecificTimesInstructions
                 :numTempTimes="tempTimes.size"
@@ -3057,7 +3057,7 @@ export default {
       // Edit fill color and border color if day is not interactable
       if (isDisabled) {
         classStyle.class +=
-          "tw-bg-light-gray-stroke tw-border-light-gray-stroke "
+          "tw-bg-light-gray-stroke tw-border-brass-dim "
       }
 
       // Change default red:
@@ -3277,7 +3277,7 @@ export default {
         }
       } else {
         classStyle = {
-          class: "tw-bg-leather tw-text-gray ",
+          class: "tw-bg-leather tw-text-parchment-dim ",
           style: {},
         }
       }

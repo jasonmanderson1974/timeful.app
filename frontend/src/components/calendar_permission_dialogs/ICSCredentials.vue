@@ -5,7 +5,7 @@
         Connect an ICS calendar feed
       </div>
       <div class="tw-flex tw-flex-col tw-gap-2">
-        <div class="tw-text-sm tw-text-very-dark-gray">
+        <div class="tw-text-sm tw-text-parchment-dim">
           Paste the ICS feed URL from your calendar provider. This is usually found in your calendar's sharing or export settings.
         </div>
       </div>

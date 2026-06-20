@@ -3,7 +3,7 @@
     <div
       class="tw-text-md tw-flex tw-flex-col tw-items-center tw-gap-2 tw-font-normal"
     >
-      Create a Timeful account to link your
+      Create a Fellowship account to link your
       <div class="tw-flex tw-items-center tw-gap-1">
         <v-img
           class="-tw-mt-1 tw-flex-initial"
@@ -19,10 +19,10 @@
         @click="$emit('signInLinkApple')"
         class="tw-mb-3 tw-w-full"
       />
-      <div class="tw-text-center tw-text-xs tw-text-dark-gray">
+      <div class="tw-text-center tw-text-xs tw-text-parchment-dim">
         By continuing, you agree to our
         <router-link
-          class="tw-text-blue"
+          class="tw-text-brass"
           target="_blank"
           :to="{ name: 'privacy-policy' }"
           >privacy policy</router-link
@@ -31,12 +31,12 @@
     </div>
     <div v-else>
       <div
-        class="tw-flex tw-items-center tw-justify-center tw-text-sm tw-text-dark-gray"
+        class="tw-flex tw-items-center tw-justify-center tw-text-sm tw-text-parchment-dim"
       >
-        <v-icon class="tw-mx-2 tw-text-green" size="16"
+        <v-icon class="tw-mx-2 tw-text-brass" size="16"
           >mdi-check-circle</v-icon
         >
-        Timeful account created
+        Fellowship account created
       </div>
     </div>
     <div class="tw-flex tw-items-center tw-gap-2">
