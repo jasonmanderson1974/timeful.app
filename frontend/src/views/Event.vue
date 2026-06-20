@@ -612,11 +612,8 @@ export default {
     ...mapState(["authUser", "events"]),
     ...mapGetters(["isPremiumUser"]),
     showAds() {
-      return (
-        !this.ownerIsPremium &&
-        !this.isPremiumUser &&
-        !this.isSettingSpecificTimes
-      )
+      // Ads (Publift/Fuse + Primis video) disabled on this self-hosted instance
+      return false
     },
     allowScheduleEvent() {
       return this.scheduleOverlapComponent?.allowScheduleEvent

@@ -1250,11 +1250,8 @@ export default {
     ...mapState(["authUser", "overlayAvailabilitiesEnabled"]),
     ...mapGetters(["isPremiumUser"]),
     showAds() {
-      return (
-        !this.ownerIsPremium &&
-        !this.isPremiumUser &&
-        this.state !== this.states.SET_SPECIFIC_TIMES
-      )
+      // Ads (Publift/Fuse) disabled on this self-hosted instance
+      return false
     },
     /** Returns the width of the right side of the calendar */
     rightSideWidth() {
