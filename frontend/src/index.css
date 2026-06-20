@@ -145,6 +145,12 @@
   border: 1px solid #8a7333; /* brass-dim keyline */
 }
 
+/* White-background brand buttons (Google/Outlook/Apple/ICS sign-in & autofill)
+   need dark labels — the dark theme otherwise renders their text light = invisible */
+.v-application .v-btn.tw-bg-white {
+  color: #1c1410 !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
