@@ -9,6 +9,14 @@ men's event-planning club). Branch: `redesign/fellowship-phase1`.
 
 ---
 
+## Parking Lot / Captured asides
+Items the user dropped as "btw ..." asides (see [[feedback-btw-asides-are-todos]]).
+Acted-on items get checked off; open ones get surfaced at the next checkpoint.
+
+- _(none yet)_
+
+---
+
 ## 1. Goal & scope (decided 2026-06-20)
 
 - **Whole-app** re-skin — every screen, not just the landing.
