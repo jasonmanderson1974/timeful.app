@@ -47,6 +47,14 @@ Captured 2026-06-20 (batch 2):
       nav → `/blog`), both in `Landing.vue` header nav (and the `LandingPageHeader` mobile menu).
 - [ ] **Remove landing hero text** "No dues · no login required." (`Landing.vue` hero, under the
       "Call a Gathering" button).
+- [ ] **Site icon still shows the OLD green icon** (confirmed by user across cleared cache +
+      different browser/computer). Cause: only `favicon.svg` was rebranded; browsers/bookmarks
+      still fetch the binary `public/favicon.ico` + `favicon-16x16.png` + `favicon-32x32.png`,
+      which are the old green Timeful calendar. FIX: regenerate those from the crest — render
+      PNGs at 16/32/180/512 via Playwright (same trick as the OG image, `/tmp/shot`), build a
+      real multi-size `favicon.ico` (needs ImageMagick/png-to-ico — not on dev box, may need a
+      tool/online or `npx png-to-ico`), add apple-touch-icon, and bump references in index.html.
+      Also Cloudflare may cache favicons hard — purge/cache-bust (e.g. `favicon.ico?v=2`).
 
 ## Next-session discussion (not a code task yet)
 - **Restrict sign-up / access to an allowlist (invite-only, NOT public).** User has a list of
