@@ -46,17 +46,6 @@
           Call a Gathering
         </v-btn>
         <v-btn
-          v-if="showFeedbackBtn"
-          id="feedback-btn"
-          text
-          class="tw-font-display tw-tracking-widest tw-text-brass"
-          href="https://forms.gle/A96i4TTWeKgH3P1W6"
-          target="_blank"
-          @click="trackFeedbackClick"
-        >
-          Send Word
-        </v-btn>
-        <v-btn
           v-if="$route.name === 'home' && !isPhone"
           color="primary"
           class="tw-mx-2 tw-rounded-md tw-font-display tw-tracking-widest tw-text-wood-deep"
@@ -281,9 +270,6 @@ export default {
         this.$route.name !== "privacy-policy"
       )
     },
-    showFeedbackBtn() {
-      return !this.isPhone || this.$route.name === "home"
-    },
     routerViewClass() {
       let c = ""
       if (this.showHeader) {
@@ -385,9 +371,6 @@ export default {
       // )
       // this.setEnablePaywall(this.$posthog.isFeatureEnabled("enable-paywall"))
       this.setFeatureFlagsLoaded(true)
-    },
-    trackFeedbackClick() {
-      this.$posthog.capture("give_feedback_button_clicked")
     },
   },
 
