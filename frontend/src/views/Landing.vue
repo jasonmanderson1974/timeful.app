@@ -76,43 +76,6 @@
             No dues &middot; no login required.
           </div>
         </div>
-        <div class="tw-relative tw-w-full">
-          <!-- Felt-green spotlight behind the club portrait -->
-          <div
-            class="tw-absolute -tw-bottom-12 tw-left-1/2 tw-h-[85%] tw-w-screen -tw-translate-x-1/2 tw-bg-green-felt sm:-tw-bottom-20"
-          ></div>
-
-          <!-- Hero portrait, framed in brass -->
-          <div
-            class="flw-panel tw-relative tw-z-20 tw-w-full tw-p-2 sm:tw-p-3 md:tw-mx-auto md:tw-w-fit"
-          >
-            <div
-              class="tw-relative tw-mx-4 tw-aspect-square md:tw-size-[700px] lg:tw-size-[800px]"
-            >
-              <v-img
-                class="tw-absolute tw-left-0 tw-top-0 tw-z-20 tw-size-full tw-transition-opacity tw-duration-300"
-                :class="{ 'tw-opacity-0': isVideoPlaying }"
-                src="@/assets/img/hero.jpg"
-                transition="fade-transition"
-                contain
-              />
-              <vue-vimeo-player
-                video-url="https://player.vimeo.com/video/1083205305?h=d58bef862a"
-                :player-width="800"
-                :player-height="800"
-                :options="{
-                  muted: true,
-                  playsinline: true,
-                  responsive: true,
-                }"
-                :controls="false"
-                :autoplay="true"
-                :loop="true"
-                @play="onPlay"
-              />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
