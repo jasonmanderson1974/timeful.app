@@ -31,6 +31,12 @@ Captured 2026-06-20 (user-reported during review — for future sessions):
       buttons (`tw-bg-white`) in `SignIn.vue` + `SignInDialog.vue` have invisible labels under
       the dark theme (v-btn default text went light). Give them dark text (`tw-text-wood-deep`
       or `tw-text-black`) so "Continue with Google/Outlook" is readable. Quick + visible fix.
+- [ ] **/home: grey backgrounds wash out text** around the **Dashboard** and **Tools** sections.
+      Currently grey (likely a leftover Vuetify default / unconverted surface) → low contrast on
+      the light text. Re-tone to wood/leather (or transparent over the damask) so text reads.
+      Look in `views/Home.vue` + `components/home/Dashboard.vue` (and any section wrapper/cards
+      for the Tools row) for grey surfaces — possibly Vuetify `theme--dark` default surface
+      (rgb 30,30,30) or a missed `tw-bg-*` / explicit background. Logged-in review finding.
 
 ---
 
