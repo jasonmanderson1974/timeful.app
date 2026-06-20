@@ -54,7 +54,7 @@
           Billing
         </div>
         <div class="tw-flex tw-flex-col tw-gap-5 sm:tw-flex-row sm:tw-gap-28">
-          <div class="tw-text-black">
+          <div class="tw-text-parchment">
             <v-btn @click="openBillingPortal">Manage billing</v-btn>
           </div>
         </div>
@@ -68,7 +68,7 @@
           Calendar access
         </div>
         <div class="tw-flex tw-flex-col tw-gap-5 sm:tw-flex-row sm:tw-gap-28">
-          <div class="tw-text-black">
+          <div class="tw-text-parchment">
             We do not store your calendar data anywhere on our servers, and we
             only fetch your calendar events for the time frame you specify in
             order to display your calendar events while you fill out your
@@ -93,15 +93,15 @@
           Permissions
         </div>
         <div
-          class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-border-light-gray-stroke"
+          class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-border-brass-dim"
         >
           <div
-            class="tw-flex tw-w-full tw-flex-row tw-border-b-[1px] tw-border-light-gray-stroke"
+            class="tw-flex tw-w-full tw-flex-row tw-border-b-[1px] tw-border-brass-dim"
           >
             <div
               v-for="(h, i) in heading"
               :class="`tw-border-r-[${i == heading.length - 1 ? '0' : '1'}px]`"
-              class="tw-w-1/3 tw-border-light-gray-stroke tw-p-4 tw-font-bold"
+              class="tw-w-1/3 tw-border-brass-dim tw-p-4 tw-font-bold"
             >
               {{ h }}
             </div>
@@ -110,12 +110,12 @@
           <div
             v-for="(c, j) in content"
             :class="`tw-border-b-[${j == content.length - 1 ? '0' : '1'}px]`"
-            class="tw-flex tw-w-full tw-flex-row tw-border-light-gray-stroke"
+            class="tw-flex tw-w-full tw-flex-row tw-border-brass-dim"
           >
             <div
               v-for="(text, k) in c"
               :class="`tw-border-r-[${k == c.length - 1 ? '0' : '1'}px]`"
-              class="tw-w-1/3 tw-border-light-gray-stroke tw-p-4"
+              class="tw-w-1/3 tw-border-brass-dim tw-p-4"
             >
               {{ text }}
             </div>
@@ -131,11 +131,11 @@
           Have a question?
         </div>
         <div class="tw-flex tw-flex-col tw-gap-5 sm:tw-flex-row sm:tw-gap-28">
-          <div class="tw-text-black">
+          <div class="tw-text-parchment">
             Email us at
             <a
               href="mailto:contact@timeful.app"
-              class="tw-text-black tw-underline"
+              class="tw-text-parchment tw-underline"
               >contact@timeful.app</a
             >
             with any questions!
@@ -154,12 +154,12 @@
             </template>
             <v-card>
               <v-card-title>Are you sure?</v-card-title>
-              <v-card-text class="tw-text-sm tw-text-dark-gray"
+              <v-card-text class="tw-text-sm tw-text-parchment-dim"
                 >Are you sure you want to delete your account? All your account
                 data will be lost.</v-card-text
               >
               <div class="tw-mx-6">
-                <div class="tw-text-sm tw-text-dark-gray">
+                <div class="tw-text-sm tw-text-parchment-dim">
                   Type your email in the box below to confirm:
                 </div>
                 <v-text-field

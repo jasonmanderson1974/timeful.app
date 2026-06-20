@@ -9,14 +9,14 @@
         </div>
         <div
           v-if="!isPremiumUser"
-          class="tw-flex tw-items-baseline tw-gap-2 tw-text-sm tw-font-normal tw-text-very-dark-gray"
+          class="tw-flex tw-items-baseline tw-gap-2 tw-text-sm tw-font-normal tw-text-parchment-dim"
         >
           <div>
             {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
             created this month
           </div>
           <div
-            class="tw-cursor-pointer tw-select-none tw-text-xs tw-font-medium tw-text-green tw-underline"
+            class="tw-cursor-pointer tw-select-none tw-text-xs tw-font-medium tw-text-brass tw-underline"
             @click="openUpgradeDialog"
           >
             Upgrade
@@ -26,7 +26,7 @@
       <v-btn
         text
         @click="openCreateFolderDialog"
-        class="tw-text-very-dark-gray"
+        class="tw-text-parchment-dim"
       >
         <v-icon class="tw-text-lg">mdi-folder-plus</v-icon>
         <span class="tw-ml-2">New folder</span>
@@ -49,7 +49,7 @@
             v-if="folder.type === 'regular'"
             :color="folder.color || '#D3D3D3'"
             small
-            class="tw-mr-2 tw-cursor-pointer tw-rounded tw-border tw-border-light-gray-stroke tw-px-2 tw-text-sm tw-font-medium"
+            class="tw-mr-2 tw-cursor-pointer tw-rounded tw-border tw-border-brass-dim tw-px-2 tw-text-sm tw-font-medium"
             @click="openEditFolderDialog(folder)"
           >
             {{ folder.name }}
@@ -116,7 +116,7 @@
                   eventsByFolder[folder.id].groups.length === 0 &&
                   eventsByFolder[folder.id].events.length === 0
                 "
-                class="tw-absolute tw-left-0 tw-py-4 tw-text-sm tw-text-very-dark-gray"
+                class="tw-absolute tw-left-0 tw-py-4 tw-text-sm tw-text-parchment-dim"
                 :class="folder.type === 'regular' ? 'tw-ml-8' : 'tw-ml-7'"
               >
                 {{ folder.emptyMessage }}
@@ -146,7 +146,7 @@
       </div>
 
       <div v-if="allEvents.length === 0">
-        <div class="tw-py-4 tw-text-sm tw-text-very-dark-gray">
+        <div class="tw-py-4 tw-text-sm tw-text-parchment-dim">
           No events yet! Create one to get started.
         </div>
       </div>
@@ -183,7 +183,7 @@
               <div
                 v-for="color in folderColors"
                 :key="color"
-                class="tw-h-6 tw-w-6 tw-cursor-pointer tw-rounded-full tw-border tw-border-light-gray-stroke"
+                class="tw-h-6 tw-w-6 tw-cursor-pointer tw-rounded-full tw-border tw-border-brass-dim"
                 :style="{ backgroundColor: color }"
                 :class="{
                   'tw-ring-2 tw-ring-gray tw-ring-offset-2':

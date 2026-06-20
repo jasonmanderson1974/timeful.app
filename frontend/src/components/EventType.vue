@@ -12,14 +12,14 @@
             enablePaywall &&
             !isPremiumUser
           "
-          class="tw-flex tw-items-baseline tw-gap-2 tw-text-sm tw-font-normal tw-text-very-dark-gray"
+          class="tw-flex tw-items-baseline tw-gap-2 tw-text-sm tw-font-normal tw-text-parchment-dim"
         >
           <div>
             {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
             created
           </div>
           <div
-            class="tw-cursor-pointer tw-select-none tw-text-xs tw-font-medium tw-text-green tw-underline"
+            class="tw-cursor-pointer tw-select-none tw-text-xs tw-font-medium tw-text-brass tw-underline"
             @click="openUpgradeDialog"
           >
             Upgrade
@@ -30,7 +30,7 @@
         v-if="eventType.header === 'Events I created'"
         text
         @click="createFolder"
-        class="tw-hidden tw-text-very-dark-gray sm:tw-block"
+        class="tw-hidden tw-text-parchment-dim sm:tw-block"
       >
         <v-icon class="tw-mr-2 tw-text-lg">mdi-folder-plus</v-icon>
         New folder
@@ -38,7 +38,7 @@
       <div
         v-if="eventType.events.length > defaultNumEventsToShow"
         @click="toggleShowAll"
-        class="tw-mt-2 tw-cursor-pointer tw-text-sm tw-font-normal tw-text-very-dark-gray sm:tw-hidden"
+        class="tw-mt-2 tw-cursor-pointer tw-text-sm tw-font-normal tw-text-parchment-dim sm:tw-hidden"
       >
         Show {{ showAll ? "less" : "more"
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>
@@ -47,7 +47,7 @@
 
     <div
       v-if="eventType.events.length === 0"
-      class="tw-my-3 tw-text-very-dark-gray"
+      class="tw-my-3 tw-text-parchment-dim"
     >
       {{ emptyText.length > 0 ? emptyText : "No events yet!" }}
     </div>
@@ -83,7 +83,7 @@
       </v-expand-transition>
       <div
         @click="toggleShowAll"
-        class="tw-mt-4 tw-hidden tw-cursor-pointer tw-text-sm tw-text-very-dark-gray sm:tw-block"
+        class="tw-mt-4 tw-hidden tw-cursor-pointer tw-text-sm tw-text-parchment-dim sm:tw-block"
       >
         Show {{ showAll ? "less" : "more"
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>

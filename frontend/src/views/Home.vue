@@ -45,13 +45,13 @@
         <div class="tw-flex tw-flex-row tw-items-center tw-gap-2">
           <div
             @click="convertW2M"
-            class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
+            class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-parchment-dim tw-underline"
           >
             Convert When2meet to Timeful
           </div>
           <div
             @click="importTimeful"
-            class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
+            class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-parchment-dim tw-underline"
           >
             Import Timeful Event
           </div>

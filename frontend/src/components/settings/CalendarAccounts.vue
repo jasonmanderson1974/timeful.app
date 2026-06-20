@@ -1,7 +1,7 @@
 <template>
   <div
     :class="toggleState ? '' : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'"
-    class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-transition-all"
+    class="tw-flex tw-flex-col tw-rounded-lg tw-bg-leather tw-text-parchment tw-transition-all"
   >
     <v-btn
       v-if="toggleState"
@@ -17,7 +17,7 @@
     >
     <div
       v-else
-      class="tw-border-b tw-border-off-white tw-px-4 tw-py-3 tw-font-medium"
+      class="tw-border-b tw-border-brass-dim tw-px-4 tw-py-3 tw-font-medium"
     >
       My calendars
     </div>
@@ -63,7 +63,7 @@
                   v-on="on"
                   >+ Add calendar</v-btn
                 >
-                <p class="tw-mb-0 tw-mt-1 tw-text-xs tw-text-dark-gray">
+                <p class="tw-mb-0 tw-mt-1 tw-text-xs tw-text-parchment-dim">
                   Only your available times are shared with respondents. Your
                   personal event details are never shared.
                 </p>
@@ -82,7 +82,7 @@
     <v-dialog v-model="removeDialog" width="500" persistent>
       <v-card>
         <v-card-title>Are you sure?</v-card-title>
-        <v-card-text class="tw-text-sm tw-text-dark-gray"
+        <v-card-text class="tw-text-sm tw-text-parchment-dim"
           >Are you sure you want to remove
           {{ removePayload.email }}?</v-card-text
         >

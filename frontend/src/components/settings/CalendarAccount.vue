@@ -1,7 +1,7 @@
 <template>
   <div v-if="showAccount" class="tw-flex tw-flex-col">
     <div
-      class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
+      class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-parchment"
     >
       <div
         :class="`tw-gap-${toggleState ? '0' : '2'}`"
@@ -27,7 +27,7 @@
 
             <v-icon
               :class="`tw-rotate-${showSubCalendars ? 90 : 0}`"
-              class="tw-text-dark-gray tw-transition-all"
+              class="tw-text-parchment-dim tw-transition-all"
               >mdi-chevron-right</v-icon
             >
           </div>
