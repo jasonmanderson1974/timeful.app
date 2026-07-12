@@ -148,19 +148,13 @@
 </style>
 
 <script>
-import LandingPageCalendar from "@/components/landing/LandingPageCalendar.vue"
 import { isPhone, signInGoogle, signInOutlook } from "@/utils"
 import FAQ from "@/components/FAQ.vue"
-import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
-import NewEvent from "@/components/NewEvent.vue"
 import NewDialog from "@/components/NewDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
-import Logo from "@/components/Logo.vue"
-import GithubButton from "vue-github-button"
 import SignInDialog from "@/components/SignInDialog.vue"
 import { calendarTypes } from "@/constants"
-import { vueVimeoPlayer } from "vue-vimeo-player"
 import Footer from "@/components/Footer.vue"
 import { mapState, mapMutations } from "vuex"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
@@ -175,17 +169,11 @@ export default {
 
   components: {
     SirThomasFoolery,
-    LandingPageCalendar,
     FAQ,
-    Header,
     NumberBullet,
-    NewEvent,
     NewDialog,
     LandingPageHeader,
-    GithubButton,
-    Logo,
     SignInDialog,
-    vueVimeoPlayer,
     Footer,
     AuthUserMenu,
   },
@@ -193,7 +181,6 @@ export default {
   data: () => ({
     signInDialog: false,
     newDialog: false,
-    githubSnackbar: true,
     howItWorksSteps: [
       "Call a Gathering and propose the candidate evenings",
       "Circulate the summons, that each man may mark his availability",
@@ -254,7 +241,6 @@ export default {
         authRequired: true,
       },
     ],
-    isVideoPlaying: false,
   }),
 
   computed: {
@@ -285,11 +271,6 @@ export default {
     },
     signIn() {
       this.$router.push({ name: "sign-in" })
-    },
-    onPlay() {
-      setTimeout(() => {
-        this.isVideoPlaying = true
-      }, 1000)
     },
     openDashboard() {
       this.$router.push({ name: "home" })

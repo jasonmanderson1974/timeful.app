@@ -572,7 +572,7 @@ export default {
     actionButtonText() {
       if (this.isSignUp) return "Edit slots"
       else if (this.userHasResponded || this.isGroup) return "Edit availability"
-      return "Add availability"
+      return "Mark availability"
     },
     mobileGuestActionButtonText() {
       return this.event.blindAvailabilityEnabled
@@ -581,7 +581,7 @@ export default {
     },
     mobileActionButtonText() {
       if (this.isSignUp) return "Edit slots"
-      return this.userHasResponded ? "Edit availability" : "Add availability"
+      return this.userHasResponded ? "Edit availability" : "Mark availability"
     },
     isIOS() {
       return isIOS()

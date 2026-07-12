@@ -223,7 +223,6 @@ import {
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
-import Logo from "@/components/Logo.vue"
 import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
 import SignInDialog from "@/components/SignInDialog.vue"
@@ -244,7 +243,6 @@ export default {
     AuthUserMenu,
     SignInNotSupportedDialog,
     NewDialog,
-    Logo,
     SignInDialog,
   },
 

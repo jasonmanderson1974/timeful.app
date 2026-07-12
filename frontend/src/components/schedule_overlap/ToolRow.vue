@@ -110,7 +110,7 @@
             <template v-slot:activator="{ on, attrs }">
               <v-btn
                 :disabled="!allowScheduleEvent"
-                class="tw-bg-blue tw-text-white"
+                class="tw-bg-brass tw-text-wood-deep"
                 v-bind="attrs"
                 v-on="on"
               >

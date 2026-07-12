@@ -149,10 +149,13 @@ Finalize = merge to `main` + `git checkout main` on the VM + redeploy, when read
 - [x] `Footer.vue` → club colophon (crest, THE FELLOWSHIP, Sir Thomas Foolery, Privacy).
 - [x] Global chrome in `App.vue`: crest + wordmark header, dark wood bar, archaic buttons.
 - [x] Deployed to VM (commit `9c61b34`); landing reads coherently end-to-end.
-- [ ] `NumberBullet.vue` still green → make brass (visible on landing how-it-works).
-- [ ] Swap hero demo media (still old light Timeful screenshot/Vimeo) for something on-theme.
-- [ ] `LandingPageCalendar.vue` (demo calendar) — restyle or replace (if still used).
-- [ ] `HowItWorksDialog.vue` content + style.
+- [x] `NumberBullet.vue` — already brass (`tw-bg-brass tw-text-wood-deep`); item was stale (2026-07-12).
+- [x] Hero demo media — removed earlier (no on-theme replacement wanted). 2026-07-12: deleted the
+      orphaned dead imports/registrations it left behind in `Landing.vue` (`LandingPageCalendar`,
+      `vueVimeoPlayer`, `Header`, `NewEvent`, `GithubButton`, `Logo`) + dead data/method
+      (`githubSnackbar`, `isVideoPlaying`, `onPlay`).
+- [x] `LandingPageCalendar.vue` — was imported but unused everywhere; DELETED (2026-07-12).
+- [x] `HowItWorksDialog.vue` — already deleted; item was stale (2026-07-12).
 
 ### Phase 2 — Event / availability page (core guest screen)  *(in progress; deployed)*
 - [x] `src/views/Event.vue` shell: parchment title/text, brass accents+buttons,
@@ -163,10 +166,17 @@ Finalize = merge to `main` + `git checkout main` on the VM + redeploy, when read
       green `#00994C` "available" reads well on dark; red→maroon "unavailable" lands
       on-theme (oxblood-ish); single `#00994C88` visible. NO remap needed. The
       Available/If-needed toggle + legend panel already theme correctly.
-- [ ] Archaic copy pass on Event.vue (buttons "Add availability"→? , "this Timeful"→
-      "this Gathering", doc title `... - Timeful`→`The Fellowship`).
-- [ ] `RespondentsList.vue`, `MarkAvailabilityDialog.vue`, calendar-permission dialogs,
-      `GuestDialog`, `SignUpForSlotDialog`, day/time pickers, toolbar (`ToolRow.vue`).
+- [x] Archaic copy pass on Event.vue (2026-07-12): "Add availability"→"Mark availability"
+      (echoes landing/FAQ "mark his availability"; "Edit availability" kept — FAQ cites it
+      literally); doc title already `· The Fellowship`. Also rebranded the two `ScheduleOverlap`
+      calendar-export strings "scheduled with Timeful: https://timeful.app/e/" →
+      "called with The Fellowship: ${window.location.origin}/e/" (also fixes the invite linking
+      members to the wrong host).
+- [x] `RespondentsList`/`MarkAvailabilityDialog`/`GuestDialog`/`SignUpForSlotDialog`/pickers/`ToolRow`
+      already themed by the Phase-5 sweep. 2026-07-12: fixed the two remaining off-theme blue
+      surfaces — the `ToolRow` "Schedule" confirm button and the on-grid scheduled-event preview
+      block (`tw-bg-blue tw-text-white` → brass on `tw-text-wood-deep`).
+      `AvailabilityTypeToggle` green left intentionally (semantic, matches grid).
 - [ ] Test event for review: **`/e/FE2dd`** ("The Inaugural Gathering").
 
 ### Phase 3 — Auth + creation flows  *(create dialogs done; deployed)*
@@ -213,8 +223,8 @@ Finalize = merge to `main` + `git checkout main` on the VM + redeploy, when read
 
 ### Phase 6 — Finalize  *(pending)*
 - [x] `schej_*` assets removed (Parking-Lot #1). Hero media removed (no product demo wanted).
-- [ ] Remaining `timeful_*` image assets (e.g. `Logo.vue` / `timeful_logo_with_text.png`) —
-      `Logo.vue` is now unused (replaced by the crest everywhere); delete if desired.
+- [x] Removed unused `Logo.vue` (replaced by the crest everywhere) + its orphaned assets
+      `timeful_logo_with_text.png` and `april_fools_logo.png` (2026-07-12).
 - [ ] **Merge `redesign/fellowship-phase1` → `main`; `git checkout main` on the VM; redeploy.**
       (Deferred — keep deploying the branch while access-control phases B–E land, then merge once.)
 
