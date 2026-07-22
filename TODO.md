@@ -27,14 +27,24 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   either `ShouldBindJSON` with a JSON error body or `BindJSON` (also auto-400) — spot-check for
   consistency but no silent-200 bug found.
 
-- [x] **A2 · Stop panicking inside request handlers on DB errors.** `M` — **DONE for `events.go`
-  (all 12 sites); ~61 remain in other files.** Converted every `logger.StdErr.Panicln(err)` in
-  `events.go` to `logger.StdErr.Println(err)` + `c.JSON(500, responses.Error{Error: errs.Internal})`
-  + `return`. The one exception is the `importEvent` response-import loop, where the event is already
-  inserted, so a failed response insert now logs and `continue`s (best-effort import) instead of
-  aborting mid-way. **Follow-up (still P0-class):** the same `Panicln`-on-DB-error pattern remains in
-  `routes/auth.go`, `routes/user.go`, `routes/admin.go`, `routes/folders.go`, `routes/stripe.go`,
-  and throughout `db/`. Do those next, file by file.
+- [x] **A2 · Stop panicking inside request handlers on DB errors.** `M` — **ALL route handlers
+  DONE (2026-07-22); `db/` + `services/` remain (needs a signature refactor, not a mechanical
+  swap).** Converted every handler `Panicln` to `logger.StdErr.Println(err)` +
+  `c.JSON(500, responses.Error{Error: errs.Internal})` + `return`: `events.go` (12),
+  `user.go` (16), `auth.go` (5). `signInHelper` (a helper returning `(models.User, error)`)
+  propagates the error instead — `return models.User{}, err`. Two handler `Panicln`s that were
+  actually *bind* errors (`toggleCalendar`, `toggleSubCalendar`) now return 400. The
+  `importEvent` response loop logs + `continue`s (event already inserted). `admin.go`,
+  `folders.go`, `stripe.go`, `users.go` had none.
+  **Intentionally left:** `auth.go generateOtpCode()` — a `crypto/rand` failure (not a DB error),
+  in a helper returning `string` with no context; converting needs a signature change and the
+  failure is astronomically rare.
+  **Follow-up (separate task, still P0-class):** ~55 `Panicln`s remain in `db/` (`events.go` 9,
+  `utils.go` 6, `users.go` 3, `folders.go`/`init.go` 1 each) and `services/` (`gcloud/tasks.go` 5,
+  `calendar/google_calendar.go` 4, `auth/auth.go` 3, `contacts` 2, …). These live in functions
+  that mostly return no `error` (e.g. `func GetUserById(id) *models.User`), so removing the panics
+  means changing signatures to return errors and updating every caller — a real refactor to plan,
+  not a mechanical pass.
 
 - [x] **A3 · Unchecked writes in loops.** `S` — **DONE 2026-07-22 (the 3 listed sites).**
   `createEvent` now builds an `[]interface{}` and uses a single `InsertMany` with an error check

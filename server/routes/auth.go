@@ -236,7 +236,8 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 		// Create user
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			return models.User{}, err
 		}
 
 		userId = res.InsertedID.(primitive.ObjectID)
@@ -298,7 +299,8 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 			bson.M{"$set": userData},
 		)
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			return models.User{}, err
 		}
 	}
 
@@ -462,7 +464,9 @@ func sendOtp(c *gin.Context) {
 
 	_, err := db.OtpCodesCollection.InsertOne(context.Background(), otpDoc)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	// Email the code via Gmail SMTP (utils.SendEmail — GMAIL_APP_PASSWORD +
@@ -524,7 +528,9 @@ func verifyOtp(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.OtpExpired})
 		return
 	} else if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	// Rate-limit: max 5 attempts per code
@@ -567,7 +573,9 @@ func verifyOtp(c *gin.Context) {
 
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
 		}
 		userId = res.InsertedID.(primitive.ObjectID)
 

@@ -91,7 +91,9 @@ func updateName(c *gin.Context) {
 		"$set": bson.M{"firstName": payload.FirstName, "lastName": payload.LastName, "hasCustomName": true},
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
@@ -178,7 +180,9 @@ func requestEmailChange(c *gin.Context) {
 		Attempts:  0,
 	}
 	if _, err := db.OtpCodesCollection.InsertOne(context.Background(), otpDoc); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	if sendErr := utils.SendEmail(
@@ -224,7 +228,9 @@ func verifyEmailChange(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.OtpExpired})
 		return
 	} else if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	// Max 5 attempts per code.
@@ -357,7 +363,9 @@ func updateCalendarOptions(c *gin.Context) {
 		"$set": bson.M{"calendarOptions": authUser.CalendarOptions},
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
@@ -380,14 +388,18 @@ func getEvents(c *gin.Context) {
 	// Get all the event ids that the user has responded to
 	cursor, err := db.EventResponsesCollection.Find(context.Background(), bson.M{"userId": userId.Hex()})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 	defer cursor.Close(context.Background())
 	eventIds := make([]primitive.ObjectID, 0)
 	for cursor.Next(context.Background()) {
 		var eventResponse models.EventResponse
 		if err := cursor.Decode(&eventResponse); err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
 		}
 		eventIds = append(eventIds, eventResponse.EventId)
 	}
@@ -395,14 +407,18 @@ func getEvents(c *gin.Context) {
 	// Get all the event ids that the user is an attendee of
 	cursor, err = db.AttendeesCollection.Find(context.Background(), bson.M{"email": user.Email, "declined": false})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 	defer cursor.Close(context.Background())
 	hasRespondedEventIds := make(models.Set[primitive.ObjectID])
 	for cursor.Next(context.Background()) {
 		var attendee models.Attendee
 		if err := cursor.Decode(&attendee); err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
 		}
 		if utils.Contains(eventIds, attendee.EventId) {
 			hasRespondedEventIds[attendee.EventId] = struct{}{}
@@ -432,10 +448,14 @@ func getEvents(c *gin.Context) {
 		opts,
 	)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 	if err := cursor.All(context.Background(), &events); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	for i, event := range events {
@@ -605,7 +625,9 @@ func addAppleCalendarAccount(c *gin.Context) {
 
 	encryptedPassword, err := utils.Encrypt(payload.Password)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	auth := &models.AppleCalendarAuth{
@@ -848,7 +870,7 @@ func toggleCalendar(c *gin.Context) {
 		Enabled      *bool               `json:"enabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		logger.StdErr.Panicln(err)
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -868,7 +890,8 @@ func toggleCalendar(c *gin.Context) {
 			"$set": authUser,
 		})
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 			return
 		}
 	}
@@ -891,7 +914,7 @@ func toggleSubCalendar(c *gin.Context) {
 		Enabled       *bool               `json:"enabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		logger.StdErr.Panicln(err)
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -913,7 +936,8 @@ func toggleSubCalendar(c *gin.Context) {
 				"$set": authUser,
 			})
 			if err != nil {
-				logger.StdErr.Panicln(err)
+				logger.StdErr.Println(err)
+				c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 				return
 			}
 		}
@@ -960,7 +984,9 @@ func deleteUser(c *gin.Context) {
 
 	_, err := db.UsersCollection.DeleteOne(context.Background(), bson.M{"_id": user.Id})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	// Delete session
