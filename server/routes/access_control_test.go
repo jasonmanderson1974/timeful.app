@@ -176,10 +176,10 @@ func TestCreateEvent_GuestForbidden(t *testing.T) {
 
 	cookie := loginAs(t, r, userId.Hex())
 	w := httptest.NewRecorder()
-	// Numeric epoch-ms dates unmarshal straight into primitive.DateTime, avoiding
-	// any string-format ambiguity; the guest role check fires before the event
-	// is ever built, so the body just needs to bind.
-	body := `{"name":"x","duration":1,"dates":[1735689600000],"type":"dow"}`
+	// primitive.DateTime unmarshals from an RFC3339 string (not epoch-ms). The
+	// guest role check fires before the event is ever built, so the body just
+	// needs to bind.
+	body := `{"name":"x","duration":1,"dates":["2025-01-01T00:00:00Z"],"type":"dow"}`
 	req := httptest.NewRequest(http.MethodPost, "/events", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(cookie)
