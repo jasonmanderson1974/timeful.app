@@ -215,12 +215,23 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ## PART B — Test Coverage (its own track — currently thin)
 
-- [ ] **B1 · Cover the core `events.go` handlers.** `M` · **P1**
-  The 1,925-line heart of the app has **no test file**. Total Go test code is ~428 lines; JS ~320.
-  Prioritize `updateEventResponse`, `getResponses`/`getResponsesMap`, and the
-  blind-availability / email-stripping logic (`shouldKeepGroupResponseUserEmails`,
-  `stripSensitiveUserFields`) — these encode privacy rules that are easy to regress. Do this
-  *after* A6 so the split files are testable in isolation.
+- [ ] **B1 · Cover the core `events.go` handlers.** `M` · **P1** — **IN PROGRESS 2026-07-22
+  (privacy-critical pure logic DONE; DB-backed handler paths remain).**
+  New `routes/event_responses_test.go` (17 tests, CI-green, no Mongo needed) covers the
+  easy-to-regress privacy rules the item called out:
+  - `getResponsesMap` (keying, empty, duplicate-id last-wins), `findResponse` (found/not-found/empty).
+  - `stripSensitiveUserFields` — clears calendar/billing fields, preserves identity, nil-safe.
+  - `shouldKeepGroupResponseUserEmails` — the DB-free guard branches (non-group, empty session, owner).
+  - **Blind-availability filtering**: extracted `getResponses`' inline logic into a pure helper
+    `filterResponsesForBlindAvailability` (behavior-preserving) and covered the full matrix
+    (blind off → all; blind on → owner sees all, non-owner only own, guest only theirs, anon nothing).
+  **Still remaining (needs a decision — heavier, DB-backed):** end-to-end tests of the full
+  `getResponses` and `updateEventResponse` handlers require Mongo fixtures. The `routes` test package
+  is currently Mongo-free by design; wiring `db.Init()` fixtures in would make `go test ./routes/`
+  depend on a running Mongo (CI has it; local devs may not). Decide whether to (a) add DB-backed
+  handler tests here, or (b) keep `routes` DB-free and push handler coverage via a separate
+  integration-test track. Also un-extracted: the per-response email-visibility loop in `getResponses`
+  (`showEmails` + `User.Email` stripping), which is entangled with the `shouldKeep` DB call.
 
 - [ ] **B2 · Cover access-control end to end.** `S` · **P1**
   `models/roles.go` has unit tests, but the middleware wiring (`middleware/auth.go` allowlist
