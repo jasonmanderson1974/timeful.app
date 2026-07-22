@@ -215,23 +215,25 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ## PART B — Test Coverage (its own track — currently thin)
 
-- [ ] **B1 · Cover the core `events.go` handlers.** `M` · **P1** — **IN PROGRESS 2026-07-22
-  (privacy-critical pure logic DONE; DB-backed handler paths remain).**
-  New `routes/event_responses_test.go` (17 tests, CI-green, no Mongo needed) covers the
-  easy-to-regress privacy rules the item called out:
-  - `getResponsesMap` (keying, empty, duplicate-id last-wins), `findResponse` (found/not-found/empty).
-  - `stripSensitiveUserFields` — clears calendar/billing fields, preserves identity, nil-safe.
-  - `shouldKeepGroupResponseUserEmails` — the DB-free guard branches (non-group, empty session, owner).
-  - **Blind-availability filtering**: extracted `getResponses`' inline logic into a pure helper
-    `filterResponsesForBlindAvailability` (behavior-preserving) and covered the full matrix
-    (blind off → all; blind on → owner sees all, non-owner only own, guest only theirs, anon nothing).
-  **Still remaining (needs a decision — heavier, DB-backed):** end-to-end tests of the full
-  `getResponses` and `updateEventResponse` handlers require Mongo fixtures. The `routes` test package
-  is currently Mongo-free by design; wiring `db.Init()` fixtures in would make `go test ./routes/`
-  depend on a running Mongo (CI has it; local devs may not). Decide whether to (a) add DB-backed
-  handler tests here, or (b) keep `routes` DB-free and push handler coverage via a separate
-  integration-test track. Also un-extracted: the per-response email-visibility loop in `getResponses`
-  (`showEmails` + `User.Email` stripping), which is entangled with the `shouldKeep` DB call.
+- [x] **B1 · Cover the core `events.go` handlers.** `M` · **P1** — **DONE 2026-07-22 (CI-green,
+  3 incremental commits).** Went from zero event tests to 20, split into DB-free unit tests and
+  DB-backed integration tests.
+  **Pure logic** (`routes/event_responses_test.go`, 17 tests, no Mongo): the easy-to-regress privacy
+  rules — `getResponsesMap` (keying/empty/duplicate-id last-wins), `findResponse`,
+  `stripSensitiveUserFields` (clears calendar/billing, preserves identity, nil-safe),
+  `shouldKeepGroupResponseUserEmails` (DB-free guard branches), and **blind-availability filtering**:
+  extracted `getResponses`' inline logic into a pure helper `filterResponsesForBlindAvailability`
+  (behavior-preserving) and covered the full matrix (blind off → all; blind on → owner sees all,
+  non-owner only own, guest only theirs, anon nothing).
+  **DB-backed handlers** (option (a): `routes/event_responses_db_test.go`, 3 tests): `TestMain` calls
+  `db.Init()` when `MONGODB_URI` is set (`mongo.Connect` is lazy, so safe); tests gate on that via
+  `requireDB(t)` so `go test ./routes/` still passes without Mongo (they skip) and run in CI (Mongo
+  service). Drive the handlers through a real gin engine + session middleware: `getResponses` 404 on
+  missing event and blind-off happy path (returns all); `updateEventResponse` guest POST persists a
+  new `EventResponse`. Fixtures inserted under a fresh ObjectID, cleaned up per-test.
+  **Optional follow-ups (not blocking):** the per-response email-visibility loop (`showEmails` +
+  `User.Email` stripping, entangled with the `shouldKeep` DB call) and `updateEventResponse`'s
+  signed-in / GROUP / sign-up-form branches are still uncovered.
 
 - [ ] **B2 · Cover access-control end to end.** `S` · **P1**
   `models/roles.go` has unit tests, but the middleware wiring (`middleware/auth.go` allowlist
