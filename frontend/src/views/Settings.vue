@@ -41,6 +41,95 @@
             </div>
           </v-expand-transition>
         </div>
+
+        <!-- Email -->
+        <div>
+          <div class="tw-mb-1 tw-font-medium">Email</div>
+          <div class="tw-mb-2 tw-max-w-lg tw-text-sm tw-text-parchment-dim">
+            Your email is how you sign in. Changing it requires confirming a code
+            sent to the new address.
+          </div>
+          <div v-if="emailStep === 'idle'" class="tw-max-w-lg">
+            <v-text-field
+              :value="authUser.email"
+              outlined
+              hide-details
+              disabled
+              class="tw-mb-2"
+              :dense="isPhone"
+            />
+            <div class="tw-flex tw-items-start tw-gap-2">
+              <v-text-field
+                v-model="newEmail"
+                outlined
+                hide-details="auto"
+                placeholder="New email address"
+                type="email"
+                :error-messages="newEmailError"
+                :dense="isPhone"
+                @keydown.enter="sendEmailCode"
+              />
+              <v-btn
+                color="primary"
+                :loading="sendingEmailCode"
+                :disabled="!newEmail.trim() || sendingEmailCode"
+                @click="sendEmailCode"
+                >Send code</v-btn
+              >
+            </div>
+          </div>
+          <div v-else class="tw-max-w-lg">
+            <div class="tw-mb-2 tw-text-sm tw-text-parchment-dim">
+              Enter the code sent to
+              <strong class="tw-text-parchment">{{ newEmail }}</strong>.
+            </div>
+            <div class="tw-flex tw-items-start tw-gap-2">
+              <v-text-field
+                v-model="emailCode"
+                outlined
+                hide-details="auto"
+                placeholder="6-digit code"
+                maxlength="6"
+                :error-messages="emailCodeError"
+                :dense="isPhone"
+                @keydown.enter="verifyEmailCode"
+              />
+              <v-btn
+                color="primary"
+                :loading="verifyingEmail"
+                :disabled="emailCode.length !== 6 || verifyingEmail"
+                @click="verifyEmailCode"
+                >Verify &amp; update</v-btn
+              >
+              <v-btn text @click="cancelEmailChange">Cancel</v-btn>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone -->
+        <div>
+          <div class="tw-mb-1 tw-font-medium">Phone</div>
+          <div class="tw-flex tw-max-w-lg tw-items-center tw-gap-2">
+            <v-text-field
+              v-model="phone"
+              outlined
+              hide-details
+              placeholder="Phone number"
+              type="tel"
+              :dense="isPhone"
+            />
+          </div>
+          <v-expand-transition>
+            <div v-if="phoneUnsavedChanges" class="tw-mt-4">
+              <v-btn @click="resetPhone" color="primary" outlined class="tw-mr-2"
+                >Cancel</v-btn
+              >
+              <v-btn @click="savePhone" color="primary" :loading="savingPhone"
+                >Save changes</v-btn
+              >
+            </div>
+          </v-expand-transition>
+        </div>
       </div>
 
       <!-- Calendar Access Section -->
@@ -172,8 +261,8 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex"
-import { _delete, patch, isPhone, get } from "@/utils"
+import { mapState, mapActions, mapMutations } from "vuex"
+import { _delete, patch, post, isPhone, get } from "@/utils"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 
 export default {
@@ -206,6 +295,17 @@ export default {
     // Profile settings
     firstName: "",
     lastName: "",
+    phone: "",
+    savingPhone: false,
+
+    // Email change flow
+    newEmail: "",
+    newEmailError: "",
+    emailStep: "idle", // 'idle' | 'code'
+    emailCode: "",
+    emailCodeError: "",
+    sendingEmailCode: false,
+    verifyingEmail: false,
   }),
 
   computed: {
@@ -219,13 +319,119 @@ export default {
     profileUnsavedChanges() {
       return this.nameUnsavedChanges
     },
+    phoneUnsavedChanges() {
+      return this.phone !== (this.authUser.phone || "")
+    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
   },
 
   methods: {
-    ...mapActions(["showError"]),
+    ...mapActions(["showError", "showInfo", "refreshAuthUser"]),
+    ...mapMutations(["setAuthUser"]),
+    resetPhone() {
+      this.phone = this.authUser.phone || ""
+    },
+    savePhone() {
+      this.savingPhone = true
+      patch(`/user/phone`, { phone: this.phone.trim() })
+        .then(async () => {
+          await this.refreshAuthUser()
+          this.showInfo("Phone number updated.")
+        })
+        .catch(() => {
+          this.showError("There was a problem updating your phone number.")
+        })
+        .finally(() => {
+          this.savingPhone = false
+        })
+    },
+    validateNewEmail() {
+      const email = this.newEmail.trim()
+      if (!email) {
+        this.newEmailError = "Please enter an email address."
+        return false
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        this.newEmailError = "Please enter a valid email address."
+        return false
+      }
+      if (email.includes("+")) {
+        this.newEmailError = "Email aliases with '+' are not allowed."
+        return false
+      }
+      if (email.toLowerCase() === (this.authUser.email || "").toLowerCase()) {
+        this.newEmailError = "That is already your email."
+        return false
+      }
+      return true
+    },
+    sendEmailCode() {
+      this.newEmailError = ""
+      if (!this.validateNewEmail()) return
+      this.sendingEmailCode = true
+      post(`/user/email/request-change`, { email: this.newEmail.trim() })
+        .then(() => {
+          this.emailStep = "code"
+          this.emailCode = ""
+          this.emailCodeError = ""
+        })
+        .catch((err) => {
+          const code = err && err.parsed && err.parsed.error
+          this.newEmailError =
+            code === "email-taken"
+              ? "That email already belongs to another account."
+              : code === "email-unchanged"
+              ? "That is already your email."
+              : code === "invalid-email"
+              ? "Please enter a valid email address."
+              : code === "otp-rate-limited"
+              ? "Too many attempts. Please wait a few minutes."
+              : code === "otp-send-failed"
+              ? "Could not send the code. Please try again."
+              : "Something went wrong. Please try again."
+        })
+        .finally(() => {
+          this.sendingEmailCode = false
+        })
+    },
+    verifyEmailCode() {
+      this.emailCodeError = ""
+      this.verifyingEmail = true
+      post(`/user/email/verify-change`, {
+        email: this.newEmail.trim(),
+        code: this.emailCode.trim(),
+      })
+        .then((user) => {
+          this.setAuthUser(user)
+          this.emailStep = "idle"
+          this.newEmail = ""
+          this.emailCode = ""
+          this.showInfo("Email address updated.")
+        })
+        .catch((err) => {
+          const code = err && err.parsed && err.parsed.error
+          this.emailCodeError =
+            code === "otp-expired"
+              ? "Code expired. Please request a new one."
+              : code === "otp-too-many-attempts"
+              ? "Too many attempts. Please request a new code."
+              : code === "email-taken"
+              ? "That email now belongs to another account."
+              : "Invalid code. Please try again."
+        })
+        .finally(() => {
+          this.verifyingEmail = false
+        })
+    },
+    cancelEmailChange() {
+      this.emailStep = "idle"
+      this.newEmail = ""
+      this.emailCode = ""
+      this.newEmailError = ""
+      this.emailCodeError = ""
+    },
     deleteAccount() {
       _delete(`/user`)
         .then(() => {
@@ -260,6 +466,7 @@ export default {
   created() {
     this.firstName = this.authUser.firstName
     this.lastName = this.authUser.lastName
+    this.phone = this.authUser.phone || ""
   },
 }
 </script>

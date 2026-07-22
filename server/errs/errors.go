@@ -39,6 +39,10 @@ const (
 	InvalidRole string = "invalid-role"
 	// Internal: a generic server-side error (details are logged, not returned)
 	Internal string = "internal-error"
+	// EmailUnchanged: the requested new email equals the current one
+	EmailUnchanged string = "email-unchanged"
+	// EmailTaken: the requested new email already belongs to another account
+	EmailTaken string = "email-taken"
 )
 
 // Sentinel error returned by signInHelper when an email is not allowlisted, so

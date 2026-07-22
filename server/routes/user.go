@@ -3,6 +3,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/db"
 	"schej.it/server/errs"
@@ -31,6 +33,9 @@ func InitUser(router *gin.RouterGroup) {
 
 	userRouter.GET("/profile", getProfile)
 	userRouter.PATCH("/name", updateName)
+	userRouter.PATCH("/phone", updatePhone)
+	userRouter.POST("/email/request-change", requestEmailChange)
+	userRouter.POST("/email/verify-change", verifyEmailChange)
 	userRouter.PATCH("/calendar-options", updateCalendarOptions)
 	userRouter.GET("/events", getEvents)
 	userRouter.POST("/events/:eventId/set-folder", setEventFolder)
@@ -90,6 +95,220 @@ func updateName(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Updates the user's phone number
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{phone=string} true "Object containing the phone number"
+// @Success 200
+// @Router /user/phone [patch]
+func updatePhone(c *gin.Context) {
+	payload := struct {
+		Phone string `json:"phone"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	authUser := utils.GetAuthUser(c)
+	phone := strings.TrimSpace(payload.Phone)
+
+	_, err := db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
+		"$set": bson.M{"phone": phone},
+	})
+	if err != nil {
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"phone": phone})
+}
+
+// @Summary Requests an email change by sending a verification code to the new address
+// @Description Sends a 6-digit code to the new email. The change is only applied
+// @Description after it is confirmed via /user/email/verify-change. Keeps the
+// @Description invite-only allowlist in sync (the new address is confirmed before
+// @Description it is allowlisted).
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string} true "The new email address"
+// @Success 200
+// @Router /user/email/request-change [post]
+func requestEmailChange(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	authUser := utils.GetAuthUser(c)
+	newEmail := utils.NormalizeEmail(payload.Email)
+
+	if !isValidEmail(newEmail) {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.InvalidEmail})
+		return
+	}
+	if newEmail == utils.NormalizeEmail(authUser.Email) {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.EmailUnchanged})
+		return
+	}
+	// The new email must not already belong to another account.
+	if existing := db.GetUserByEmail(newEmail); existing != nil && existing.Id != authUser.Id {
+		c.JSON(http.StatusConflict, responses.Error{Error: errs.EmailTaken})
+		return
+	}
+	// Rate-limit change requests per user (anti-abuse / anti-mail-bombing).
+	if !otpLimiter.Allow("email-change:"+authUser.Id.Hex(), 5, 15*time.Minute) {
+		c.JSON(http.StatusTooManyRequests, responses.Error{Error: errs.OtpRateLimited})
+		return
+	}
+
+	// Store a fresh code for the new email and send it there.
+	db.OtpCodesCollection.DeleteMany(context.Background(), bson.M{"email": newEmail})
+	code := generateOtpCode()
+	otpDoc := models.OtpCode{
+		Email:     newEmail,
+		Code:      code,
+		ExpiresAt: time.Now().Add(10 * time.Minute),
+		Attempts:  0,
+	}
+	if _, err := db.OtpCodesCollection.InsertOne(context.Background(), otpDoc); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	if sendErr := utils.SendEmail(
+		newEmail,
+		fmt.Sprintf("%s is your Fellowship email-change code", code),
+		buildEmailChangeOtpBody(code),
+		"text/html",
+	); sendErr != nil {
+		db.OtpCodesCollection.DeleteMany(context.Background(), bson.M{"email": newEmail})
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.OtpSendFailed})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Confirms an email change with the code sent to the new address
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string,code=string} true "New email and the code sent to it"
+// @Success 200 {object} models.User
+// @Router /user/email/verify-change [post]
+func verifyEmailChange(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+		Code  string `json:"code" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	authUser := utils.GetAuthUser(c)
+	newEmail := utils.NormalizeEmail(payload.Email)
+
+	// Find the (non-expired) code for the new email.
+	var otpDoc models.OtpCode
+	err := db.OtpCodesCollection.FindOne(context.Background(), bson.M{
+		"email":     newEmail,
+		"expiresAt": bson.M{"$gt": time.Now()},
+	}).Decode(&otpDoc)
+	if err == mongo.ErrNoDocuments {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.OtpExpired})
+		return
+	} else if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	// Max 5 attempts per code.
+	if otpDoc.Attempts >= 5 {
+		db.OtpCodesCollection.DeleteOne(context.Background(), bson.M{"_id": otpDoc.Id})
+		c.JSON(http.StatusTooManyRequests, responses.Error{Error: errs.OtpTooManyAttempts})
+		return
+	}
+	db.OtpCodesCollection.UpdateByID(context.Background(), otpDoc.Id, bson.M{"$inc": bson.M{"attempts": 1}})
+
+	if otpDoc.Code != payload.Code {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.OtpInvalidCode})
+		return
+	}
+
+	// Verified — consume the code.
+	db.OtpCodesCollection.DeleteOne(context.Background(), bson.M{"_id": otpDoc.Id})
+
+	// Re-check the conflict in case an account claimed the email meanwhile.
+	if existing := db.GetUserByEmail(newEmail); existing != nil && existing.Id != authUser.Id {
+		c.JSON(http.StatusConflict, responses.Error{Error: errs.EmailTaken})
+		return
+	}
+
+	oldEmail := utils.NormalizeEmail(authUser.Email)
+
+	// Apply the change. Add the new email to the allowlist FIRST (so the user's
+	// per-request access check keeps passing after their email flips), then move
+	// the account, then remove the old allowlist entry (replace semantics — no
+	// dangling invite at the user's old address).
+	role := authUser.EffectiveRole()
+	if err := db.AddToAllowlist(newEmail, oldEmail, role); err != nil {
+		logger.StdErr.Println(err)
+	}
+	db.SetAllowlistRole(newEmail, role) // ensure role is correct even if the entry pre-existed
+
+	if _, err := db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
+		"$set": bson.M{"email": newEmail},
+	}); err != nil {
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+
+	if oldEmail != newEmail {
+		db.RemoveFromAllowlist(oldEmail)
+	}
+
+	user := db.GetUserById(authUser.Id.Hex())
+	c.JSON(http.StatusOK, user)
+}
+
+// buildEmailChangeOtpBody returns the Fellowship-themed HTML email for
+// confirming a new email address (mirrors the sign-in code email).
+func buildEmailChangeOtpBody(code string) string {
+	return fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:#1c1410;">
+  <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="background-color:#1c1410;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="max-width:440px;background-color:#241a13;border:1px solid #8a7333;border-radius:14px;">
+          <tr>
+            <td style="padding:32px 36px;font-family:Georgia,'Times New Roman',serif;color:#ede4d3;">
+              <div style="font-size:13px;font-weight:bold;letter-spacing:0.16em;color:#c9a44c;text-transform:uppercase;">The Fellowship</div>
+              <div style="height:1px;background-color:#8a7333;margin:18px 0 24px;"></div>
+              <div style="font-size:22px;color:#ede4d3;margin-bottom:10px;">Confirm your new address</div>
+              <div style="font-size:14px;color:#b8ad97;line-height:1.5;margin-bottom:24px;">
+                Enter this code to confirm this address for your Fellowship membership. It expires in ten minutes.
+              </div>
+              <div style="text-align:center;background-color:#2e2117;border:1px solid #8a7333;border-radius:10px;padding:20px;margin-bottom:24px;">
+                <span style="font-size:34px;font-weight:bold;letter-spacing:0.32em;color:#e3c578;font-family:'Courier New',monospace;">%s</span>
+              </div>
+              <div style="font-size:12px;color:#b8ad97;line-height:1.5;">
+                If you did not request this change, you may disregard this message.
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`, code)
 }
 
 // @Summary Updates the user's calendar options

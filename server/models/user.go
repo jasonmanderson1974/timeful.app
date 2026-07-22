@@ -13,6 +13,7 @@ type User struct {
 	Email     string             `json:"email" bson:"email,omitempty"`
 	FirstName string             `json:"firstName" bson:"firstName,omitempty"`
 	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
+	Phone     string             `json:"phone" bson:"phone,omitempty"`
 	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
 	// Whether the user has set a custom name for themselves, i.e. don't change their name when they sign in
