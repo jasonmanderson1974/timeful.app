@@ -99,10 +99,14 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
       `docker compose exec mongo mongosh schej-it --eval 'db.users.updateOne({email:"jason@jasonmanderson.com"},{$set:{canInvite:true}})'`
       then reload the site; the "Members" menu item appears. Promote others via the UI thereafter.
 
-### Phase D — Self-service contact info
-- [ ] Settings page: edit **email + phone** (name already editable).
-- [ ] On email change: update `user.email` + **add new email to the allowlist** (keep access).
-      Decide whether to also remove the old email (likely keep, or replace — TBD when building).
+### Phase D — Self-service contact info  *(DONE 2026-07-22, deployed `b3dd960`)*
+- [x] Settings page: edit **phone** (direct, `PATCH /user/phone`, `User.phone` field) + **email**.
+- [x] **Email change is OTP-VERIFIED** (user chose this over direct, given per-request enforcement):
+      `POST /user/email/request-change` (validate + conflict-check + rate-limit + code to NEW address) →
+      `POST /user/email/verify-change` (confirm code, then update `user.email`).
+- [x] On email change: **REPLACE** semantics — add new email to allowlist at the user's role FIRST
+      (so per-request access keeps passing), then remove the old email (no dangling invite at the old
+      address). New errs `email-unchanged`, `email-taken`.
 
 ### Phase E — Seed
 - [ ] Seed script (`server/scripts/` dated-folder convention) to load the initial ~30–40 emails
@@ -152,8 +156,9 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
     the create button from anon (matches backend).
   - **ALL 15 REVIEW FINDINGS CLOSED.** Security: invite-only enforced per-request + fail-closed; OTP
     rate-limited; cookies hardened; roles validated + unit-tested.
-- Phases D–E: ☐ not started. **Next = Phase D** (self-service email/phone edit in Settings;
-  email-change → auto-add to allowlist) then **Phase E** (seed script for initial ~40 emails/admins).
+- 2026-07-22: **Phase D DONE & deployed** (`b3dd960`) — self-service Settings email/phone editing;
+  email change is OTP-verified and replaces the allowlist entry (add-new-then-remove-old).
+- **Next = Phase E** (seed script for the initial ~40 emails/admins) — the last access-control phase.
 
 ## 6. Needs-from-user / manual steps
 
