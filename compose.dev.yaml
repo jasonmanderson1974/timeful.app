@@ -1,0 +1,69 @@
+name: timeful-dev
+
+# Local development / smoke-test stack. Self-contained — no real secrets needed:
+#   docker compose -f compose.dev.yaml up -d --build
+#   open http://localhost:3002
+#
+# Boots the full app against a throwaway local Mongo (exposed on :27017 so the
+# Go test suite can run against it too). NOTE: auth flows that need external
+# services do NOT work locally — Gmail SMTP (email OTP codes) and Google OAuth
+# (calendar) are not configured here. Use this for build/boot/UI smoke tests and
+# for running the backend integration tests, not for full login flows.
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017" # exposed so `go test ./db/ ./routes/` on the host can reach it
+    volumes:
+      - mongo_dev_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      target: builder
+      args:
+        VUE_APP_GOOGLE_CLIENT_ID: "" # Google calendar disabled locally (login is OTP-only)
+    volumes:
+      - frontend_dev_dist:/app/dist
+    command:
+      [
+        "sh",
+        "-c",
+        "rm -rf /app/dist/* && cp -r /build/* /app/dist/ && echo 'Frontend assets copied' && tail -f /dev/null",
+      ]
+
+  server:
+    build:
+      context: ./server
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      GIN_MODE: debug
+      # Dummy dev secrets — NOT for production. SESSION_SECRET must be >=32 chars;
+      # ENCRYPTION_KEY is used raw as an AES key (32 chars => AES-256).
+      SESSION_SECRET: "dev-session-secret-not-for-prod-change-me!!"
+      ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef"
+      CORS_ORIGINS: "http://localhost:8080"
+      # Invite-only gate off locally so an empty allowlist fails open for testing.
+      INVITE_ONLY_ENFORCED: "false"
+    volumes:
+      - frontend_dev_dist:/app/frontend/dist:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+volumes:
+  mongo_dev_data:
+  frontend_dev_dist:

@@ -286,8 +286,10 @@ func setMemberRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.CannotRemoveSelf})
 		return
 	}
-	// Super admins are immutable via the app, and super admin can't be granted.
-	if effectiveTargetRole(email).IsSuperAdmin() || payload.Role.IsSuperAdmin() {
+	// Super admin can't be granted, and existing super admins are immutable. The
+	// requested-role check is first so an attempt to grant super admin is rejected
+	// without a DB lookup.
+	if payload.Role.IsSuperAdmin() || effectiveTargetRole(email).IsSuperAdmin() {
 		c.JSON(http.StatusForbidden, responses.Error{Error: errs.SuperAdminImmutable})
 		return
 	}
