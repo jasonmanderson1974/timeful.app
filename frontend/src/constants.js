@@ -14,6 +14,28 @@ export const errors = Object.freeze({
   OtpTooManyAttempts: "otp-too-many-attempts",
 })
 
+// User roles (must match server/models/roles.go), ordered by privilege.
+export const roles = Object.freeze({
+  SUPER_ADMIN: "superAdmin",
+  ADMIN: "admin",
+  MEMBER: "member",
+  GUEST: "guest",
+})
+
+// Human-readable labels for each role.
+export const roleLabels = Object.freeze({
+  superAdmin: "Super Admin",
+  admin: "Admin",
+  member: "Member",
+  guest: "Guest",
+})
+
+// An empty/unknown role is treated as member (see NormalizeRole on the server).
+export const normalizeRole = (role) =>
+  [roles.SUPER_ADMIN, roles.ADMIN, roles.MEMBER, roles.GUEST].includes(role)
+    ? role
+    : roles.MEMBER
+
 // Auth types
 export const authTypes = Object.freeze({
   EVENT_ADD_AVAILABILITY: "event-add-availability", // Autofill with google calendar

@@ -119,8 +119,20 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 - 2026-07-21: **Login made email-OTP-only** (Google/Outlook sign-in buttons removed; Google kept for
   calendar autofill only). Commit `88772a1`, deployed.
 - 2026-07-21: **Phase C code DONE** — `canInvite` role + `/api/admin` allowlist endpoints +
-  `CanInviteRequired` middleware + "The Roll" admin page (`/members`) + gated menu link. Awaits VM
-  deploy (server rebuild) + first-admin bootstrap (set `canInvite:true` on jason@ in Mongo).
+  `CanInviteRequired` middleware + "The Roll" admin page (`/members`) + gated menu link. Deployed;
+  jason@ bootstrapped. **SUPERSEDED same day by the 4-tier role model below.**
+- 2026-07-21: **4-TIER ROLE MODEL (Phase C v2) code DONE.** Replaced the binary `canInvite` flag with
+  `User.role` (superAdmin/admin/member/guest — `models/roles.go`, empty⇒member). Decisions: **Admins
+  can manage other Admins** (promote/demote/remove); **Super Admin is DB-only + immutable in app**
+  (never grantable/removable via UI). Capabilities: create events = all except guest; invite guests =
+  member+; invite members/admins + manage roles + strike = admin+; super admin untouchable by anyone
+  via API. Allowlist entry now carries `role` (seeds new user's role at first sign-in; existing users
+  keep their role). Endpoints: `GET/POST/DELETE /admin/allowlist` + `POST /admin/member/role`
+  (renamed from /can-invite); guards block self-change, super-admin mods, and out-of-tier grants.
+  Guest event-creation blocked in `createEvent` + UI (store `createNew` guard + hidden create buttons).
+  Frontend: role constants/getters (`isGuest`,`canInvite`,`canManageUsers`,`canCreateEvents`), reworked
+  "The Roll" (role badges + per-member role dropdown + adaptive member/admin view). **Awaits VM deploy
+  + re-bootstrap jason@ to `role:"superAdmin"` (canInvite field now obsolete).**
 - Phases D–E: ☐ not started. **Next = Phase D** (self-service email/phone edit in Settings;
   email-change → auto-add to allowlist) then **Phase E** (seed script for initial ~40 emails/admins).
 

@@ -7,8 +7,14 @@
           The Roll
         </div>
         <div class="tw-text-sm tw-text-parchment-dim">
-          Only those on the roll may enter the Fellowship. Add a gentleman's
-          email to extend an invitation; strike it to revoke.
+          <span v-if="canManageUsers">
+            Only those on the roll may enter the Fellowship. Extend invitations
+            and set each member's standing; strike an email to revoke access.
+          </span>
+          <span v-else>
+            Invite a guest to the Fellowship by adding their email below. Only an
+            admin may raise a member's standing or strike them from the roll.
+          </span>
         </div>
       </div>
 
@@ -17,7 +23,7 @@
         class="tw-rounded-xl tw-border tw-border-brass-dim tw-bg-leather/60 tw-p-4"
       >
         <div class="tw-mb-1 tw-text-sm tw-font-medium tw-text-parchment">
-          Invite a member
+          Invite {{ canManageUsers ? "a member" : "a guest" }}
         </div>
         <div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
           <v-text-field
@@ -31,6 +37,15 @@
             :disabled="adding"
             @keydown.enter="invite"
           />
+          <v-select
+            v-if="canManageUsers"
+            v-model="inviteRole"
+            :items="grantableRoleOptions"
+            solo
+            hide-details
+            :disabled="adding"
+            class="sm:tw-max-w-[10rem]"
+          />
           <v-btn
             color="primary"
             :loading="adding"
@@ -40,15 +55,16 @@
             Extend invitation
           </v-btn>
         </div>
+        <div v-if="!canManageUsers" class="tw-mt-1 tw-text-xs tw-text-parchment-dim">
+          Members may invite guests only.
+        </div>
       </div>
 
-      <!-- Roll -->
-      <div class="tw-flex tw-flex-col tw-gap-3">
-        <div class="tw-flex tw-items-center tw-justify-between">
-          <div class="tw-text-lg tw-font-medium tw-text-parchment">
-            On the roll
-            <span class="tw-text-parchment-dim">({{ members.length }})</span>
-          </div>
+      <!-- Roll (admins only) -->
+      <div v-if="canManageUsers" class="tw-flex tw-flex-col tw-gap-3">
+        <div class="tw-text-lg tw-font-medium tw-text-parchment">
+          On the roll
+          <span class="tw-text-parchment-dim">({{ members.length }})</span>
         </div>
 
         <div v-if="loading" class="tw-py-8 tw-text-center tw-text-parchment-dim">
@@ -82,55 +98,45 @@
             </div>
           </div>
 
-          <!-- Status badge -->
+          <!-- Account status -->
           <span
             class="tw-shrink-0 tw-rounded-full tw-border tw-px-2 tw-py-0.5 tw-text-xs"
             :class="
               member.hasAccount
-                ? 'tw-border-brass tw-text-brass'
-                : 'tw-border-brass-dim tw-text-parchment-dim'
+                ? 'tw-border-brass-dim tw-text-parchment-dim'
+                : 'tw-border-brass-dim tw-text-parchment-dim tw-italic'
             "
           >
-            {{ member.hasAccount ? "Member" : "Invited" }}
+            {{ member.hasAccount ? "Joined" : "Invited" }}
           </span>
 
-          <!-- Inviter toggle (only meaningful once they have an account) -->
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
-              <div v-on="on" class="tw-flex tw-shrink-0 tw-items-center">
-                <v-switch
-                  :input-value="member.canInvite"
-                  :disabled="!member.hasAccount || busyEmail === member.email"
-                  color="brass"
-                  hide-details
-                  dense
-                  class="tw-mt-0 tw-pt-0"
-                  @change="toggleCanInvite(member, $event)"
-                />
-                <span class="tw-hidden tw-text-xs tw-text-parchment-dim sm:tw-inline">
-                  Inviter
-                </span>
-              </div>
-            </template>
-            <span>
-              {{
-                member.hasAccount
-                  ? "Allow this member to manage the roll"
-                  : "Available once they have signed in"
-              }}
-            </span>
-          </v-tooltip>
+          <!-- Role: editable selector, or a locked badge for super admin / self -->
+          <v-select
+            v-if="isEditable(member)"
+            :value="member.role"
+            :items="grantableRoleOptions"
+            solo
+            dense
+            hide-details
+            :loading="busyEmail === member.email"
+            :disabled="busyEmail === member.email"
+            class="tw-shrink-0 tw-max-w-[9rem]"
+            @change="changeRole(member, $event)"
+          />
+          <span
+            v-else
+            class="tw-shrink-0 tw-rounded-full tw-border tw-px-2 tw-py-0.5 tw-text-xs"
+            :class="roleBadgeClass(member.role)"
+          >
+            {{ roleLabel(member.role) }}
+          </span>
 
-          <!-- Remove -->
+          <!-- Strike -->
           <v-btn
             icon
             small
-            :disabled="busyEmail === member.email || member.email === selfEmail"
-            :title="
-              member.email === selfEmail
-                ? 'You cannot strike yourself from the roll'
-                : 'Strike from the roll'
-            "
+            :disabled="!canStrike(member) || busyEmail === member.email"
+            :title="strikeTitle(member)"
             @click="remove(member)"
           >
             <v-icon small color="oxblood">mdi-close</v-icon>
@@ -142,8 +148,9 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex"
+import { mapState, mapGetters, mapActions } from "vuex"
 import { get, post, _delete } from "@/utils"
+import { roles, roleLabels } from "@/constants"
 
 export default {
   name: "MemberAdmin",
@@ -156,6 +163,7 @@ export default {
     return {
       email: "",
       emailError: "",
+      inviteRole: roles.GUEST,
       members: [],
       loading: true,
       adding: false,
@@ -165,22 +173,70 @@ export default {
 
   computed: {
     ...mapState(["authUser"]),
+    ...mapGetters(["canInvite", "canManageUsers"]),
     selfEmail() {
       return (this.authUser?.email || "").toLowerCase()
+    },
+    // Roles this actor may grant. Admins: guest/member/admin. Members: guest only.
+    grantableRoleOptions() {
+      const opts = [{ text: roleLabels[roles.GUEST], value: roles.GUEST }]
+      if (this.canManageUsers) {
+        opts.push(
+          { text: roleLabels[roles.MEMBER], value: roles.MEMBER },
+          { text: roleLabels[roles.ADMIN], value: roles.ADMIN }
+        )
+      }
+      return opts
     },
   },
 
   async created() {
     // Client-side guard; the /admin endpoints enforce this server-side too.
-    if (!this.authUser || !this.authUser.canInvite) {
+    if (!this.canInvite) {
       this.$router.replace({ name: "home" })
       return
     }
-    await this.fetchAllowlist()
+    if (this.canManageUsers) {
+      await this.fetchAllowlist()
+    } else {
+      this.loading = false
+    }
   },
 
   methods: {
     ...mapActions(["showError", "showInfo"]),
+    roleLabel(role) {
+      return roleLabels[role] || roleLabels[roles.MEMBER]
+    },
+    roleBadgeClass(role) {
+      if (role === roles.SUPER_ADMIN) return "tw-border-brass tw-text-brass-bright"
+      if (role === roles.ADMIN) return "tw-border-brass tw-text-brass"
+      if (role === roles.GUEST) return "tw-border-brass-dim tw-text-parchment-dim"
+      return "tw-border-brass-dim tw-text-parchment"
+    },
+    // A row's role may be changed only by an admin, and never for a super admin
+    // or for the admin's own account.
+    isEditable(member) {
+      return (
+        this.canManageUsers &&
+        member.role !== roles.SUPER_ADMIN &&
+        member.email.toLowerCase() !== this.selfEmail
+      )
+    },
+    canStrike(member) {
+      return (
+        this.canManageUsers &&
+        member.role !== roles.SUPER_ADMIN &&
+        member.email.toLowerCase() !== this.selfEmail
+      )
+    },
+    strikeTitle(member) {
+      if (member.role === roles.SUPER_ADMIN)
+        return "The Super Admin cannot be struck from the roll"
+      if (member.email.toLowerCase() === this.selfEmail)
+        return "You cannot strike yourself from the roll"
+      return "Strike from the roll"
+    },
     async fetchAllowlist() {
       this.loading = true
       try {
@@ -213,14 +269,30 @@ export default {
       if (!this.validateEmail()) return
       this.adding = true
       try {
-        await post("/admin/allowlist", { email: this.email.trim() })
+        const role = this.canManageUsers ? this.inviteRole : roles.GUEST
+        await post("/admin/allowlist", { email: this.email.trim(), role })
         this.email = ""
-        await this.fetchAllowlist()
+        this.inviteRole = roles.GUEST
+        if (this.canManageUsers) await this.fetchAllowlist()
         this.showInfo("Invitation extended.")
       } catch (err) {
         this.emailError = "Could not add that email. Please try again."
       } finally {
         this.adding = false
+      }
+    },
+    async changeRole(member, role) {
+      if (this.busyEmail) return
+      this.busyEmail = member.email
+      try {
+        await post("/admin/member/role", { email: member.email, role })
+        await this.fetchAllowlist()
+        this.showInfo("Standing updated.")
+      } catch (err) {
+        this.showError("Could not update that member's standing.")
+        await this.fetchAllowlist() // revert the selector
+      } finally {
+        this.busyEmail = ""
       }
     },
     async remove(member) {
@@ -238,23 +310,6 @@ export default {
         await this.fetchAllowlist()
       } catch (err) {
         this.showError("Could not remove that email. Please try again.")
-      } finally {
-        this.busyEmail = ""
-      }
-    },
-    async toggleCanInvite(member, value) {
-      if (this.busyEmail) return
-      this.busyEmail = member.email
-      try {
-        await post("/admin/member/can-invite", {
-          email: member.email,
-          canInvite: value,
-        })
-        await this.fetchAllowlist()
-      } catch (err) {
-        this.showError("Could not update inviter status. Please try again.")
-        // Revert the optimistic switch position by reloading.
-        await this.fetchAllowlist()
       } finally {
         this.busyEmail = ""
       }

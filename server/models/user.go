@@ -18,9 +18,9 @@ type User struct {
 	// Whether the user has set a custom name for themselves, i.e. don't change their name when they sign in
 	HasCustomName *bool `json:"hasCustomName" bson:"hasCustomName,omitempty"`
 
-	// CanInvite designates a member who may manage the invite-only allowlist
-	// (add/remove emails, promote other inviters) via the /admin routes.
-	CanInvite *bool `json:"canInvite" bson:"canInvite,omitempty"`
+	// Role is the user's access level in the invite-only Fellowship
+	// (superAdmin/admin/member/guest). Empty ⇒ treated as member. See roles.go.
+	Role Role `json:"role" bson:"role,omitempty"`
 
 	// CalendarAccounts is a mapping from {`email_CALENDARTYPE` => CalendarAccount} that contains all the
 	// additional accounts the user wants to see google calendar events for

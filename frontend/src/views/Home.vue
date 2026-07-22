@@ -21,7 +21,7 @@
 
       <!-- FAB -->
       <BottomFab
-        v-if="isPhone"
+        v-if="isPhone && canCreateEvents"
         id="create-event-btn"
         @click="() => _createNew()"
       >
@@ -36,7 +36,7 @@ import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
 import Dashboard from "@/components/home/Dashboard.vue"
-import { mapState, mapActions, mapMutations } from "vuex"
+import { mapState, mapActions, mapMutations, mapGetters } from "vuex"
 import { eventTypes } from "@/constants"
 import { isPhone, get } from "@/utils"
 
@@ -78,6 +78,7 @@ export default {
 
   computed: {
     ...mapState(["events", "authUser", "groupsEnabled"]),
+    ...mapGetters(["canCreateEvents"]),
     eventsNotEmpty() {
       return this.events.length > 0
     },

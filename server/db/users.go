@@ -55,10 +55,9 @@ func GetUserByStripeCustomerId(stripeCustomerId string) *models.User {
 	return &user
 }
 
-// SetUserCanInvite sets the canInvite flag on the user with the given email
-// (case-insensitive). Returns the number of users matched (0 if no account
-// exists for that email yet).
-func SetUserCanInvite(email string, canInvite bool) (int64, error) {
+// SetUserRole sets the role on the user with the given email (case-insensitive).
+// Returns the number of users matched (0 if no account exists for that email yet).
+func SetUserRole(email string, role models.Role) (int64, error) {
 	e := strings.ToLower(strings.TrimSpace(email))
 	if e == "" {
 		return 0, nil
@@ -70,7 +69,7 @@ func SetUserCanInvite(email string, canInvite bool) (int64, error) {
 	res, err := UsersCollection.UpdateOne(
 		context.Background(),
 		bson.M{"email": e},
-		bson.M{"$set": bson.M{"canInvite": canInvite}},
+		bson.M{"$set": bson.M{"role": models.NormalizeRole(role)}},
 		opts,
 	)
 	if err != nil {

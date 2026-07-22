@@ -1,5 +1,6 @@
-/* The /admin group contains routes for managing the invite-only allowlist.
-   All routes require a signed-in user with the canInvite role. */
+/* The /admin group contains routes for managing the invite-only allowlist and
+   member roles. All routes require a signed-in user who can invite (member+);
+   management actions further require an admin (see CanManageUsers). */
 package routes
 
 import (
@@ -33,17 +34,18 @@ func InitAdmin(router *gin.RouterGroup) {
 	adminRouter.GET("/allowlist", getAllowlist)
 	adminRouter.POST("/allowlist", addAllowlistEmail)
 	adminRouter.DELETE("/allowlist", removeAllowlistEmail)
-	adminRouter.POST("/member/can-invite", setMemberCanInvite)
+	adminRouter.POST("/member/role", setMemberRole)
 }
 
 // allowlistMember is an allowlist entry enriched with the registered-user
-// status for that email, so the admin UI can show who has actually signed up.
+// status. The reported role is the account's role once they've signed in,
+// otherwise the role recorded on the allowlist invitation.
 type allowlistMember struct {
 	models.AllowlistEntry
-	HasAccount bool   `json:"hasAccount"`
-	FirstName  string `json:"firstName,omitempty"`
-	LastName   string `json:"lastName,omitempty"`
-	CanInvite  bool   `json:"canInvite"`
+	HasAccount bool        `json:"hasAccount"`
+	FirstName  string      `json:"firstName,omitempty"`
+	LastName   string      `json:"lastName,omitempty"`
+	Role       models.Role `json:"role"`
 }
 
 func authUserFromContext(c *gin.Context) *models.User {
@@ -51,7 +53,16 @@ func authUserFromContext(c *gin.Context) *models.User {
 	return userInterface.(*models.User)
 }
 
-// @Summary Lists the invite-only allowlist (with member/account status)
+// effectiveTargetRole returns the current role of the given email: the account
+// role if they have one, otherwise the allowlist invitation role.
+func effectiveTargetRole(email string) models.Role {
+	if user := db.GetUserByEmail(email); user != nil {
+		return user.EffectiveRole()
+	}
+	return models.NormalizeRole(db.GetAllowlistRole(email))
+}
+
+// @Summary Lists the invite-only allowlist (with member status + role)
 // @Tags admin
 // @Produce json
 // @Success 200 {array} allowlistMember
@@ -60,12 +71,12 @@ func getAllowlist(c *gin.Context) {
 	entries := db.GetAllowlist()
 	members := make([]allowlistMember, 0, len(entries))
 	for _, entry := range entries {
-		m := allowlistMember{AllowlistEntry: entry}
+		m := allowlistMember{AllowlistEntry: entry, Role: models.NormalizeRole(entry.Role)}
 		if user := db.GetUserByEmail(entry.Email); user != nil {
 			m.HasAccount = true
 			m.FirstName = user.FirstName
 			m.LastName = user.LastName
-			m.CanInvite = user.CanInvite != nil && *user.CanInvite
+			m.Role = user.EffectiveRole()
 		}
 		members = append(members, m)
 	}
@@ -76,12 +87,13 @@ func getAllowlist(c *gin.Context) {
 // @Tags admin
 // @Accept json
 // @Produce json
-// @Param payload body object{email=string} true "Email to invite"
+// @Param payload body object{email=string,role=string} true "Email to invite and the role to grant"
 // @Success 200
 // @Router /admin/allowlist [post]
 func addAllowlistEmail(c *gin.Context) {
 	payload := struct {
-		Email string `json:"email" binding:"required"`
+		Email string      `json:"email" binding:"required"`
+		Role  models.Role `json:"role"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
@@ -93,14 +105,24 @@ func addAllowlistEmail(c *gin.Context) {
 		return
 	}
 
-	admin := authUserFromContext(c)
-	if err := db.AddToAllowlist(email, admin.Email); err != nil {
+	// Default invited role is guest; validate the actor may grant the requested role.
+	role := models.NormalizeRole(payload.Role)
+	if payload.Role == "" {
+		role = models.RoleGuest
+	}
+	actor := authUserFromContext(c)
+	if !canGrantRole(actor.EffectiveRole(), role) {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.InvalidRole})
+		return
+	}
+
+	if err := db.AddToAllowlist(email, actor.Email, role); err != nil {
 		logger.StdErr.Println(err)
 		c.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"email": email})
+	c.JSON(http.StatusOK, gin.H{"email": email, "role": role})
 }
 
 // @Summary Removes an email from the allowlist
@@ -119,11 +141,21 @@ func removeAllowlistEmail(c *gin.Context) {
 	}
 
 	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	actor := authUserFromContext(c)
 
-	// Guard: don't let an admin remove their own access and lock themselves out.
-	admin := authUserFromContext(c)
-	if email == strings.ToLower(strings.TrimSpace(admin.Email)) {
+	// Only admins may remove members from the roll.
+	if !actor.EffectiveRole().CanManageUsers() {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
+		return
+	}
+	// Can't remove yourself (avoid self-lockout).
+	if email == strings.ToLower(strings.TrimSpace(actor.Email)) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.CannotRemoveSelf})
+		return
+	}
+	// Super admins are immutable via the app.
+	if effectiveTargetRole(email).IsSuperAdmin() {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.SuperAdminImmutable})
 		return
 	}
 
@@ -136,42 +168,76 @@ func removeAllowlistEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"email": email})
 }
 
-// @Summary Grants or revokes the canInvite role for a member
+// @Summary Sets a member's role (guest/member/admin)
 // @Tags admin
 // @Accept json
 // @Produce json
-// @Param payload body object{email=string,canInvite=bool} true "Member email and desired canInvite state"
+// @Param payload body object{email=string,role=string} true "Member email and new role"
 // @Success 200
-// @Router /admin/member/can-invite [post]
-func setMemberCanInvite(c *gin.Context) {
+// @Router /admin/member/role [post]
+func setMemberRole(c *gin.Context) {
 	payload := struct {
-		Email     string `json:"email" binding:"required"`
-		CanInvite *bool  `json:"canInvite" binding:"required"`
+		Email string      `json:"email" binding:"required"`
+		Role  models.Role `json:"role" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
 	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	actor := authUserFromContext(c)
 
-	// Guard: an admin can't revoke their own inviter role (avoid self-lockout).
-	admin := authUserFromContext(c)
-	if email == strings.ToLower(strings.TrimSpace(admin.Email)) && !*payload.CanInvite {
+	// Only admins may change roles.
+	if !actor.EffectiveRole().CanManageUsers() {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
+		return
+	}
+	// Can't change your own role (avoid self-lockout / accidental demotion).
+	if email == strings.ToLower(strings.TrimSpace(actor.Email)) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.CannotRemoveSelf})
 		return
 	}
+	// Super admins are immutable via the app, and super admin can't be granted.
+	if effectiveTargetRole(email).IsSuperAdmin() || payload.Role.IsSuperAdmin() {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.SuperAdminImmutable})
+		return
+	}
+	// The new role must be one the actor is allowed to grant.
+	newRole := models.NormalizeRole(payload.Role)
+	if !canGrantRole(actor.EffectiveRole(), newRole) {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.InvalidRole})
+		return
+	}
 
-	matched, err := db.SetUserCanInvite(email, *payload.CanInvite)
-	if err != nil {
+	// Keep the allowlist invitation role and the account role in sync.
+	if err := db.SetAllowlistRole(email, newRole); err != nil {
 		logger.StdErr.Println(err)
 		c.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error()})
 		return
 	}
-	if matched == 0 {
-		// No account for that email yet — the role only applies once they sign in.
-		c.JSON(http.StatusNotFound, responses.Error{Error: errs.UserDoesNotExist})
+	if _, err := db.SetUserRole(email, newRole); err != nil {
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"email": email, "canInvite": *payload.CanInvite})
+	c.JSON(http.StatusOK, gin.H{"email": email, "role": newRole})
+}
+
+// canGrantRole reports whether an actor with actorRole may grant targetRole.
+// Members may only grant guest; admins/super admins may grant guest/member/admin.
+// Super admin is never grantable through the app.
+func canGrantRole(actorRole, targetRole models.Role) bool {
+	if targetRole.IsSuperAdmin() {
+		return false
+	}
+	if actorRole.CanManageUsers() {
+		// admin & super admin: guest/member/admin
+		return true
+	}
+	if actorRole.CanInvite() {
+		// member: guests only
+		return targetRole == models.RoleGuest
+	}
+	return false
 }

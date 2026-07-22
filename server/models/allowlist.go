@@ -10,4 +10,8 @@ type AllowlistEntry struct {
 	Email   string             `json:"email" bson:"email"`
 	AddedBy string             `json:"addedBy,omitempty" bson:"addedBy,omitempty"`
 	AddedAt primitive.DateTime `json:"addedAt,omitempty" bson:"addedAt,omitempty"`
+
+	// Role the invitee will receive on first sign-in (guest/member/admin).
+	// Empty ⇒ member (see models.NormalizeRole).
+	Role Role `json:"role,omitempty" bson:"role,omitempty"`
 }

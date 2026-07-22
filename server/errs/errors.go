@@ -30,8 +30,12 @@ const (
 	NotAuthorized string = "not-authorized"
 	// InvalidEmail: the provided email failed validation
 	InvalidEmail string = "invalid-email"
-	// CannotRemoveSelf: an admin tried to remove their own access / inviter role
+	// CannotRemoveSelf: an admin tried to remove their own access / role
 	CannotRemoveSelf string = "cannot-remove-self"
+	// SuperAdminImmutable: attempted to modify or remove a super admin via the app
+	SuperAdminImmutable string = "super-admin-immutable"
+	// InvalidRole: the requested role is not grantable by the actor
+	InvalidRole string = "invalid-role"
 )
 
 // Sentinel error returned by signInHelper when an email is not allowlisted, so

@@ -1,6 +1,7 @@
 import Vue from "vue"
 import Vuex from "vuex"
 import { get, isPremiumUser } from "@/utils"
+import { roles, normalizeRole } from "@/constants"
 import {
   createFolder,
   deleteFolder,
@@ -44,6 +45,30 @@ export default new Vuex.Store({
   getters: {
     isPremiumUser(state) {
       return isPremiumUser(state.authUser)
+    },
+    // Effective role of the signed-in user (empty ⇒ member; null user ⇒ guest-less)
+    role(state) {
+      return state.authUser ? normalizeRole(state.authUser.role) : null
+    },
+    isGuest(state, getters) {
+      return getters.role === roles.GUEST
+    },
+    isSuperAdmin(state, getters) {
+      return getters.role === roles.SUPER_ADMIN
+    },
+    // Can add emails to the allowlist (member and up)
+    canInvite(state, getters) {
+      return [roles.MEMBER, roles.ADMIN, roles.SUPER_ADMIN].includes(
+        getters.role
+      )
+    },
+    // Can manage users / change roles (admin and up)
+    canManageUsers(state, getters) {
+      return [roles.ADMIN, roles.SUPER_ADMIN].includes(getters.role)
+    },
+    // Everyone except guests may create events
+    canCreateEvents(state, getters) {
+      return getters.role != null && getters.role !== roles.GUEST
     },
   },
   mutations: {
@@ -148,6 +173,14 @@ export default new Vuex.Store({
       { state, getters, commit, dispatch },
       { eventOnly = false, folderId = null }
     ) {
+      // Guests may respond to events but not create them (enforced server-side too).
+      if (getters.isGuest) {
+        dispatch(
+          "showError",
+          "Guests cannot create gatherings. Ask a member to raise your standing."
+        )
+        return
+      }
       commit("setNewDialogOptions", {
         show: true,
         contactsPayload: {},

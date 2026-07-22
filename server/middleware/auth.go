@@ -38,8 +38,8 @@ func AuthRequired() gin.HandlerFunc {
 }
 
 // CanInviteRequired must be chained AFTER AuthRequired. It rejects signed-in
-// users who are not designated inviters (User.canInvite), gating the /admin
-// allowlist-management routes.
+// users who cannot invite (guests), gating the /admin group. Individual
+// handlers further restrict management actions to admins (CanManageUsers).
 func CanInviteRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInterface, exists := c.Get("authUser")
@@ -50,7 +50,7 @@ func CanInviteRequired() gin.HandlerFunc {
 		}
 		user := userInterface.(*models.User)
 
-		if user.CanInvite == nil || !*user.CanInvite {
+		if !user.EffectiveRole().CanInvite() {
 			c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
 			c.Abort()
 			return

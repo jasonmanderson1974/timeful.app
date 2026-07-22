@@ -224,6 +224,10 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 			canonicalKey: calendarAccount,
 		}
 
+		// Seed the role from the allowlist entry (guest/member/admin). Only on
+		// creation — existing users keep whatever role they've since been given.
+		userData.Role = models.NormalizeRole(db.GetAllowlistRole(email))
+
 		// Create user
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
@@ -532,6 +536,8 @@ func verifyOtp(c *gin.Context) {
 			LastName:       lastName,
 			TimezoneOffset: *payload.TimezoneOffset,
 			TokenOrigin:    models.WEB,
+			// Seed the role from the allowlist entry (guest/member/admin).
+			Role: models.NormalizeRole(db.GetAllowlistRole(email)),
 		}
 
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)

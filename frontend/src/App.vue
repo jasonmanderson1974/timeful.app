@@ -37,7 +37,7 @@
         <v-spacer />
 
         <v-btn
-          v-if="$route.name === 'event'"
+          v-if="$route.name === 'event' && canCreateEvents"
           id="top-right-create-btn"
           text
           class="tw-font-display tw-tracking-widest tw-text-brass"
@@ -46,7 +46,7 @@
           Call a Gathering
         </v-btn>
         <v-btn
-          v-if="$route.name === 'home' && !isPhone"
+          v-if="$route.name === 'home' && !isPhone && canCreateEvents"
           color="primary"
           class="tw-mx-2 tw-rounded-md tw-font-display tw-tracking-widest tw-text-wood-deep"
           @click="() => _createNew()"
@@ -256,6 +256,7 @@ export default {
 
   computed: {
     ...mapState(["authUser", "error", "info", "newDialogOptions"]),
+    ...mapGetters(["canCreateEvents"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },

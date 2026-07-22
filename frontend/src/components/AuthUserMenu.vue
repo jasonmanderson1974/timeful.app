@@ -35,7 +35,7 @@
           </v-list-item-title>
         </v-list-item>
         <v-list-item
-          v-if="authUser.canInvite"
+          v-if="canInvite"
           id="members-btn"
           @click="goToAdmin"
         >
@@ -65,7 +65,7 @@
 
 <script>
 import UserAvatarContent from "@/components/UserAvatarContent"
-import { mapState, mapMutations } from "vuex"
+import { mapState, mapMutations, mapGetters } from "vuex"
 import { post, isPhone } from "@/utils"
 import TeamsNotReadyDialog from "./TeamsNotReadyDialog.vue"
 
@@ -85,6 +85,7 @@ export default {
 
   computed: {
     ...mapState(["authUser"]),
+    ...mapGetters(["canInvite"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },

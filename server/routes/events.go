@@ -102,6 +102,11 @@ func createEvent(c *gin.Context) {
 			signedIn = false
 			ownerId = primitive.NilObjectID
 		} else {
+			// Guests may respond to events but not create them.
+			if !user.EffectiveRole().CanCreateEvents() {
+				c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
+				return
+			}
 			ownerId = utils.StringToObjectID(userId)
 		}
 	} else {
