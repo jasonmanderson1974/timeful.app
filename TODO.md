@@ -74,6 +74,14 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   `GetTokensFromAuthCode`, `RefreshAccessToken`, `GetUserInfo`, `CreateEmailTask`). These are the
   high-effort/low-benefit end (all already recovered → 500); decide whether they're worth it.
 
+  **Batch 2 DONE 2026-07-22 (CI-green):** the event-getter cluster —
+  `GetEventById`/`GetEventByShortId`/`GetEventByEitherId` → `(*Event, error)`, ~17 call sites
+  updated (11 handlers → 500; `main.go` + db-internal callers keep nil-checks). `GenerateShortEventId`
+  kept its `string` signature (handles the error internally). **Still remaining:** `GetUserById`
+  (20 callers) + `GetUserByEmail` (8) in `db/users.go`; `GetEventResponses` (8) + `GetAttendees` (3)
+  slice getters in `db/events.go`; and `services/` (`CallApi`, `GetTokensFromAuthCode`,
+  `RefreshAccessToken`, `GetUserInfo`, `CreateEmailTask`).
+
 - [x] **A3 · Unchecked writes in loops.** `S` — **DONE 2026-07-22 (the 3 listed sites).**
   `createEvent` now builds an `[]interface{}` and uses a single `InsertMany` with an error check
   (returns 500 on failure — it runs before the event is inserted, so no partial event). The
