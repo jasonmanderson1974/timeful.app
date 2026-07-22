@@ -223,7 +223,7 @@ func GuestNameExists(eventId string, guestName string) bool {
 	objectId, err := primitive.ObjectIDFromHex(guestName)
 	if err == nil {
 		// The name is a valid ObjectID format - check if a user exists with this ID
-		user := GetUserById(objectId.Hex())
+		user, _ := GetUserById(objectId.Hex())
 		if user != nil {
 			// A logged-in user exists with this ObjectID, so block it
 			return true

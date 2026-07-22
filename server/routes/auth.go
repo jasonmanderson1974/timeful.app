@@ -215,7 +215,10 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 	canonicalKey := utils.GetCalendarAccountKey(email, calendarType)
 
 	var userId primitive.ObjectID
-	existing := db.GetUserByEmail(email)
+	existing, existingErr := db.GetUserByEmail(email)
+	if existingErr != nil {
+		return models.User{}, existingErr
+	}
 	// If user doesn't exist, create a new user
 	if existing == nil {
 		// Fetch subcalendars
@@ -417,7 +420,12 @@ func checkEmail(c *gin.Context) {
 		return
 	}
 
-	isNewUser := db.GetUserByEmail(email) == nil
+	existingUser, existingErr := db.GetUserByEmail(email)
+	if existingErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+	isNewUser := existingUser == nil
 	c.JSON(http.StatusOK, gin.H{"invited": true, "isNewUser": isNewUser})
 }
 
@@ -555,7 +563,11 @@ func verifyOtp(c *gin.Context) {
 
 	// Find or create user
 	var userId primitive.ObjectID
-	existing := db.GetUserByEmail(email)
+	existing, existingErr := db.GetUserByEmail(email)
+	if existingErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	if existing == nil {
 		firstName := strings.TrimSpace(payload.FirstName)
@@ -593,6 +605,10 @@ func verifyOtp(c *gin.Context) {
 	session.Set("userId", userId.Hex())
 	session.Save()
 
-	user := db.GetUserById(userId.Hex())
+	user, userErr := db.GetUserById(userId.Hex())
+	if userErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	c.JSON(http.StatusOK, user)
 }

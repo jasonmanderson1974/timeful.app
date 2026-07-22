@@ -227,7 +227,11 @@ func _fulfillCheckout(sessionId string) {
 				logger.StdErr.Printf("Error parsing user ID: %v", err)
 				return
 			}
-			user := db.GetUserById(userId)
+			user, userErr := db.GetUserById(userId)
+			if userErr != nil {
+				logger.StdErr.Printf("Error getting user: %v", userErr)
+				return
+			}
 			if user == nil {
 				logger.StdErr.Printf("Error getting user: %v", err)
 				return

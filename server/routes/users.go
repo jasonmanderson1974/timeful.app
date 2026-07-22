@@ -27,7 +27,11 @@ func InitUsers(router *gin.RouterGroup) {
 // @Router /users/{userId}/is-premium [get]
 func getIsUserPremium(c *gin.Context) {
 	userId := c.Param("userId")
-	user := db.GetUserById(userId)
+	user, userErr := db.GetUserById(userId)
+	if userErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if user == nil {
 		c.JSON(http.StatusOK, gin.H{"isPremium": false})
 		return
@@ -53,7 +57,11 @@ func getIsUserPremium(c *gin.Context) {
 // @Router /users/{userId} [get]
 func getPublicUserProfile(c *gin.Context) {
 	userId := c.Param("userId")
-	user := db.GetUserById(userId)
+	user, userErr := db.GetUserById(userId)
+	if userErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if user == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.UserDoesNotExist})
 		return

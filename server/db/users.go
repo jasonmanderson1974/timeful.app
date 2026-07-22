@@ -13,27 +13,28 @@ import (
 )
 
 // Returns a user based on their _id
-func GetUserById(userId string) *models.User {
+func GetUserById(userId string) (*models.User, error) {
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
 		// userId is malformatted
-		return nil
+		return nil, nil
 	}
 	result := UsersCollection.FindOne(context.Background(), bson.M{
 		"_id": objectId,
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// User does not exist!
-		return nil
+		return nil, nil
 	}
 
 	// Decode result
 	var user models.User
 	if err := result.Decode(&user); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 
-	return &user
+	return &user, nil
 }
 
 func GetUserByStripeCustomerId(stripeCustomerId string) (*models.User, error) {
@@ -115,10 +116,10 @@ func GetUsersByEmails(emails []string) map[string]models.User {
 	return result
 }
 
-func GetUserByEmail(email string) *models.User {
+func GetUserByEmail(email string) (*models.User, error) {
 	emailQuery := strings.TrimSpace(email)
 	if emailQuery == "" {
-		return nil
+		return nil, nil
 	}
 	opts := options.FindOne().SetCollation(&options.Collation{
 		Locale:   "en",
@@ -129,14 +130,15 @@ func GetUserByEmail(email string) *models.User {
 	}, opts)
 	if result.Err() == mongo.ErrNoDocuments {
 		// User does not exist!
-		return nil
+		return nil, nil
 	}
 
 	// Decode result
 	var user models.User
 	if err := result.Decode(&user); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 
-	return &user
+	return &user, nil
 }

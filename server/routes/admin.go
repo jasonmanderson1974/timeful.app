@@ -59,7 +59,7 @@ func authUserFromContext(c *gin.Context) *models.User {
 // effectiveTargetRole returns the current role of the given email: the account
 // role if they have one, otherwise the allowlist invitation role.
 func effectiveTargetRole(email string) models.Role {
-	if user := db.GetUserByEmail(email); user != nil {
+	if user, _ := db.GetUserByEmail(email); user != nil {
 		return user.EffectiveRole()
 	}
 	return models.NormalizeRole(db.GetAllowlistRole(email))
@@ -147,7 +147,8 @@ func addAllowlistEmail(c *gin.Context) {
 	// the invite (allowlist entry) already succeeded, so a mail failure must not
 	// fail the request — we just report emailSent back to the admin. Skip people
 	// who already have an account (they're already in — nothing to accept).
-	hasAccount := db.GetUserByEmail(email) != nil
+	existingUser, _ := db.GetUserByEmail(email)
+	hasAccount := existingUser != nil
 	emailSent := false
 	if !hasAccount {
 		signInURL := fmt.Sprintf("%s/sign-in", utils.GetOrigin(c))

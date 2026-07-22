@@ -164,7 +164,12 @@ func requestEmailChange(c *gin.Context) {
 		return
 	}
 	// The new email must not already belong to another account.
-	if existing := db.GetUserByEmail(newEmail); existing != nil && existing.Id != authUser.Id {
+	existing, existingErr := db.GetUserByEmail(newEmail)
+	if existingErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+	if existing != nil && existing.Id != authUser.Id {
 		c.JSON(http.StatusConflict, responses.Error{Error: errs.EmailTaken})
 		return
 	}
@@ -254,7 +259,12 @@ func verifyEmailChange(c *gin.Context) {
 	db.OtpCodesCollection.DeleteOne(context.Background(), bson.M{"_id": otpDoc.Id})
 
 	// Re-check the conflict in case an account claimed the email meanwhile.
-	if existing := db.GetUserByEmail(newEmail); existing != nil && existing.Id != authUser.Id {
+	existing, existingErr := db.GetUserByEmail(newEmail)
+	if existingErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+	if existing != nil && existing.Id != authUser.Id {
 		c.JSON(http.StatusConflict, responses.Error{Error: errs.EmailTaken})
 		return
 	}
@@ -283,7 +293,11 @@ func verifyEmailChange(c *gin.Context) {
 		db.RemoveFromAllowlist(oldEmail)
 	}
 
-	user := db.GetUserById(authUser.Id.Hex())
+	user, userErr := db.GetUserById(authUser.Id.Hex())
+	if userErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	c.JSON(http.StatusOK, user)
 }
 

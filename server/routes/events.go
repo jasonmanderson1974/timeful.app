@@ -97,7 +97,12 @@ func createEvent(c *gin.Context) {
 	var user *models.User
 	var ownerId primitive.ObjectID
 	if signedIn {
-		user = db.GetUserById(userId)
+		var userErr error
+		user, userErr = db.GetUserById(userId)
+		if userErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
+		}
 		if user == nil {
 			signedIn = false
 			ownerId = primitive.NilObjectID
@@ -349,7 +354,11 @@ func editEvent(c *gin.Context) {
 		if event.OwnerId == primitive.NilObjectID {
 			ownerName = "Somebody"
 		} else {
-			owner := db.GetUserById(event.OwnerId.Hex())
+			owner, ownerErr := db.GetUserById(event.OwnerId.Hex())
+			if ownerErr != nil {
+				c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+				return
+			}
 			ownerName = owner.FirstName
 		}
 
@@ -386,7 +395,12 @@ func editEvent(c *gin.Context) {
 		var ownerName string
 		var owner *models.User
 		if event.OwnerId != primitive.NilObjectID {
-			owner = db.GetUserById(event.OwnerId.Hex())
+			var ownerErr error
+			owner, ownerErr = db.GetUserById(event.OwnerId.Hex())
+			if ownerErr != nil {
+				c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+				return
+			}
 			ownerName = owner.FirstName
 		} else {
 			ownerName = "Somebody"
@@ -399,7 +413,11 @@ func editEvent(c *gin.Context) {
 			for _, removedEmail := range removed {
 				// Only delete response if it isn't the owner of the group
 				if removedEmail.Value != utils.Coalesce(owner).Email {
-					removedUser := db.GetUserByEmail(removedEmail.Value)
+					removedUser, removedErr := db.GetUserByEmail(removedEmail.Value)
+					if removedErr != nil {
+						logger.StdErr.Println(removedErr)
+						continue
+					}
 					if removedUser != nil {
 						// Remove response from array
 						for i := range eventResponses {
@@ -533,7 +551,11 @@ func getEvent(c *gin.Context) {
 
 	// Populate user fields
 	for userId, response := range responsesMap {
-		user := db.GetUserById(userId)
+		user, userErr := db.GetUserById(userId)
+		if userErr != nil {
+			logger.StdErr.Println(userErr)
+			continue
+		}
 		if user == nil {
 			if len(response.Name) == 0 {
 				// User was deleted
@@ -561,7 +583,11 @@ func getEvent(c *gin.Context) {
 
 	// Populate sign up form fields
 	for userId, response := range event.SignUpResponses {
-		user := db.GetUserById(userId)
+		user, userErr := db.GetUserById(userId)
+		if userErr != nil {
+			logger.StdErr.Println(userErr)
+			continue
+		}
 		if user == nil {
 			if len(response.Name) == 0 {
 				// User was deleted
@@ -907,7 +933,11 @@ func updateEventResponse(c *gin.Context) {
 			}
 
 			if event.Type == models.GROUP {
-				user := db.GetUserById(userIdString)
+				user, userErr := db.GetUserById(userIdString)
+				if userErr != nil {
+					c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+					return
+				}
 
 				// Set declined to false (in case user declined group in the past)
 				if user != nil {
@@ -1030,7 +1060,11 @@ func updateEventResponse(c *gin.Context) {
 				}
 			}()
 
-			creator := db.GetUserById(event.OwnerId.Hex())
+			creator, creatorErr := db.GetUserById(event.OwnerId.Hex())
+			if creatorErr != nil {
+				logger.StdErr.Println(creatorErr)
+				return
+			}
 			if creator == nil {
 				return
 			}
@@ -1039,7 +1073,11 @@ func updateEventResponse(c *gin.Context) {
 			if *payload.Guest {
 				respondentName = payload.Name
 			} else {
-				respondent := db.GetUserById(userIdString)
+				respondent, respondentErr := db.GetUserById(userIdString)
+				if respondentErr != nil {
+					logger.StdErr.Println(respondentErr)
+					return
+				}
 				respondentName = fmt.Sprintf("%s %s", respondent.FirstName, respondent.LastName)
 			}
 
@@ -1078,7 +1116,11 @@ func updateEventResponse(c *gin.Context) {
 				}
 			}()
 
-			creator := db.GetUserById(event.OwnerId.Hex())
+			creator, creatorErr := db.GetUserById(event.OwnerId.Hex())
+			if creatorErr != nil {
+				logger.StdErr.Println(creatorErr)
+				return
+			}
 			if creator == nil {
 				return
 			}
@@ -1187,7 +1229,11 @@ func deleteEventResponse(c *gin.Context) {
 
 		// If this event is a Group, also make the attendee "leave the group" by setting "declined" to true
 		if event.Type == models.GROUP {
-			user := db.GetUserById(userIdString)
+			user, userErr := db.GetUserById(userIdString)
+			if userErr != nil {
+				c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+				return
+			}
 			if user != nil {
 				db.AttendeesCollection.UpdateOne(context.Background(), bson.M{
 					"email":   user.Email,
@@ -1329,7 +1375,11 @@ func userResponded(c *gin.Context) {
 	}
 	if everyoneResponded {
 		// Get owner
-		owner := db.GetUserById(event.OwnerId.Hex())
+		owner, ownerErr := db.GetUserById(event.OwnerId.Hex())
+		if ownerErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
+		}
 
 		// Get event url
 		baseUrl := utils.GetBaseUrl()
@@ -1448,7 +1498,11 @@ func getCalendarAvailabilities(c *gin.Context) {
 	eventResponses := db.GetEventResponses(event.Id.Hex())
 	for _, eventResponse := range eventResponses {
 		if utils.Coalesce(eventResponse.Response.UseCalendarAvailability) {
-			user := db.GetUserById(eventResponse.UserId)
+			user, userErr := db.GetUserById(eventResponse.UserId)
+			if userErr != nil {
+				logger.StdErr.Println(userErr)
+				continue
+			}
 			if user != nil {
 				numCalendarEventsRequests++
 
@@ -1967,7 +2021,7 @@ func shouldKeepGroupResponseUserEmails(event *models.Event, userSesh string, isO
 	if isOwner {
 		return true
 	}
-	user := db.GetUserById(userSesh)
+	user, _ := db.GetUserById(userSesh)
 	if user == nil {
 		return false
 	}

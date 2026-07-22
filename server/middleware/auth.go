@@ -23,7 +23,12 @@ func AuthRequired() gin.HandlerFunc {
 		}
 
 		// Check if user with user id exists
-		user := db.GetUserById(session.Get("userId").(string))
+		user, userErr := db.GetUserById(session.Get("userId").(string))
+		if userErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			c.Abort()
+			return
+		}
 
 		if user == nil {
 			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.UserDoesNotExist})

@@ -77,9 +77,19 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   **Batch 2 DONE 2026-07-22 (CI-green):** the event-getter cluster —
   `GetEventById`/`GetEventByShortId`/`GetEventByEitherId` → `(*Event, error)`, ~17 call sites
   updated (11 handlers → 500; `main.go` + db-internal callers keep nil-checks). `GenerateShortEventId`
-  kept its `string` signature (handles the error internally). **Still remaining:** `GetUserById`
-  (20 callers) + `GetUserByEmail` (8) in `db/users.go`; `GetEventResponses` (8) + `GetAttendees` (3)
-  slice getters in `db/events.go`; and `services/` (`CallApi`, `GetTokensFromAuthCode`,
+  kept its `string` signature (handles the error internally).
+
+  **Batch 3 DONE 2026-07-22:** the user-getter cluster — `GetUserById` → `(*User, error)` (20 callers)
+  and `GetUserByEmail` → `(*User, error)` (8 callers) in `db/users.go`. Call-site handling by context:
+  request handlers → 500 (`middleware/auth.go`, `routes/users.go` ×2, `routes/user.go` ×3,
+  `routes/auth.go` ×3, `routes/events.go` handlers); `signInHelper` propagates
+  `return models.User{}, err`; async goroutines (email-send blocks in `updateEventResponse`) and
+  counted loops (`getResponses` populate loops, calendar-fetch loop) log + `continue`/`return` so they
+  degrade gracefully rather than aborting; pure helpers that fall back safely ignore the error
+  (`db/events.go isNameBlocked`, `routes/admin.go effectiveTargetRole`/invite email-check,
+  `shouldKeepGroupResponseUserEmails` → treats a fetch error as "not a member"); `routes/stripe.go`
+  fulfillment helper logs + returns. **Still remaining in A2:** `GetEventResponses` (8) + `GetAttendees`
+  (3) slice getters in `db/events.go`; and `services/` (`CallApi`, `GetTokensFromAuthCode`,
   `RefreshAccessToken`, `GetUserInfo`, `CreateEmailTask`).
 
 - [x] **A3 · Unchecked writes in loops.** `S` — **DONE 2026-07-22 (the 3 listed sites).**
