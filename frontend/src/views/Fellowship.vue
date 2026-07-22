@@ -1,0 +1,197 @@
+<template>
+  <div class="tw-mx-auto tw-mb-12 tw-mt-5 tw-max-w-3xl">
+    <div class="tw-flex tw-flex-col tw-gap-6 tw-p-4">
+      <!-- Header -->
+      <div class="tw-flex tw-flex-col tw-gap-1">
+        <div class="tw-font-head tw-text-2xl tw-text-parchment sm:tw-text-3xl">
+          The Fellowship
+        </div>
+        <div class="tw-text-sm tw-text-parchment-dim">
+          A directory of the membership — reach a fellow gentleman by post or by
+          telephone.
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div
+        class="tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+      >
+        <v-text-field
+          v-model="search"
+          class="tw-flex-1"
+          placeholder="Search by name or email..."
+          solo
+          hide-details
+          clearable
+          prepend-inner-icon="mdi-magnify"
+          :dense="isPhone"
+        />
+        <v-switch
+          v-model="showGuests"
+          color="brass"
+          hide-details
+          dense
+          class="tw-mt-0 tw-shrink-0 tw-pt-0"
+          label="Show guests"
+        />
+      </div>
+
+      <div v-if="loading" class="tw-py-10 tw-text-center tw-text-parchment-dim">
+        <v-progress-circular indeterminate color="brass" size="24" />
+      </div>
+
+      <div
+        v-else-if="filteredMembers.length === 0"
+        class="tw-rounded-xl tw-border tw-border-brass-dim tw-bg-leather/40 tw-py-10 tw-text-center tw-text-sm tw-text-parchment-dim"
+      >
+        {{
+          search
+            ? "No one on the roll matches your search."
+            : "No one to show."
+        }}
+      </div>
+
+      <!-- Directory -->
+      <div v-else class="tw-flex tw-flex-col tw-gap-3">
+        <div class="tw-text-sm tw-text-parchment-dim">
+          {{ filteredMembers.length }}
+          {{ filteredMembers.length === 1 ? "gentleman" : "gentlemen" }}
+        </div>
+        <div class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-grid-cols-2">
+          <div
+            v-for="member in filteredMembers"
+            :key="member.email"
+            class="tw-flex tw-gap-3 tw-rounded-xl tw-border tw-border-brass-dim tw-bg-leather/40 tw-p-4"
+          >
+            <!-- Monogram -->
+            <div
+              class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-brass-dim tw-bg-wood tw-text-sm tw-font-medium tw-text-brass"
+            >
+              {{ initials(member) }}
+            </div>
+
+            <div class="tw-min-w-0 tw-flex-1">
+              <div class="tw-flex tw-items-center tw-gap-2">
+                <span
+                  v-if="member.hasAccount"
+                  class="tw-truncate tw-font-medium tw-text-parchment"
+                >
+                  {{ member.firstName }} {{ member.lastName }}
+                </span>
+                <span
+                  v-else
+                  class="tw-truncate tw-italic tw-text-parchment-dim"
+                >
+                  Awaiting first entry
+                </span>
+                <span
+                  class="tw-shrink-0 tw-rounded-full tw-border tw-px-2 tw-py-0.5 tw-text-xs"
+                  :class="roleBadgeClass(member.role)"
+                >
+                  {{ roleLabel(member.role) }}
+                </span>
+              </div>
+
+              <!-- Email -->
+              <a
+                :href="`mailto:${member.email}`"
+                class="tw-mt-1 tw-flex tw-items-center tw-gap-1 tw-truncate tw-text-sm tw-text-parchment-dim hover:tw-text-brass"
+              >
+                <v-icon x-small color="brass">mdi-email-outline</v-icon>
+                <span class="tw-truncate">{{ member.email }}</span>
+              </a>
+
+              <!-- Phone -->
+              <a
+                v-if="member.phone"
+                :href="`tel:${member.phone}`"
+                class="tw-mt-1 tw-flex tw-items-center tw-gap-1 tw-text-sm tw-text-parchment-dim hover:tw-text-brass"
+              >
+                <v-icon x-small color="brass">mdi-phone-outline</v-icon>
+                <span>{{ formatPhone(member.phone) }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { mapGetters } from "vuex"
+import { get, formatPhone, isPhone } from "@/utils"
+import { roles, roleLabels } from "@/constants"
+
+export default {
+  name: "Fellowship",
+
+  metaInfo() {
+    return { title: "The Fellowship · Directory" }
+  },
+
+  data() {
+    return {
+      members: [],
+      loading: true,
+      search: "",
+      showGuests: true,
+    }
+  },
+
+  computed: {
+    ...mapGetters(["canInvite"]),
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
+    filteredMembers() {
+      const q = (this.search || "").trim().toLowerCase()
+      return this.members.filter((m) => {
+        if (!this.showGuests && m.role === roles.GUEST) return false
+        if (!q) return true
+        const hay = `${m.firstName || ""} ${m.lastName || ""} ${m.email}`
+          .toLowerCase()
+        return hay.includes(q)
+      })
+    },
+  },
+
+  async created() {
+    // Directory is for member+ (guests are excluded by the /admin group too).
+    if (!this.canInvite) {
+      this.$router.replace({ name: "home" })
+      return
+    }
+    try {
+      this.members = await get("/admin/allowlist")
+    } catch (err) {
+      this.members = []
+    } finally {
+      this.loading = false
+    }
+  },
+
+  methods: {
+    formatPhone,
+    roleLabel(role) {
+      return roleLabels[role] || roleLabels[roles.MEMBER]
+    },
+    roleBadgeClass(role) {
+      if (role === roles.SUPER_ADMIN)
+        return "tw-border-brass tw-text-brass-bright"
+      if (role === roles.ADMIN) return "tw-border-brass tw-text-brass"
+      if (role === roles.GUEST)
+        return "tw-border-brass-dim tw-text-parchment-dim"
+      return "tw-border-brass-dim tw-text-parchment"
+    },
+    initials(member) {
+      const f = (member.firstName || "").trim()
+      const l = (member.lastName || "").trim()
+      if (f || l) {
+        return `${f.charAt(0)}${l.charAt(0)}`.toUpperCase() || "?"
+      }
+      return (member.email || "?").charAt(0).toUpperCase()
+    },
+  },
+}
+</script>

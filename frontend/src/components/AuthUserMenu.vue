@@ -36,6 +36,18 @@
         </v-list-item>
         <v-list-item
           v-if="canInvite"
+          id="fellowship-btn"
+          @click="goToFellowship"
+        >
+          <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
+            <v-icon class="tw-mr-1" small color="black"
+              >mdi-book-account-outline</v-icon
+            >
+            The Fellowship
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item
+          v-if="canInvite"
           id="members-btn"
           @click="goToAdmin"
         >
@@ -107,6 +119,9 @@ export default {
     },
     goToSettings() {
       this.$router.replace({ name: "settings" })
+    },
+    goToFellowship() {
+      this.$router.replace({ name: "fellowship" })
     },
     goToAdmin() {
       this.$router.replace({ name: "admin" })

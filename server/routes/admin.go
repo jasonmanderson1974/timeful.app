@@ -47,6 +47,7 @@ type allowlistMember struct {
 	HasAccount bool        `json:"hasAccount"`
 	FirstName  string      `json:"firstName,omitempty"`
 	LastName   string      `json:"lastName,omitempty"`
+	Phone      string      `json:"phone,omitempty"`
 	Role       models.Role `json:"role"`
 }
 
@@ -90,6 +91,7 @@ func getAllowlist(c *gin.Context) {
 			m.HasAccount = true
 			m.FirstName = user.FirstName
 			m.LastName = user.LastName
+			m.Phone = user.Phone
 			m.Role = user.EffectiveRole()
 		}
 		members = append(members, m)

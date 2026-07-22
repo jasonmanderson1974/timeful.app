@@ -263,7 +263,7 @@
 
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
-import { _delete, patch, post, isPhone, get } from "@/utils"
+import { _delete, patch, post, isPhone, get, formatPhone } from "@/utils"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 
 export default {
@@ -334,23 +334,7 @@ export default {
     resetPhone() {
       this.phone = this.authUser.phone || ""
     },
-    // Beautify a US 10-digit number (or 11 with a leading 1) into
-    // "(123) 456-7890". Anything else (partial, international) is left as typed.
-    formatPhone(value) {
-      if (!value) return value
-      const trimmed = value.trim()
-      const digits = trimmed.replace(/\D/g, "")
-      let ten = null
-      if (digits.length === 10) {
-        ten = digits
-      } else if (digits.length === 11 && digits.charAt(0) === "1") {
-        ten = digits.slice(1)
-      }
-      if (ten) {
-        return `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}`
-      }
-      return trimmed
-    },
+    formatPhone,
     beautifyPhone() {
       this.phone = this.formatPhone(this.phone)
     },

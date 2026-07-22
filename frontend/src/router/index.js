@@ -28,6 +28,11 @@ const routes = [
     component: () => import("@/views/MemberAdmin.vue"),
   },
   {
+    path: "/fellowship",
+    name: "fellowship",
+    component: () => import("@/views/Fellowship.vue"),
+  },
+  {
     path: "/e/:eventId",
     name: "event",
     component: () => import("@/views/Event.vue"),
@@ -86,7 +91,7 @@ const router = new VueRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const authRoutes = ["home", "settings", "admin"]
+  const authRoutes = ["home", "settings", "admin", "fellowship"]
   const noAuthRoutes = ["sign-in", "sign-up"]
   try {
     await get("/auth/status")
