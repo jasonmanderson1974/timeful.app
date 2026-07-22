@@ -263,9 +263,16 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   gate on `requireDB` (skip without Mongo; run in CI).
   *(Fixed one CI-caught bug: `primitive.DateTime` binds from an RFC3339 string, not epoch-ms.)*
 
-- [ ] **B3 · Frontend: cover the grid/availability math extracted in A5.** `M` · **P2**
-  The geometry helpers are pure functions once extracted — high-value, easy-to-test, and currently
-  the riskiest untested logic on the frontend.
+- [x] **B3 · Frontend: cover the grid/availability math extracted in A5.** `M` · **P2** — **DONE
+  2026-07-22 (CI-green).** The A5 mixin still held the geometry as `this`-dependent methods, so first
+  extracted the pure computational core into `schedule_overlap/gridGeometry.js` (`clampRow`,
+  `clampCol`, `getRowColFromXY` as pure functions of their inputs) and made `dragGridMixin` delegate
+  to it (exact transcription → behavior unchanged; dropped the now-unused `clamp` import). Added
+  `gridGeometry.test.js` — 9 vitest cases covering row/col clamping in both daysOnly and time-grid
+  views, `columnOffsets`-based column derivation, past-last-offset clamping, and the split-gap row
+  adjustment. Frontend suite 23 → 32 tests. **Remaining frontend test gap:** the availability
+  fetch/format/animate logic (now in `availabilityMixin`/`currentAvailabilityMixin`) is still
+  `this`-dependent and would need the same extract-pure-core treatment to be unit-testable.
 
 ---
 
