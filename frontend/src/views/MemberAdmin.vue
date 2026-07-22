@@ -347,11 +347,20 @@ export default {
       this.adding = true
       try {
         const role = this.canManageUsers ? this.inviteRole : roles.GUEST
-        await post("/admin/allowlist", { email: this.email.trim(), role })
+        const invitedEmail = this.email.trim()
+        const res = await post("/admin/allowlist", { email: invitedEmail, role })
         this.email = ""
         this.inviteRole = roles.GUEST
         if (this.canManageUsers) await this.fetchAllowlist()
-        this.showInfo("Invitation extended.")
+        if (res.hasAccount) {
+          this.showInfo(`${res.email} is already a member — added to the roll.`)
+        } else if (res.emailSent) {
+          this.showInfo(`Invitation email sent to ${res.email}.`)
+        } else {
+          this.showError(
+            `${res.email} was added to the roll, but the invitation email could not be sent.`
+          )
+        }
       } catch (err) {
         this.emailError = "Could not add that email. Please try again."
       } finally {
