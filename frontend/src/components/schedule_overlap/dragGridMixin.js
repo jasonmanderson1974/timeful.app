@@ -1,5 +1,10 @@
-import { isBetween, clamp, dateToDowDate } from "@/utils"
+import { isBetween, dateToDowDate } from "@/utils"
 import { availabilityTypes, eventTypes } from "@/constants"
+import {
+  clampRow as clampRowPure,
+  clampCol as clampColPure,
+  getRowColFromXY as getRowColFromXYPure,
+} from "./gridGeometry"
 
 /**
  * Grid geometry + drag-lifecycle methods for ScheduleOverlap.
@@ -26,51 +31,31 @@ export default {
       return { x, y }
     },
     clampRow(row) {
-      if (this.event.daysOnly) {
-        row = clamp(row, 0, Math.floor(this.monthDays.length / 7))
-      } else {
-        row = clamp(row, 0, this.times.length - 1)
-      }
-      return row
+      return clampRowPure(row, {
+        daysOnly: this.event.daysOnly,
+        monthDaysLength: this.monthDays.length,
+        timesLength: this.times.length,
+      })
     },
     clampCol(col) {
-      if (this.event.daysOnly) {
-        col = clamp(col, 0, 7 - 1)
-      } else {
-        col = clamp(col, 0, this.days.length - 1)
-      }
-      return col
+      return clampColPure(col, {
+        daysOnly: this.event.daysOnly,
+        daysLength: this.days.length,
+      })
     },
     /** Returns row, col for the timeslot we are currently hovering over given the x and y position */
     getRowColFromXY(x, y) {
-      const { width, height } = this.timeslot
-      let col = Math.floor(x / width)
-      if (!this.event.daysOnly) {
-        col = this.columnOffsets.length
-        for (let i = 0; i < this.columnOffsets.length; ++i) {
-          if (x < this.columnOffsets[i]) {
-            col = i - 1
-            break
-          }
-        }
-      }
-      let row = Math.floor(y / height)
-
-      // Account for split gap
-      if (!this.event.daysOnly && row > this.splitTimes[0].length) {
-        const adjustedRow = Math.floor((y - this.SPLIT_GAP_HEIGHT) / height)
-        if (adjustedRow >= this.splitTimes[0].length) {
-          // Make sure we don't go to a lesser index
-          row = adjustedRow
-        }
-      }
-
-      row = this.clampRow(row)
-      col = this.clampCol(col)
-      return {
-        row,
-        col,
-      }
+      return getRowColFromXYPure(x, y, {
+        daysOnly: this.event.daysOnly,
+        timeslotWidth: this.timeslot.width,
+        timeslotHeight: this.timeslot.height,
+        columnOffsets: this.columnOffsets,
+        firstSplitLength: this.splitTimes[0].length,
+        splitGapHeight: this.SPLIT_GAP_HEIGHT,
+        monthDaysLength: this.monthDays.length,
+        timesLength: this.times.length,
+        daysLength: this.days.length,
+      })
     },
     endDrag() {
       if (!this.allowDrag) return
