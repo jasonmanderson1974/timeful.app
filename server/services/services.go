@@ -14,7 +14,7 @@ import (
 
 // Calls the given url with the given method using the user's OAuth 2 access token.
 // Set user to nil if refreshing the token is not necessary
-func CallApi(user *models.User, calendarAuth *models.OAuth2CalendarAuth, method string, url string, body *bson.M) *http.Response {
+func CallApi(user *models.User, calendarAuth *models.OAuth2CalendarAuth, method string, url string, body *bson.M) (*http.Response, error) {
 	if user != nil {
 		auth.RefreshUserTokenIfNecessary(user, nil)
 	}
@@ -30,18 +30,24 @@ func CallApi(user *models.User, calendarAuth *models.OAuth2CalendarAuth, method 
 
 	// Construct request
 	var req *http.Request
+	var err error
 	if bodyBuffer != nil {
-		req, _ = http.NewRequest(method, url, bodyBuffer)
+		req, err = http.NewRequest(method, url, bodyBuffer)
 	} else {
-		req, _ = http.NewRequest(method, url, nil)
+		req, err = http.NewRequest(method, url, nil)
+	}
+	if err != nil {
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", calendarAuth.AccessToken))
 
 	// Execute request
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 
-	return response
+	return response, nil
 }

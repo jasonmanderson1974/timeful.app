@@ -41,13 +41,17 @@ func SearchContacts(user *models.User, query string) ([]models.User, *errs.Googl
 	calendarAuth := account.OAuth2CalendarAuth
 
 	// Search contacts
-	response := services.CallApi(
+	response, err := services.CallApi(
 		user,
 		calendarAuth,
 		"GET",
 		fmt.Sprintf("https://people.googleapis.com/v1/people:searchContacts?query=%s&pageSize=10&readMask=names,emailAddresses,photos", url.QueryEscape(query)),
 		nil,
 	)
+	if err != nil {
+		logger.StdErr.Println(err)
+		return nil, &errs.GoogleAPIError{Code: 500, Message: err.Error()}
+	}
 	defer response.Body.Close()
 
 	// Parse response
@@ -68,13 +72,17 @@ func SearchContacts(user *models.User, query string) ([]models.User, *errs.Googl
 	}{}
 	if len(query) > 0 {
 		// Search Directory
-		response = services.CallApi(
+		response, err = services.CallApi(
 			user,
 			calendarAuth,
 			"GET",
 			fmt.Sprintf("https://people.googleapis.com/v1/people:searchDirectoryPeople?query=%s&pageSize=10&readMask=names,emailAddresses,photos&sources=DIRECTORY_SOURCE_TYPE_DOMAIN_PROFILE", url.QueryEscape(query)),
 			nil,
 		)
+		if err != nil {
+			logger.StdErr.Println(err)
+			return nil, &errs.GoogleAPIError{Code: 500, Message: err.Error()}
+		}
 		defer response.Body.Close()
 
 		// Parse response

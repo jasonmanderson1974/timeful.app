@@ -27,9 +27,10 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   either `ShouldBindJSON` with a JSON error body or `BindJSON` (also auto-400) — spot-check for
   consistency but no silent-200 bug found.
 
-- [x] **A2 · Stop panicking inside request handlers on DB errors.** `M` — **ALL route handlers
-  DONE (2026-07-22); `db/` + `services/` remain (needs a signature refactor, not a mechanical
-  swap).** Converted every handler `Panicln` to `logger.StdErr.Println(err)` +
+- [x] **A2 · Stop panicking inside request handlers on DB errors.** `M` — **FULLY DONE 2026-07-22
+  (route handlers + `db/` + `services/`).** Only intentional fail-fast panics remain (`db/init.go`
+  startup, `auth.go generateOtpCode` crypto/rand — see below). Converted every handler `Panicln` to
+  `logger.StdErr.Println(err)` +
   `c.JSON(500, responses.Error{Error: errs.Internal})` + `return`: `events.go` (12),
   `user.go` (16), `auth.go` (5). `signInHelper` (a helper returning `(models.User, error)`)
   propagates the error instead — `return models.User{}, err`. Two handler `Panicln`s that were
@@ -88,9 +89,30 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   degrade gracefully rather than aborting; pure helpers that fall back safely ignore the error
   (`db/events.go isNameBlocked`, `routes/admin.go effectiveTargetRole`/invite email-check,
   `shouldKeepGroupResponseUserEmails` → treats a fetch error as "not a member"); `routes/stripe.go`
-  fulfillment helper logs + returns. **Still remaining in A2:** `GetEventResponses` (8) + `GetAttendees`
-  (3) slice getters in `db/events.go`; and `services/` (`CallApi`, `GetTokensFromAuthCode`,
-  `RefreshAccessToken`, `GetUserInfo`, `CreateEmailTask`).
+  fulfillment helper logs + returns.
+
+  **Batch 4 DONE 2026-07-22 (final — A2 complete):** the slice getters + `services/` tail.
+  - Slice getters in `db/events.go`: `GetEventResponses` → `([]EventResponse, error)` (8 callers) and
+    `GetAttendees` → `([]Attendee, error)` (3 callers). All `routes/events.go` handler callers → 500;
+    the `shouldKeepGroupResponseUserEmails` helper ignores the error (safe empty-slice fallback).
+  - `services/services.go CallApi` → `(*http.Response, error)` (also fixed a latent nil-`req` deref by
+    checking the previously-ignored `http.NewRequest` error). Callers propagate: outlook
+    `GetCalendarList`/`GetCalendarEvents` (already `…, error`), contacts `SearchContacts` (2 sites →
+    `*errs.GoogleAPIError{Code:500}`), and `microsoftgraph.GetUserInfo` → `(UserInfo, error)`.
+  - `services/auth/auth.go`: `GetTokensFromAuthCode` → `(TokenResponse, error)` (3 handler callers in
+    `user.go`/`auth.go` → 500; the OAuth-error branch now returns an error instead of panicking on the
+    marshaled body) and `RefreshAccessToken` → `(AccessTokenResponse, error)` (its only caller,
+    `RefreshAccessTokenAsync`, feeds the error into the existing `RefreshAccessTokenData.Error` channel
+    field). `microsoftgraph.GetUserInfo` callers: `user.go` handler → 500, `auth.go signInHelper` →
+    `return models.User{}, err`.
+  - `services/gcloud/tasks.go CreateEmailTask` kept its `[]string` signature (no caller changes):
+    reminder-email scheduling is a best-effort side effect of event create/edit, so a failure must not
+    500 the event op — env-var/template-id parse errors log + `return []string{}`, and per-task
+    marshal/CreateTask errors log + `continue` (partial scheduling still succeeds).
+  - **Deliberately left panicking:** `db/init.go:39` (Mongo connect at startup — fail-fast) and
+    `auth.go generateOtpCode` crypto/rand (astronomically rare, helper returns bare `string`).
+
+  **Not verified locally (no Go toolchain on this machine) — Backend CI is the gate.**
 
 - [x] **A3 · Unchecked writes in loops.** `S` — **DONE 2026-07-22 (the 3 listed sites).**
   `createEvent` now builds an `[]interface{}` and uses a single `InsertMany` with an error check

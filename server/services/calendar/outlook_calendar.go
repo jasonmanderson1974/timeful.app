@@ -17,7 +17,10 @@ type OutlookCalendar struct {
 }
 
 func (calendar *OutlookCalendar) GetCalendarList() (map[string]models.SubCalendar, error) {
-	response := services.CallApi(nil, &calendar.OAuth2CalendarAuth, "GET", "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name", nil)
+	response, err := services.CallApi(nil, &calendar.OAuth2CalendarAuth, "GET", "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name", nil)
+	if err != nil {
+		return nil, err
+	}
 	defer response.Body.Close()
 
 	responseBody := struct {
@@ -28,7 +31,7 @@ func (calendar *OutlookCalendar) GetCalendarList() (map[string]models.SubCalenda
 		Error bson.M `json:"error"`
 	}{}
 
-	err := json.NewDecoder(response.Body).Decode(&responseBody)
+	err = json.NewDecoder(response.Body).Decode(&responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +56,10 @@ func (calendar *OutlookCalendar) GetCalendarEvents(calendarId string, timeMin ti
 		calendarId,
 		timeMin.Format(time.RFC3339),
 		timeMax.Format(time.RFC3339))
-	response := services.CallApi(nil, &calendar.OAuth2CalendarAuth, "GET", url, nil)
+	response, err := services.CallApi(nil, &calendar.OAuth2CalendarAuth, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	defer response.Body.Close()
 
 	responseBody := struct {
@@ -70,7 +76,7 @@ func (calendar *OutlookCalendar) GetCalendarEvents(calendarId string, timeMin ti
 		} `json:"value"`
 		Error bson.M `json:"error"`
 	}{}
-	err := json.NewDecoder(response.Body).Decode(&responseBody)
+	err = json.NewDecoder(response.Body).Decode(&responseBody)
 	if err != nil {
 		return nil, err
 	}

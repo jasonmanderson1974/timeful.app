@@ -14,14 +14,17 @@ type UserInfo struct {
 	Email     string `json:"mail"`
 }
 
-func GetUserInfo(user *models.User, calendarAuth *models.OAuth2CalendarAuth) UserInfo {
-	response := services.CallApi(
+func GetUserInfo(user *models.User, calendarAuth *models.OAuth2CalendarAuth) (UserInfo, error) {
+	response, err := services.CallApi(
 		user,
 		calendarAuth,
 		"GET",
 		"https://graph.microsoft.com/v1.0/me?$select=givenName,surname,mail",
 		nil,
 	)
+	if err != nil {
+		return UserInfo{}, err
+	}
 	defer response.Body.Close()
 
 	userResponse := struct {
@@ -31,12 +34,13 @@ func GetUserInfo(user *models.User, calendarAuth *models.OAuth2CalendarAuth) Use
 	}{}
 
 	if err := json.NewDecoder(response.Body).Decode(&userResponse); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return UserInfo{}, err
 	}
 
 	return UserInfo{
 		FirstName: userResponse.GivenName,
 		LastName:  userResponse.Surname,
 		Email:     userResponse.Mail,
-	}
+	}, nil
 }

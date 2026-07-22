@@ -388,7 +388,11 @@ func editEvent(c *gin.Context) {
 
 	// Update attendees
 	if event.Type == models.GROUP {
-		origAttendees := db.GetAttendees(event.Id.Hex())
+		origAttendees, attendeesErr := db.GetAttendees(event.Id.Hex())
+		if attendeesErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
+		}
 		added, removed, kept := utils.FindAddedRemovedKept(payload.Attendees, utils.Map(origAttendees, func(a models.Attendee) string { return a.Email }))
 
 		// Determine owner name
@@ -407,7 +411,11 @@ func editEvent(c *gin.Context) {
 		}
 
 		if len(removed) > 0 {
-			eventResponses := db.GetEventResponses(event.Id.Hex())
+			eventResponses, eventResponsesErr := db.GetEventResponses(event.Id.Hex())
+			if eventResponsesErr != nil {
+				c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+				return
+			}
 
 			// Remove user from responses map
 			for _, removedEmail := range removed {
@@ -541,7 +549,11 @@ func getEvent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
 	}
-	eventResponses := db.GetEventResponses(event.Id.Hex())
+	eventResponses, eventResponsesErr := db.GetEventResponses(event.Id.Hex())
+	if eventResponsesErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	// Convert to old format for backward compatibility
 	utils.ConvertEventToOldFormat(event, eventResponses)
@@ -608,7 +620,11 @@ func getEvent(c *gin.Context) {
 	}
 
 	if event.Type == models.GROUP {
-		attendees := db.GetAttendees(event.Id.Hex())
+		attendees, attendeesErr := db.GetAttendees(event.Id.Hex())
+		if attendeesErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
+		}
 		event.Attendees = &attendees
 	}
 
@@ -742,7 +758,11 @@ func getResponses(c *gin.Context) {
 	}
 
 	// Convert to map format and filter availability
-	eventResponses := db.GetEventResponses(event.Id.Hex())
+	eventResponses, eventResponsesErr := db.GetEventResponses(event.Id.Hex())
+	if eventResponsesErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	responsesMap := getResponsesMap(eventResponses)
 
 	// Filter availability slice based on timeMin and timeMax
@@ -897,7 +917,11 @@ func updateEventResponse(c *gin.Context) {
 		}
 	}
 
-	eventResponses := db.GetEventResponses(event.Id.Hex())
+	eventResponses, eventResponsesErr := db.GetEventResponses(event.Id.Hex())
+	if eventResponsesErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	var userIdString string
 	var userHasResponded bool
@@ -1179,7 +1203,11 @@ func deleteEventResponse(c *gin.Context) {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
 	}
-	eventResponses := db.GetEventResponses(event.Id.Hex())
+	eventResponses, eventResponsesErr := db.GetEventResponses(event.Id.Hex())
+	if eventResponsesErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	if *payload.Guest {
 		if utils.Coalesce(event.IsSignUpForm) {
@@ -1495,7 +1523,11 @@ func getCalendarAvailabilities(c *gin.Context) {
 		Events map[string]calendar.CalendarEventsWithError
 	})
 
-	eventResponses := db.GetEventResponses(event.Id.Hex())
+	eventResponses, eventResponsesErr := db.GetEventResponses(event.Id.Hex())
+	if eventResponsesErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	for _, eventResponse := range eventResponses {
 		if utils.Coalesce(eventResponse.Response.UseCalendarAvailability) {
 			user, userErr := db.GetUserById(eventResponse.UserId)
@@ -1601,7 +1633,11 @@ func deleteEvent(c *gin.Context) {
 	user := userInterface.(*models.User)
 
 	// Check if the current user responded
-	eventResponses := db.GetEventResponses(eventId)
+	eventResponses, eventResponsesErr := db.GetEventResponses(eventId)
+	if eventResponsesErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	hasCurrentUserResponded := false
 	for _, resp := range eventResponses {
 		if resp.UserId == user.Id.Hex() {
@@ -1720,7 +1756,11 @@ func duplicateEvent(c *gin.Context) {
 	numResponses := 0
 	event.NumResponses = &numResponses
 	if *payload.CopyAvailability {
-		eventResponses := db.GetEventResponses(eventId)
+		eventResponses, eventResponsesErr := db.GetEventResponses(eventId)
+		if eventResponsesErr != nil {
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
+		}
 		for _, eventResponse := range eventResponses {
 			eventResponse.Id = primitive.NewObjectID()
 			eventResponse.EventId = event.Id
@@ -2033,7 +2073,7 @@ func shouldKeepGroupResponseUserEmails(event *models.Event, userSesh string, isO
 	if event.Attendees != nil {
 		attendees = *event.Attendees
 	} else {
-		attendees = db.GetAttendees(event.Id.Hex())
+		attendees, _ = db.GetAttendees(event.Id.Hex())
 	}
 	for _, a := range attendees {
 		if utils.NormalizeEmail(a.Email) == viewerEmail {

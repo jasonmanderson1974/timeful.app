@@ -107,7 +107,7 @@ func VerifyGoogleIdToken(idToken string, allowedAuds []string) (GoogleIdTokenInf
 }
 
 // Returns access, refresh, and id tokens from the auth code
-func GetTokensFromAuthCode(code string, scope string, origin string, calendarType models.CalendarType) TokenResponse {
+func GetTokensFromAuthCode(code string, scope string, origin string, calendarType models.CalendarType) (TokenResponse, error) {
 	clientId, clientSecret := getCredentialsFromCalendarType(calendarType)
 	tokenEndpoint := getTokenEndpointFromCalendarType(calendarType)
 
@@ -126,7 +126,8 @@ func GetTokensFromAuthCode(code string, scope string, origin string, calendarTyp
 		values,
 	)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return TokenResponse{}, err
 	}
 	defer resp.Body.Close()
 
@@ -135,13 +136,14 @@ func GetTokensFromAuthCode(code string, scope string, origin string, calendarTyp
 	json.NewDecoder(resp.Body).Decode(&res)
 	if len(res.Error) > 0 {
 		data, _ := json.MarshalIndent(res, "", "  ")
-		logger.StdErr.Panicln(string(data))
+		logger.StdErr.Println(string(data))
+		return res, fmt.Errorf("token endpoint error: %s", string(data))
 	}
 
-	return res
+	return res, nil
 }
 
-func RefreshAccessToken(accountAuth *models.OAuth2CalendarAuth, calendarType models.CalendarType) AccessTokenResponse {
+func RefreshAccessToken(accountAuth *models.OAuth2CalendarAuth, calendarType models.CalendarType) (AccessTokenResponse, error) {
 	clientId, clientSecret := getCredentialsFromCalendarType(calendarType)
 	tokenEndpoint := getTokenEndpointFromCalendarType(calendarType)
 	values := url.Values{
@@ -157,14 +159,15 @@ func RefreshAccessToken(accountAuth *models.OAuth2CalendarAuth, calendarType mod
 		values,
 	)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return AccessTokenResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	var res AccessTokenResponse
 	json.NewDecoder(resp.Body).Decode(&res)
 
-	return res
+	return res, nil
 }
 
 type RefreshAccessTokenData struct {
@@ -182,7 +185,12 @@ func RefreshAccessTokenAsync(email string, accountAuth *models.OAuth2CalendarAut
 		}
 	}()
 
-	tokenResponse := RefreshAccessToken(accountAuth, calendarType)
+	tokenResponse, err := RefreshAccessToken(accountAuth, calendarType)
+	if err != nil {
+		var errIface interface{} = err
+		c <- RefreshAccessTokenData{Error: &errIface}
+		return
+	}
 
 	c <- RefreshAccessTokenData{tokenResponse, email, calendarType, nil}
 }

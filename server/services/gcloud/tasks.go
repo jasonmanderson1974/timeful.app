@@ -65,15 +65,18 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 	// Get email template ids
 	initialEmailReminderId, err := strconv.Atoi(os.Getenv("LISTMONK_INITIAL_EMAIL_REMINDER_ID"))
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return []string{}
 	}
 	secondEmailReminderId, err := strconv.Atoi(os.Getenv("LISTMONK_SECOND_EMAIL_REMINDER_ID"))
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return []string{}
 	}
 	finalEmailReminderId, err := strconv.Atoi(os.Getenv("LISTMONK_FINAL_EMAIL_REMINDER_ID"))
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return []string{}
 	}
 
 	// Create map of emails to iterate through
@@ -103,7 +106,8 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 			"content_type": "html",
 		})
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			continue
 		}
 
 		// Create task
@@ -126,7 +130,8 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 		})
 
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			continue
 		}
 
 		taskIds = append(taskIds, task.Name)

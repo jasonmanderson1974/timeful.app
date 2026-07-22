@@ -82,56 +82,60 @@ func GetEventByEitherId(id string) (*models.Event, error) {
 	return GetEventById(id)
 }
 
-func GetEventResponses(eventId string) []models.EventResponse {
+func GetEventResponses(eventId string) ([]models.EventResponse, error) {
 	objectId, err := primitive.ObjectIDFromHex(eventId)
 	if err != nil {
 		// eventId is malformatted
-		return []models.EventResponse{}
+		return []models.EventResponse{}, nil
 	}
 
 	result, err := EventResponsesCollection.Find(context.Background(), bson.M{
 		"eventId": objectId,
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return []models.EventResponse{}, err
 	}
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event responses do not exist!
-		return []models.EventResponse{}
+		return []models.EventResponse{}, nil
 	}
 
 	var eventResponses []models.EventResponse
 	if err := result.All(context.Background(), &eventResponses); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return []models.EventResponse{}, err
 	}
 
-	return eventResponses
+	return eventResponses, nil
 }
 
-func GetAttendees(eventId string) []models.Attendee {
+func GetAttendees(eventId string) ([]models.Attendee, error) {
 	objectId, err := primitive.ObjectIDFromHex(eventId)
 	if err != nil {
 		// eventId is malformatted
-		return []models.Attendee{}
+		return []models.Attendee{}, nil
 	}
 
 	result, err := AttendeesCollection.Find(context.Background(), bson.M{
 		"eventId": objectId,
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return []models.Attendee{}, err
 	}
 	if result.Err() == mongo.ErrNoDocuments {
 		// Attendees do not exist!
-		return []models.Attendee{}
+		return []models.Attendee{}, nil
 	}
 
 	var attendees []models.Attendee
 	if err := result.All(context.Background(), &attendees); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return []models.Attendee{}, err
 	}
 
-	return attendees
+	return attendees, nil
 }
 
 func GetEventsCreatedThisMonth(userId primitive.ObjectID) (int, error) {

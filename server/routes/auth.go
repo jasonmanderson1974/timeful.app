@@ -67,7 +67,11 @@ func signIn(c *gin.Context) {
 		return
 	}
 
-	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), payload.CalendarType)
+	tokens, tokensErr := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), payload.CalendarType)
+	if tokensErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	user, err := signInHelper(c, tokens, models.WEB, payload.CalendarType, *payload.TimezoneOffset)
 	if err == errs.ErrNotInvited {
@@ -175,7 +179,10 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 		picture = info.Picture
 	} else if calendarType == models.OutlookCalendarType {
 		// Get user info from microsoft graph
-		userInfo := microsoftgraph.GetUserInfo(nil, &calendarAuth)
+		userInfo, userInfoErr := microsoftgraph.GetUserInfo(nil, &calendarAuth)
+		if userInfoErr != nil {
+			return models.User{}, userInfoErr
+		}
 		email = userInfo.Email
 		firstName = userInfo.FirstName
 		lastName = userInfo.LastName

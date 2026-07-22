@@ -599,7 +599,11 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	}
 
 	// Get tokens
-	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.GoogleCalendarType)
+	tokens, tokensErr := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.GoogleCalendarType)
+	if tokensErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	// Get user info from JWT
 	claims := utils.ParseJWT(tokens.IdToken)
@@ -693,7 +697,11 @@ func addOutlookCalendarAccount(c *gin.Context) {
 	authUser := utils.GetAuthUser(c)
 
 	// Get tokens
-	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.OutlookCalendarType)
+	tokens, tokensErr := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.OutlookCalendarType)
+	if tokensErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
@@ -707,7 +715,11 @@ func addOutlookCalendarAccount(c *gin.Context) {
 	}
 
 	// Get user info
-	userInfo := microsoftgraph.GetUserInfo(authUser, calendarAuth)
+	userInfo, userInfoErr := microsoftgraph.GetUserInfo(authUser, calendarAuth)
+	if userInfoErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	addCalendarAccount(c, addCalendarAccountArgs{
 		calendarType:       models.OutlookCalendarType,
