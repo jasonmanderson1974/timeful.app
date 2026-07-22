@@ -111,42 +111,40 @@ func getResponses(c *gin.Context) {
 		responsesMap[userId] = response
 	}
 
-	// Apply privacy logic based on blindAvailabilityEnabled
+	// Apply blind-availability privacy filtering, then return.
+	c.JSON(http.StatusOK, filterResponsesForBlindAvailability(event, responsesMap, userSesh, guestName))
+}
+
+// filterResponsesForBlindAvailability applies the blind-availability privacy
+// rule and returns the response map that should be sent to the requester. When
+// blind availability is off, everyone sees every response. When it's on: the
+// owner sees all; a logged-in non-owner sees only their own response; a guest
+// (identified by guestName) sees only theirs; an anonymous viewer sees nothing.
+func filterResponsesForBlindAvailability(event *models.Event, responsesMap map[string]*models.Response, userSesh string, guestName string) map[string]*models.Response {
 	if !utils.Coalesce(event.BlindAvailabilityEnabled) {
-		// Blind availability is NOT enabled - return response as-is
-		c.JSON(http.StatusOK, responsesMap)
-		return
+		return responsesMap
 	}
 
-	// Blind availability IS enabled - apply privacy filtering
 	if userSesh != "" {
-		// User session exists (user is logged in)
-		if ownerSesh == userSesh {
-			// User is the owner - return response as-is
-			c.JSON(http.StatusOK, responsesMap)
-			return
-		} else {
-			// User is NOT the owner - return only their own response
-			filteredMap := make(map[string]*models.Response)
-			if userResponse, exists := responsesMap[userSesh]; exists {
-				filteredMap[userSesh] = userResponse
-			}
-			c.JSON(http.StatusOK, filteredMap)
-			return
+		if event.OwnerId.Hex() == userSesh {
+			return responsesMap
 		}
-	} else if guestName != "" {
-		// Guest name query parameter exists - return only that guest's response
+		filteredMap := make(map[string]*models.Response)
+		if userResponse, exists := responsesMap[userSesh]; exists {
+			filteredMap[userSesh] = userResponse
+		}
+		return filteredMap
+	}
+
+	if guestName != "" {
 		filteredMap := make(map[string]*models.Response)
 		if guestResponse, exists := responsesMap[guestName]; exists {
 			filteredMap[guestName] = guestResponse
 		}
-		c.JSON(http.StatusOK, filteredMap)
-		return
-	} else {
-		// No session, no guest name - return empty map
-		c.JSON(http.StatusOK, make(map[string]*models.Response))
-		return
+		return filteredMap
 	}
+
+	return make(map[string]*models.Response)
 }
 
 // @Summary Updates the current user's availability
