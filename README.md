@@ -22,6 +22,12 @@ Hosted version of the site: https://timeful.app
 
 Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/mongodb/mongo), [Go](https://github.com/golang/go), and [TailwindCSS](https://github.com/tailwindlabs/tailwindcss)
 
+> **Working on this fork? Read [`DEVELOPMENT.md`](./DEVELOPMENT.md) first.** It covers the multi-machine
+> workflow (always `git fetch` + sync to the latest `main` before making changes), deploys (`./deploy.sh`
+> on the VM — manual and gate-kept), local dev (`compose.dev.yaml`), and testing/CI.
+> **AI assistants:** the authoritative project + workflow instructions live in [`CLAUDE.md`](./CLAUDE.md)
+> (auto-loaded by Claude Code); if your tool doesn't load it, read `CLAUDE.md` and `DEVELOPMENT.md` first.
+
 ## Demo
 
 [![demo video](http://markdown-videos-api.jorgenkh.no/youtube/vFkBC8BrkOk)](https://www.youtube.com/watch?v=vFkBC8BrkOk)
