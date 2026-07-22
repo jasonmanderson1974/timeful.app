@@ -58,7 +58,8 @@ func SearchContacts(user *models.User, query string) ([]models.User, *errs.Googl
 		Error *errs.GoogleAPIError `json:"error"`
 	}{}
 	if err := json.NewDecoder(response.Body).Decode(&contactsData); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, &errs.GoogleAPIError{Code: 500, Message: err.Error()}
 	}
 
 	directoryData := struct {
@@ -78,7 +79,8 @@ func SearchContacts(user *models.User, query string) ([]models.User, *errs.Googl
 
 		// Parse response
 		if err := json.NewDecoder(response.Body).Decode(&directoryData); err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			return nil, &errs.GoogleAPIError{Code: 500, Message: err.Error()}
 		}
 	}
 

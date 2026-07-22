@@ -27,7 +27,8 @@ func (calendar GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar,
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", calendar.AccessToken))
 	resp, err := utils.HTTPClient.Do(req)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -44,7 +45,8 @@ func (calendar GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar,
 	// Parse the response
 	var res Response
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 
 	// Check if the response returned an error
@@ -82,7 +84,8 @@ func (calendar *GoogleCalendar) GetCalendarEvents(calendarId string, timeMin tim
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", calendar.AccessToken))
 	resp, err := utils.HTTPClient.Do(req)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -112,7 +115,8 @@ func (calendar *GoogleCalendar) GetCalendarEvents(calendarId string, timeMin tim
 	// Parse the response
 	var res Response
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 
 	// Check if the response returned an error

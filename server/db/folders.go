@@ -13,7 +13,7 @@ import (
 func CreateFolder(folder *models.Folder) (primitive.ObjectID, error) {
 	result, err := FoldersCollection.InsertOne(context.Background(), folder)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
 		return primitive.NilObjectID, err
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
