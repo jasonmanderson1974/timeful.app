@@ -299,3 +299,53 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 4. **A5 (split ScheduleOverlap.vue) → B3** — the biggest frontend win; tackle in slices.
 5. **Feature track in parallel:** C2 → C3 → C1 (reminder infra → universal calendar → RSVP) are the
    highest-leverage, lowest-new-infrastructure wins for an active club.
+
+---
+
+## PART D — Rebranding (remove all `schej-it` / `schej.it` and `timeful.app` references)
+
+> **Supersedes the CLAUDE.md caveat** ("internal identifiers … still use the old name — leave them
+> alone unless rebranding is the explicit task"). This item *is* that explicit task. Scope from a
+> 2026-07-22 survey: **~290 `schej*` matches across ~50 files** (234 `schej.it`, 44 `schej-it`, plus
+> bare `schej`) and **~69 `timeful*` matches**. Split into a safe/mechanical tier and a
+> dangerous/infra tier — **do NOT treat this as one find-replace.**
+
+- [ ] **D0 · Decide the target name(s) first.** `S` · **P3** — **prerequisite / open decision.**
+  Nothing below can start until we pick concrete replacements for each identifier class, because they
+  have *different* constraints: the **Go module path** (`schej.it/server`), a **public domain** (for
+  CORS/nginx/email links), the **Mongo DB name**, the **GCP project id**, and the **brand string**
+  ("Schej.it"/"Timeful" shown to users). The fork is "The Fellowship" — but e.g. a Go module path and a
+  GCP project id can't contain spaces/caps, so each needs its own decided value. Record them here once
+  chosen.
+
+- [ ] **D1 · Safe code/brand renames (mechanical, CI-gated).** `M` · **P3**
+  - **Go module path** `schej.it/server` → new path: edit `server/go.mod` `module` directive and the
+    `schej.it/server/...` import prefix in **59 `.go` files**. Purely mechanical but touches nearly
+    every backend file — **no local Go toolchain, so gate strictly on Backend CI** (do it as one
+    dedicated commit so a red build is easy to bisect/revert). `swag init` will also regenerate
+    `docs/` with the new path.
+  - **User-facing brand strings**: "Timeful"/"Schej.it" in the frontend (`frontend/` — titles, OG
+    meta in `main.go`'s NoRoute handler, `package.json` name) and in **email templates / listmonk**
+    copy. Cosmetic; low risk once the brand name is decided.
+  - `kill-sw.js`, `maintenance_page/`, `server/README.md`, `.env.template` comments — string swaps.
+
+- [ ] **D2 · Dangerous / infra-coupled references (NOT a code-only change).** `L` · **P3**
+  These are tied to live infrastructure and data — changing the string in code without the matching
+  infra change will break prod. Each needs a coordinated migration, ideally done by the human with VM
+  access:
+  - **Mongo DB name `schej-it`** (`db/init.go`, `mongodump/mongorestore` commands in docs): renaming
+    the database is a **data migration** (`mongodump` old → `mongorestore` into new name → cutover),
+    not a code edit. Sequence with a deploy window.
+  - **GCP Cloud Tasks project `schej-it`** (`services/gcloud/tasks.go`:
+    `projects/schej-it/locations/us-central1/queues/SendReminderEmail`): this is a real **GCP project
+    id**. It can only change if the project itself is renamed/recreated — coordinate with whoever owns
+    the GCP project or leave as-is.
+  - **Domains/CORS/nginx**: `main.go`'s default CORS origins (see also A14), `deploy_scripts/
+    nginx_configs/*`, `deploy_scripts/reboot_server_if_down.sh` — must match the **real deployed
+    domain**; only change alongside the actual DNS/hosting cutover.
+
+- [ ] **D3 · Historical migration scripts — leave or annotate, don't rename.** `S` · **P3**
+  `server/scripts/*` account for ~13 of the `schej` matches but intentionally **don't compile** (they
+  reference outdated models — noted in `backend-ci.yml`) and are run-once history. Renaming identifiers
+  there is pointless and risks implying they're live. Overlaps with A15 (document the dated folders);
+  handle there, not as part of the rename.
