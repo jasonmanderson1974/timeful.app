@@ -1,6 +1,6 @@
 module schej.it/server
 
-go 1.20
+go 1.25
 
 require (
 	cloud.google.com/go/cloudtasks v1.12.6

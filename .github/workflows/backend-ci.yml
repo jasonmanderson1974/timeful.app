@@ -49,6 +49,21 @@ jobs:
       - name: Compile server
         run: go build .
 
+      # Lint as WARNINGS first (continue-on-error) — surfaces issues in the log
+      # without blocking merges on the existing backlog (see TODO A8). Tighten to
+      # blocking once the backlog is cleared. scripts/ are excluded everywhere
+      # because they don't compile.
+      - name: go vet
+        continue-on-error: true
+        run: go vet $(go list ./... | grep -v '/scripts')
+
+      - name: golangci-lint
+        continue-on-error: true
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.61.0
+          working-directory: server
+
       # models/routes/utils need no external services; db runs integration tests
       # against the Mongo service above. services/* still excluded (need creds).
       - name: Run tests

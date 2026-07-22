@@ -1,0 +1,21 @@
+# golangci-lint config (v1.x schema — pinned to v1.61.0 in backend-ci.yml).
+# Introduced as WARNINGS first: the CI step runs with continue-on-error, so
+# findings surface in the log without blocking merges (see TODO A8). Tighten
+# (drop continue-on-error, expand linters) once the existing backlog is cleared.
+run:
+  timeout: 5m
+  # One-off migration scripts reference outdated models and don't compile
+  # (see backend-ci.yml). Keep the linter off them.
+  skip-dirs:
+    - scripts
+
+linters:
+  # Default set (errcheck, govet, ineffassign, staticcheck, unused, gosimple).
+  # These directly catch the A1/A3-class issues (ignored errors, dead assigns)
+  # that motivated this task.
+  disable-all: false
+
+issues:
+  # Show everything — don't cap per-linter/per-issue while we're in warn mode.
+  max-issues-per-linter: 0
+  max-same-issues: 0

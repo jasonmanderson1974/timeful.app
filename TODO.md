@@ -149,11 +149,19 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   "which lib do I reach for?" decision from every date change. (`date_utils.test.js` guards the
   behavior.)
 
-- [ ] **A8 · Add linting to CI (nothing lints today).** `S`
-  No ESLint in the frontend (only `prettier`), no `golangci-lint` / `go vet` on the backend. CI runs
-  tests + build only. Add `go vet ./...` + `golangci-lint` to `backend-ci.yml` and an ESLint step to
-  `frontend-ci.yml`. This is the cheapest way to stop A1/A3-class issues (ignored errors, unused
-  vars) from recurring. Introduce as **warnings first** to avoid blocking on a large existing backlog.
+- [x] **A8 · Add linting to CI (nothing lints today).** `S` — **DONE 2026-07-22 (warnings-first).**
+  All lint steps use `continue-on-error: true`, so findings surface in the CI log without blocking
+  merges on the existing backlog. **Backend** (`backend-ci.yml`): added `go vet` (scoped
+  `go vet $(go list ./... | grep -v '/scripts')` so it skips the non-compiling migration scripts) and
+  `golangci-lint` via `golangci/golangci-lint-action@v6` **pinned to v1.61.0** (v2 changed the config
+  schema) with a v1-format `server/.golangci.yml` (default linter set; `skip-dirs: [scripts]`).
+  **Frontend** (`frontend-ci.yml`): added `eslint@^8.57` + `eslint-plugin-vue@^9.27` as devDeps
+  (lockfile regenerated; `npm ci` verified green), a `.eslintrc.cjs` (Vue 2 preset
+  `plugin:vue/essential` + `eslint:recommended`; `vue/multi-word-component-names` off since view
+  components are intentionally single-word; noisiest rules set to `warn`), `.eslintignore`, a `lint`
+  npm script, and a non-blocking `Lint` CI step. Baseline: **102 problems (41 errors, 61 warnings)** —
+  that's the backlog to work down before flipping the steps to blocking. **Next:** once the backlog is
+  cleared, drop `continue-on-error` to make lint a real gate.
 
 ### P2 — Cleanup & smaller components
 
@@ -181,9 +189,9 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P3 — Housekeeping
 
-- [ ] **A13 · Align Go toolchain version.** `S`
-  `server/go.mod` declares `go 1.20`; CI builds with **Go 1.25**. Bump the `go` directive so local
-  and CI agree (and to unlock newer stdlib). Low risk, avoids "works in CI, not locally" surprises.
+- [x] **A13 · Align Go toolchain version.** `S` — **DONE 2026-07-22.**
+  Bumped `server/go.mod` `go 1.20` → `go 1.25` to match the CI toolchain (`setup-go` with
+  `go-version: "1.25"` in `backend-ci.yml`). Verified green by CI (no local Go toolchain).
 
 - [ ] **A14 · Prune legacy CORS origins.** `S`
   `main.go:105` still defaults to `schej.it` / `www.schej.it` origins. Harmless, but for an
