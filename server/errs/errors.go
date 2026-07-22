@@ -23,6 +23,7 @@ const (
 	OtpInvalidCode        string = "otp-invalid-code"
 	OtpTooManyAttempts    string = "otp-too-many-attempts"
 	OtpSendFailed         string = "otp-send-failed"
+	OtpRateLimited        string = "otp-rate-limited"
 	InvalidIdToken        string = "invalid-id-token"
 	// NotInvited: the email is not on the invite-only allowlist
 	NotInvited string = "not-invited"

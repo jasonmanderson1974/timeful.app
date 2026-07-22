@@ -31,6 +31,18 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
+		// Enforce the invite-only allowlist on every request, not just at
+		// sign-in. If a member is struck from the roll, their existing session
+		// stops working on the next request (cookie sessions can't be revoked
+		// server-side otherwise). Fail-open while the allowlist is empty.
+		if !db.IsAccessAllowed(user.Email) {
+			session.Delete("userId")
+			session.Save()
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotInvited})
+			c.Abort()
+			return
+		}
+
 		c.Set("authUser", user)
 
 		c.Next()

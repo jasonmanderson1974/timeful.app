@@ -29,6 +29,11 @@ import (
 	"schej.it/server/utils"
 )
 
+// otpLimiter throttles the passwordless email flow: it caps how often a code
+// can be sent to a given email (anti email-bombing) and how often check-email
+// can be probed from a given client (defense-in-depth against enumeration).
+var otpLimiter = utils.NewRateLimiter()
+
 func InitAuth(router *gin.RouterGroup) {
 	authRouter := router.Group("/auth")
 
@@ -398,6 +403,12 @@ func checkEmail(c *gin.Context) {
 
 	email := strings.ToLower(strings.TrimSpace(payload.Email))
 
+	// Throttle probing from a single client (defense-in-depth vs enumeration).
+	if !otpLimiter.Allow("check-email:"+c.ClientIP(), 60, time.Minute) {
+		c.JSON(http.StatusTooManyRequests, responses.Error{Error: errs.OtpRateLimited})
+		return
+	}
+
 	// Invite-only gate: only allowlisted emails may sign in / register.
 	if !db.IsAccessAllowed(email) {
 		c.JSON(http.StatusOK, gin.H{"invited": false})
@@ -428,6 +439,13 @@ func sendOtp(c *gin.Context) {
 	// Invite-only gate: never send a code to a non-allowlisted email
 	if !db.IsAccessAllowed(email) {
 		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotInvited})
+		return
+	}
+
+	// Rate-limit code sends per email to prevent inbox flooding / abuse. The
+	// client also enforces a 30s resend cooldown; this is the server-side cap.
+	if !otpLimiter.Allow("otp-send:"+email, 5, 15*time.Minute) {
+		c.JSON(http.StatusTooManyRequests, responses.Error{Error: errs.OtpRateLimited})
 		return
 	}
 

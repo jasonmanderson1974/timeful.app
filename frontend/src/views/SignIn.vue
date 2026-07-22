@@ -302,8 +302,9 @@ export default {
           this.otpError = ""
         }
       } catch (err) {
+        const code = err && err.parsed && err.parsed.error
         this.emailError =
-          err && err.parsed && err.parsed.error === "otp-send-failed"
+          code === "otp-send-failed" || code === "otp-rate-limited"
             ? this.otpSendErrorMessage(err)
             : "Something went wrong. Please try again."
       } finally {
@@ -328,10 +329,14 @@ export default {
       await post("/auth/otp/send", { email: this.email })
       this.startResendCooldown()
     },
-    // Themed message for a failed code send. Distinguishes an actual delivery
-    // failure (server couldn't reach the mail relay) from a generic error.
+    // Themed message for a failed code send. Distinguishes a delivery failure
+    // (mail relay) and a rate limit from a generic error.
     otpSendErrorMessage(err) {
-      if (err && err.parsed && err.parsed.error === "otp-send-failed") {
+      const code = err && err.parsed && err.parsed.error
+      if (code === "otp-rate-limited") {
+        return "Too many requests. Kindly wait a few minutes before trying again."
+      }
+      if (code === "otp-send-failed") {
         return "The code could not be dispatched — the post has failed us. Try again shortly, or send word to a member if it persists."
       }
       return "Failed to send code. Please try again."
@@ -344,7 +349,7 @@ export default {
         this.otpCode = ""
         this.otpError = ""
       } catch (err) {
-        this.otpError = "Failed to resend code. Please try again."
+        this.otpError = this.otpSendErrorMessage(err)
       } finally {
         this.sending = false
       }

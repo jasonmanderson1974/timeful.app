@@ -123,6 +123,16 @@ func main() {
 
 	// Session
 	store := cookie.NewStore([]byte(os.Getenv("SESSION_SECRET")))
+	// Harden the session cookie. Secure only in release mode so local dev over
+	// http://localhost still works; SameSite=Lax blocks cross-site POSTs (CSRF)
+	// while allowing the OAuth top-level redirect back to the app.
+	store.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   30 * 24 * 60 * 60, // 30 days
+		HttpOnly: true,
+		Secure:   gin.Mode() == gin.ReleaseMode,
+		SameSite: http.SameSiteLaxMode,
+	})
 	router.Use(sessions.Sessions("session", store))
 
 	// Init routes
