@@ -133,8 +133,24 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
   Frontend: role constants/getters (`isGuest`,`canInvite`,`canManageUsers`,`canCreateEvents`), reworked
   "The Roll" (role badges + per-member role dropdown + adaptive member/admin view). **Awaits VM deploy
   + re-bootstrap jason@ to `role:"superAdmin"` (canInvite field now obsolete).**
+- 2026-07-21: **4-tier role model deployed** (`9ccc6e7`); jason@ re-bootstrapped `role:"superAdmin"`.
+- 2026-07-21: **SECURITY REVIEW + HARDENING deployed** (`e2d0b08` → `a21a020` → `ad0decf` → `7dca053`;
+  branch HEAD `7dca053`, VM in sync). Full review of the access-control work → 15 findings, tracked in
+  a **Todoist** parent "Timeful/Fellowship access-control — code review findings". **11/15 fixed:**
+  - P1: `GET /admin/allowlist` gated to admin (roster-read authz); guest event-creation bypass via
+    `duplicateEvent`/`importEvent` closed.
+  - P2: OTP **rate limiting** (`utils.RateLimiter` — send 5/email/15m, check-email 60/IP/min);
+    **session revocation** (`AuthRequired` re-checks `IsAccessAllowed` every request ⇒ allowlist now
+    enforced per-request); **cookie hardening** (HttpOnly/SameSite=Lax/Secure-in-release/MaxAge=30d).
+  - Tests: `models/roles_test.go` + `routes/admin_test.go` (run in `golang:1.25-alpine` container;
+    dev box has no Go).
+  - P3: admin 500s → `errs.Internal`; email normalization → `utils.NormalizeEmail`; `getAllowlist`
+    batch query (no N+1). `checkEmail` isNewUser enumeration CLOSED (accepted; rate-limit-mitigated).
+  - **REMAINING = 5 open P4 tasks** (minor, non-security): verifyOtp TOCTOU; fail-open→enforce flag;
+    setMemberRole non-atomic write; invalid-role→400; anon create-button UX. See Todoist parent.
 - Phases D–E: ☐ not started. **Next = Phase D** (self-service email/phone edit in Settings;
-  email-change → auto-add to allowlist) then **Phase E** (seed script for initial ~40 emails/admins).
+  email-change → auto-add to allowlist) then **Phase E** (seed script for initial ~40 emails/admins),
+  or clear the 5 P4 cleanups first.
 
 ## 6. Needs-from-user / manual steps
 
