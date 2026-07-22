@@ -401,7 +401,7 @@ func checkEmail(c *gin.Context) {
 		return
 	}
 
-	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	email := utils.NormalizeEmail(payload.Email)
 
 	// Throttle probing from a single client (defense-in-depth vs enumeration).
 	if !otpLimiter.Allow("check-email:"+c.ClientIP(), 60, time.Minute) {
@@ -434,7 +434,7 @@ func sendOtp(c *gin.Context) {
 		return
 	}
 
-	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	email := utils.NormalizeEmail(payload.Email)
 
 	// Invite-only gate: never send a code to a non-allowlisted email
 	if !db.IsAccessAllowed(email) {
@@ -504,7 +504,7 @@ func verifyOtp(c *gin.Context) {
 		return
 	}
 
-	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	email := utils.NormalizeEmail(payload.Email)
 
 	// Find the OTP document
 	var otpDoc models.OtpCode

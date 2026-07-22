@@ -78,6 +78,42 @@ func SetUserRole(email string, role models.Role) (int64, error) {
 	return res.MatchedCount, nil
 }
 
+// GetUsersByEmails fetches users for the given emails in a single query and
+// returns them keyed by lowercased email (case-insensitive match). Avoids N+1
+// lookups when enriching a list of allowlist entries.
+func GetUsersByEmails(emails []string) map[string]models.User {
+	result := make(map[string]models.User)
+	if len(emails) == 0 {
+		return result
+	}
+	lowered := make([]string, 0, len(emails))
+	for _, e := range emails {
+		lowered = append(lowered, strings.ToLower(strings.TrimSpace(e)))
+	}
+
+	opts := options.Find().SetCollation(&options.Collation{
+		Locale:   "en",
+		Strength: 2, // case-insensitive match on email
+	})
+	cursor, err := UsersCollection.Find(context.Background(), bson.M{
+		"email": bson.M{"$in": lowered},
+	}, opts)
+	if err != nil {
+		logger.StdErr.Println(err)
+		return result
+	}
+
+	var users []models.User
+	if err := cursor.All(context.Background(), &users); err != nil {
+		logger.StdErr.Println(err)
+		return result
+	}
+	for _, u := range users {
+		result[strings.ToLower(strings.TrimSpace(u.Email))] = u
+	}
+	return result
+}
+
 func GetUserByEmail(email string) *models.User {
 	emailQuery := strings.TrimSpace(email)
 	if emailQuery == "" {

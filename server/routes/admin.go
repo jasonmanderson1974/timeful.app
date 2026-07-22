@@ -15,6 +15,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/utils"
 )
 
 // isValidEmail does a basic RFC 5322 address check and rejects '+' aliases
@@ -76,10 +77,18 @@ func getAllowlist(c *gin.Context) {
 	}
 
 	entries := db.GetAllowlist()
+
+	// Batch-fetch the accounts for all listed emails in one query (avoids N+1).
+	emails := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		emails = append(emails, entry.Email)
+	}
+	users := db.GetUsersByEmails(emails)
+
 	members := make([]allowlistMember, 0, len(entries))
 	for _, entry := range entries {
 		m := allowlistMember{AllowlistEntry: entry, Role: models.NormalizeRole(entry.Role)}
-		if user := db.GetUserByEmail(entry.Email); user != nil {
+		if user, ok := users[utils.NormalizeEmail(entry.Email)]; ok {
 			m.HasAccount = true
 			m.FirstName = user.FirstName
 			m.LastName = user.LastName
@@ -106,7 +115,7 @@ func addAllowlistEmail(c *gin.Context) {
 		return
 	}
 
-	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	email := utils.NormalizeEmail(payload.Email)
 	if !isValidEmail(email) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.InvalidEmail})
 		return
@@ -125,7 +134,7 @@ func addAllowlistEmail(c *gin.Context) {
 
 	if err := db.AddToAllowlist(email, actor.Email, role); err != nil {
 		logger.StdErr.Println(err)
-		c.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return
 	}
 
@@ -147,7 +156,7 @@ func removeAllowlistEmail(c *gin.Context) {
 		return
 	}
 
-	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	email := utils.NormalizeEmail(payload.Email)
 	actor := authUserFromContext(c)
 
 	// Only admins may remove members from the roll.
@@ -156,7 +165,7 @@ func removeAllowlistEmail(c *gin.Context) {
 		return
 	}
 	// Can't remove yourself (avoid self-lockout).
-	if email == strings.ToLower(strings.TrimSpace(actor.Email)) {
+	if email == utils.NormalizeEmail(actor.Email) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.CannotRemoveSelf})
 		return
 	}
@@ -168,7 +177,7 @@ func removeAllowlistEmail(c *gin.Context) {
 
 	if err := db.RemoveFromAllowlist(email); err != nil {
 		logger.StdErr.Println(err)
-		c.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return
 	}
 
@@ -191,7 +200,7 @@ func setMemberRole(c *gin.Context) {
 		return
 	}
 
-	email := strings.ToLower(strings.TrimSpace(payload.Email))
+	email := utils.NormalizeEmail(payload.Email)
 	actor := authUserFromContext(c)
 
 	// Only admins may change roles.
@@ -200,7 +209,7 @@ func setMemberRole(c *gin.Context) {
 		return
 	}
 	// Can't change your own role (avoid self-lockout / accidental demotion).
-	if email == strings.ToLower(strings.TrimSpace(actor.Email)) {
+	if email == utils.NormalizeEmail(actor.Email) {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.CannotRemoveSelf})
 		return
 	}
@@ -219,12 +228,12 @@ func setMemberRole(c *gin.Context) {
 	// Keep the allowlist invitation role and the account role in sync.
 	if err := db.SetAllowlistRole(email, newRole); err != nil {
 		logger.StdErr.Println(err)
-		c.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return
 	}
 	if _, err := db.SetUserRole(email, newRole); err != nil {
 		logger.StdErr.Println(err)
-		c.JSON(http.StatusInternalServerError, responses.Error{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return
 	}
 

@@ -1883,7 +1883,7 @@ func shouldKeepGroupResponseUserEmails(event *models.Event, userSesh string, isO
 	if user == nil {
 		return false
 	}
-	viewerEmail := strings.ToLower(strings.TrimSpace(user.Email))
+	viewerEmail := utils.NormalizeEmail(user.Email)
 	if viewerEmail == "" {
 		return false
 	}
@@ -1894,7 +1894,7 @@ func shouldKeepGroupResponseUserEmails(event *models.Event, userSesh string, isO
 		attendees = db.GetAttendees(event.Id.Hex())
 	}
 	for _, a := range attendees {
-		if strings.ToLower(strings.TrimSpace(a.Email)) == viewerEmail {
+		if utils.NormalizeEmail(a.Email) == viewerEmail {
 			return true
 		}
 	}

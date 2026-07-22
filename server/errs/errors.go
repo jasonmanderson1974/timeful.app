@@ -37,6 +37,8 @@ const (
 	SuperAdminImmutable string = "super-admin-immutable"
 	// InvalidRole: the requested role is not grantable by the actor
 	InvalidRole string = "invalid-role"
+	// Internal: a generic server-side error (details are logged, not returned)
+	Internal string = "internal-error"
 )
 
 // Sentinel error returned by signInHelper when an email is not allowlisted, so
