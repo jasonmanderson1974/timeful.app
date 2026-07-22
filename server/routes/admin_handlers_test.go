@@ -8,11 +8,20 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"schej.it/server/db"
 	"schej.it/server/models"
 )
 
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
+	// DB-backed handler tests need a Mongo connection. mongo.Connect is lazy (no
+	// ping), so calling Init is safe even without a running server; the tests that
+	// actually touch Mongo gate on MONGODB_URI via requireDB (CI sets it, local
+	// devs may not). See event_responses_db_test.go.
+	if os.Getenv("MONGODB_URI") != "" {
+		db.Init()
+		dbReady = true
+	}
 	os.Exit(m.Run())
 }
 
