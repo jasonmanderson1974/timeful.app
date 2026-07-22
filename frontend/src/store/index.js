@@ -66,9 +66,11 @@ export default new Vuex.Store({
     canManageUsers(state, getters) {
       return [roles.ADMIN, roles.SUPER_ADMIN].includes(getters.role)
     },
-    // Everyone except guests may create events
+    // Everyone except guests may create events. Anonymous (not signed in) is
+    // allowed too, matching the backend createEvent, which rejects only
+    // signed-in guests — they'll be prompted to sign in when they try to save.
     canCreateEvents(state, getters) {
-      return getters.role != null && getters.role !== roles.GUEST
+      return getters.role !== roles.GUEST
     },
   },
   mutations: {

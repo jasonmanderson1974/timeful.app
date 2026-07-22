@@ -121,7 +121,12 @@ func addAllowlistEmail(c *gin.Context) {
 		return
 	}
 
-	// Default invited role is guest; validate the actor may grant the requested role.
+	// Reject unknown role values rather than silently coercing them. Empty is
+	// allowed and defaults to guest.
+	if payload.Role != "" && !models.IsKnownRole(payload.Role) {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.InvalidRole})
+		return
+	}
 	role := models.NormalizeRole(payload.Role)
 	if payload.Role == "" {
 		role = models.RoleGuest
@@ -203,6 +208,12 @@ func setMemberRole(c *gin.Context) {
 	email := utils.NormalizeEmail(payload.Email)
 	actor := authUserFromContext(c)
 
+	// Reject unknown role values rather than silently coercing them to member.
+	if !models.IsKnownRole(payload.Role) {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.InvalidRole})
+		return
+	}
+
 	// Only admins may change roles.
 	if !actor.EffectiveRole().CanManageUsers() {
 		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
@@ -225,13 +236,17 @@ func setMemberRole(c *gin.Context) {
 		return
 	}
 
-	// Keep the allowlist invitation role and the account role in sync.
-	if err := db.SetAllowlistRole(email, newRole); err != nil {
+	// Keep the account role and the allowlist invitation role in sync. Write the
+	// account role first — it is the authoritative source for permissions (and
+	// getAllowlist reports it over the allowlist role for anyone with an account),
+	// so if the second write fails the live permission change has still landed.
+	// Both writes are idempotent; standalone Mongo has no multi-doc transactions.
+	if _, err := db.SetUserRole(email, newRole); err != nil {
 		logger.StdErr.Println(err)
 		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return
 	}
-	if _, err := db.SetUserRole(email, newRole); err != nil {
+	if err := db.SetAllowlistRole(email, newRole); err != nil {
 		logger.StdErr.Println(err)
 		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return

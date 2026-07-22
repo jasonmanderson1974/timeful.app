@@ -11,6 +11,17 @@ const (
 	RoleGuest      Role = "guest"
 )
 
+// IsKnownRole reports whether r is one of the defined roles (rejects
+// empty/garbage input at the API boundary).
+func IsKnownRole(r Role) bool {
+	switch r {
+	case RoleSuperAdmin, RoleAdmin, RoleMember, RoleGuest:
+		return true
+	default:
+		return false
+	}
+}
+
 // NormalizeRole coerces an empty/unknown role to the default (member). New
 // invited guests always carry an explicit "guest", so an empty role only
 // happens for legacy accounts, which are treated as members.

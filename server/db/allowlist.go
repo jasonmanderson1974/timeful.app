@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"os"
 	"strings"
 	"time"
 
@@ -10,6 +11,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/models"
 )
+
+// accessControlEnforced reports whether the invite-only gate is strictly
+// enforced. When false (default), the gate fails OPEN while the allowlist is
+// empty (bootstrap convenience). Set INVITE_ONLY_ENFORCED=true in production so
+// that an accidentally-emptied allowlist fails CLOSED (deny) rather than opening
+// the site to everyone.
+func accessControlEnforced() bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("INVITE_ONLY_ENFORCED"))) {
+	case "true", "1", "yes":
+		return true
+	default:
+		return false
+	}
+}
 
 func normalizeAllowlistEmail(email string) string {
 	return strings.ToLower(strings.TrimSpace(email))
@@ -24,13 +39,17 @@ func IsAllowlisted(email string) bool {
 	return err == nil && count > 0
 }
 
-// IsAccessAllowed is the invite-only sign-in gate. It returns true if the
-// allowlist is EMPTY (bootstrap "open" state, before the list has been seeded —
-// prevents locking everyone out) OR the email is explicitly allowlisted.
+// IsAccessAllowed is the invite-only sign-in gate. The email is allowed if it is
+// explicitly allowlisted. When enforcement is NOT enabled, it also fails open
+// while the allowlist is empty (bootstrap "open" state so the first sign-in
+// isn't locked out). With INVITE_ONLY_ENFORCED=true the empty-list fail-open is
+// disabled, so an accidentally-emptied allowlist denies everyone (fail closed).
 func IsAccessAllowed(email string) bool {
-	total, err := AllowlistCollection.CountDocuments(context.Background(), bson.M{})
-	if err == nil && total == 0 {
-		return true
+	if !accessControlEnforced() {
+		total, err := AllowlistCollection.CountDocuments(context.Background(), bson.M{})
+		if err == nil && total == 0 {
+			return true
+		}
 	}
 	return IsAllowlisted(email)
 }

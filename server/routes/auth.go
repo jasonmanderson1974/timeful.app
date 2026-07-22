@@ -506,6 +506,13 @@ func verifyOtp(c *gin.Context) {
 
 	email := utils.NormalizeEmail(payload.Email)
 
+	// Re-check the allowlist at verify time: the email may have been struck from
+	// the roll between /otp/send and /otp/verify while a valid code still exists.
+	if !db.IsAccessAllowed(email) {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotInvited})
+		return
+	}
+
 	// Find the OTP document
 	var otpDoc models.OtpCode
 	err := db.OtpCodesCollection.FindOne(context.Background(), bson.M{

@@ -22,6 +22,21 @@ func TestNormalizeRole(t *testing.T) {
 	}
 }
 
+func TestIsKnownRole(t *testing.T) {
+	known := []Role{RoleSuperAdmin, RoleAdmin, RoleMember, RoleGuest}
+	for _, r := range known {
+		if !IsKnownRole(r) {
+			t.Errorf("IsKnownRole(%q) = false, want true", r)
+		}
+	}
+	unknown := []Role{"", "nonsense", "ADMIN", "Guest"}
+	for _, r := range unknown {
+		if IsKnownRole(r) {
+			t.Errorf("IsKnownRole(%q) = true, want false", r)
+		}
+	}
+}
+
 func TestRoleCapabilities(t *testing.T) {
 	cases := []struct {
 		role         Role
