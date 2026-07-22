@@ -1,0 +1,149 @@
+package routes
+
+import (
+	"testing"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"schej.it/server/models"
+)
+
+func strPtrTest(s string) *string { return &s }
+
+// getResponsesMap keys each EventResponse's Response by its UserId.
+func TestGetResponsesMap(t *testing.T) {
+	respA := &models.Response{Name: "A"}
+	respB := &models.Response{Name: "B"}
+	got := getResponsesMap([]models.EventResponse{
+		{UserId: "a", Response: respA},
+		{UserId: "b", Response: respB},
+	})
+	if len(got) != 2 {
+		t.Fatalf("len: got %d, want 2", len(got))
+	}
+	if got["a"] != respA || got["b"] != respB {
+		t.Fatalf("map did not key responses by userId correctly")
+	}
+}
+
+func TestGetResponsesMap_Empty(t *testing.T) {
+	got := getResponsesMap([]models.EventResponse{})
+	if got == nil {
+		t.Fatal("expected non-nil empty map")
+	}
+	if len(got) != 0 {
+		t.Fatalf("len: got %d, want 0", len(got))
+	}
+}
+
+// A duplicate userId should collapse to the last response for that id.
+func TestGetResponsesMap_DuplicateUserIdLastWins(t *testing.T) {
+	first := &models.Response{Name: "first"}
+	last := &models.Response{Name: "last"}
+	got := getResponsesMap([]models.EventResponse{
+		{UserId: "dup", Response: first},
+		{UserId: "dup", Response: last},
+	})
+	if len(got) != 1 {
+		t.Fatalf("len: got %d, want 1", len(got))
+	}
+	if got["dup"] != last {
+		t.Fatalf("expected last response to win for duplicate userId")
+	}
+}
+
+func TestFindResponse_Found(t *testing.T) {
+	target := &models.Response{Name: "target"}
+	responses := []models.EventResponse{
+		{UserId: "x", Response: &models.Response{Name: "x"}},
+		{UserId: "y", Response: target},
+	}
+	i, resp := findResponse(responses, "y")
+	if i != 1 {
+		t.Fatalf("index: got %d, want 1", i)
+	}
+	if resp != target {
+		t.Fatalf("returned wrong response pointer")
+	}
+}
+
+func TestFindResponse_NotFound(t *testing.T) {
+	i, resp := findResponse([]models.EventResponse{{UserId: "x", Response: &models.Response{}}}, "missing")
+	if i != -1 || resp != nil {
+		t.Fatalf("not-found: got (%d, %v), want (-1, nil)", i, resp)
+	}
+}
+
+func TestFindResponse_Empty(t *testing.T) {
+	i, resp := findResponse([]models.EventResponse{}, "anything")
+	if i != -1 || resp != nil {
+		t.Fatalf("empty: got (%d, %v), want (-1, nil)", i, resp)
+	}
+}
+
+// stripSensitiveUserFields must clear calendar/billing fields (never exposed in
+// event responses) while leaving identity fields (name, email) intact — email
+// visibility is handled separately by the caller.
+func TestStripSensitiveUserFields(t *testing.T) {
+	user := &models.User{
+		Email:             "user@example.test",
+		FirstName:         "First",
+		LastName:          "Last",
+		CalendarAccounts:  map[string]models.CalendarAccount{"k": {}},
+		CalendarOptions:   &models.CalendarOptions{},
+		StripeCustomerId:  strPtrTest("cus_123"),
+		PrimaryAccountKey: strPtrTest("primary"),
+	}
+	stripSensitiveUserFields(user)
+
+	if user.CalendarAccounts != nil {
+		t.Error("CalendarAccounts should be nil after stripping")
+	}
+	if user.CalendarOptions != nil {
+		t.Error("CalendarOptions should be nil after stripping")
+	}
+	if user.StripeCustomerId != nil {
+		t.Error("StripeCustomerId should be nil after stripping")
+	}
+	if user.PrimaryAccountKey != nil {
+		t.Error("PrimaryAccountKey should be nil after stripping")
+	}
+	// Identity fields must be preserved.
+	if user.Email != "user@example.test" || user.FirstName != "First" || user.LastName != "Last" {
+		t.Errorf("identity fields must be preserved, got %+v", user)
+	}
+}
+
+func TestStripSensitiveUserFields_NilSafe(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("stripSensitiveUserFields(nil) panicked: %v", r)
+		}
+	}()
+	stripSensitiveUserFields(nil)
+}
+
+// shouldKeepGroupResponseUserEmails — cover the DB-free guard branches. The
+// invitee-matching branch hits Mongo (db.GetUserById) and is left to the
+// DB-backed handler tests.
+func TestShouldKeepGroupResponseUserEmails_NonGroupIsFalse(t *testing.T) {
+	event := &models.Event{Type: models.DOW}
+	if shouldKeepGroupResponseUserEmails(event, "someUserId", true) {
+		t.Fatal("non-group event must never keep emails")
+	}
+}
+
+func TestShouldKeepGroupResponseUserEmails_EmptySessionIsFalse(t *testing.T) {
+	event := &models.Event{Type: models.GROUP}
+	if shouldKeepGroupResponseUserEmails(event, "", true) {
+		t.Fatal("empty session must not keep emails")
+	}
+}
+
+func TestShouldKeepGroupResponseUserEmails_OwnerIsTrue(t *testing.T) {
+	// Owner of a group with a session set: true without any DB lookup (the
+	// isOwner check short-circuits before db.GetUserById).
+	event := &models.Event{Type: models.GROUP, OwnerId: primitive.NewObjectID()}
+	if !shouldKeepGroupResponseUserEmails(event, "ownerSessionId", true) {
+		t.Fatal("group owner with a session must keep emails")
+	}
+}
