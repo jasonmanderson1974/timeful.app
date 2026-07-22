@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Development workflow (READ FIRST — multi-machine)
+
+This fork is developed from **more than one machine**, all pushing directly to `main`. Full details in
+`DEVELOPMENT.md` (read it for deploy/local-dev/testing specifics). The rules that always apply:
+
+- **Sync before making ANY changes.** Another machine may have pushed. Start every task with
+  `git fetch origin` and confirm you're on the latest `origin/main` (`git pull --ff-only` if behind).
+  Building on stale `main` causes divergence and rejected pushes.
+- **`main` is the trunk; keep it green.** CI (GitHub Actions: `backend-ci.yml`, `frontend-ci.yml`) runs
+  on every push but is *post-hoc*, not a merge gate — so build/test locally before pushing.
+- **Deploys are manual and gate-kept, and only possible from the machine with SSH access to the prod
+  VM.** Deploy by running `./deploy.sh` on the VM. If the current machine has no VM SSH access, do NOT
+  attempt to deploy — the human handles it. `origin/main` may be ahead of what's live; that's expected.
+- **Local stack:** `docker compose -f compose.dev.yaml up` (dummy secrets; Mongo on :27017 for tests;
+  SMTP/Google not wired, so login doesn't work locally). **Tests:** `npm run test:unit` (frontend) and
+  `go test ./models/ ./routes/ ./utils/ ./db/` with `MONGODB_URI` set (backend) — see `DEVELOPMENT.md`.
+
 ## Repository layout
 
 Monorepo for Timeful (formerly Schej.it), a group availability/scheduling app.
