@@ -68,7 +68,7 @@ func VerifyGoogleIdToken(idToken string, allowedAuds []string) (GoogleIdTokenInf
 	}
 
 	endpoint := "https://oauth2.googleapis.com/tokeninfo?id_token=" + url.QueryEscape(idToken)
-	resp, err := http.Get(endpoint)
+	resp, err := utils.HTTPClient.Get(endpoint)
 	if err != nil {
 		return GoogleIdTokenInfo{}, fmt.Errorf("failed to reach token verification endpoint: %w", err)
 	}
@@ -121,7 +121,7 @@ func GetTokensFromAuthCode(code string, scope string, origin string, calendarTyp
 		"redirect_uri":  {redirectUri},
 		"grant_type":    {"authorization_code"},
 	}
-	resp, err := http.PostForm(
+	resp, err := utils.HTTPClient.PostForm(
 		tokenEndpoint,
 		values,
 	)
@@ -152,7 +152,7 @@ func RefreshAccessToken(accountAuth *models.OAuth2CalendarAuth, calendarType mod
 		"grant_type":    {"refresh_token"},
 	}
 
-	resp, err := http.PostForm(
+	resp, err := utils.HTTPClient.PostForm(
 		tokenEndpoint,
 		values,
 	)

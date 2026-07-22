@@ -25,7 +25,7 @@ func (calendar GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar,
 		nil,
 	)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", calendar.AccessToken))
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := utils.HTTPClient.Do(req)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
@@ -80,7 +80,7 @@ func (calendar *GoogleCalendar) GetCalendarEvents(calendarId string, timeMin tim
 		nil,
 	)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", calendar.AccessToken))
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := utils.HTTPClient.Do(req)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}

@@ -27,7 +27,7 @@ func (cal *ICSCalendar) GetCalendarList() (map[string]models.SubCalendar, error)
 
 func (cal *ICSCalendar) GetCalendarEvents(calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, error) {
 	// Fetch the data and ensure the fetch was successful
-	resp, err := http.Get(cal.FeedURL)
+	resp, err := utils.HTTPClient.Get(cal.FeedURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch ICS feed: %v", err)
 	}

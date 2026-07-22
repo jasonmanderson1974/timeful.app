@@ -121,6 +121,7 @@ export default {
     allowAddCalendarAccount: { type: Boolean, default: true }, // Whether to allow user to add a new calendar account
     initialCalendarAccountsData: { type: Object, default: () => {} }, // Initial data to display for enabled calendar accounts
     fillSpace: { type: Boolean, default: false }, // Whether to fill the available space up
+    skipCalendarFetch: { type: Boolean, default: false }, // Skip the eager live calendar-events fetch (e.g. on Settings, where it's just account management — avoids a slow Google round-trip on mount)
   },
 
   data: () => ({
@@ -219,6 +220,13 @@ export default {
     calendarEventsMap: {
       immediate: true,
       async handler() {
+        // In manage-only contexts (e.g. Settings) skip the live calendar-events
+        // fetch — it's a slow external Google round-trip that isn't needed just
+        // to list/manage accounts.
+        if (this.skipCalendarFetch) {
+          this.calendarEventsMapCopy = this.calendarEventsMap || {}
+          return
+        }
         // Do a test request to calendarevents route to check if calendar access is allowed for each account
         if (
           !this.calendarEventsMap ||

@@ -155,7 +155,7 @@
             >Revoke calendar access</v-btn
           >
         </div>
-        <CalendarAccounts></CalendarAccounts>
+        <CalendarAccounts :skip-calendar-fetch="true"></CalendarAccounts>
       </div>
 
       <!-- Permissions Section -->
