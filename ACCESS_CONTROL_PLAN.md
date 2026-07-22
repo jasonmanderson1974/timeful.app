@@ -146,11 +146,14 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
     dev box has no Go).
   - P3: admin 500s → `errs.Internal`; email normalization → `utils.NormalizeEmail`; `getAllowlist`
     batch query (no N+1). `checkEmail` isNewUser enumeration CLOSED (accepted; rate-limit-mitigated).
-  - **REMAINING = 5 open P4 tasks** (minor, non-security): verifyOtp TOCTOU; fail-open→enforce flag;
-    setMemberRole non-atomic write; invalid-role→400; anon create-button UX. See Todoist parent.
+  - P4 (all fixed, `c64c82d`): verifyOtp re-checks allowlist (TOCTOU); `INVITE_ONLY_ENFORCED` flag
+    (empty allowlist fails closed; set true in VM `server/.env`); setMemberRole writes account role
+    first; unknown roles → 400 `invalid-role` (`models.IsKnownRole`); `canCreateEvents` no longer hides
+    the create button from anon (matches backend).
+  - **ALL 15 REVIEW FINDINGS CLOSED.** Security: invite-only enforced per-request + fail-closed; OTP
+    rate-limited; cookies hardened; roles validated + unit-tested.
 - Phases D–E: ☐ not started. **Next = Phase D** (self-service email/phone edit in Settings;
-  email-change → auto-add to allowlist) then **Phase E** (seed script for initial ~40 emails/admins),
-  or clear the 5 P4 cleanups first.
+  email-change → auto-add to allowlist) then **Phase E** (seed script for initial ~40 emails/admins).
 
 ## 6. Needs-from-user / manual steps
 
