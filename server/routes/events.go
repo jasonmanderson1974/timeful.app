@@ -293,7 +293,11 @@ func editEvent(c *gin.Context) {
 	}
 
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -480,7 +484,11 @@ func editEvent(c *gin.Context) {
 // @Router /events/{eventId}/ids [get]
 func getEventIds(c *gin.Context) {
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -505,7 +513,11 @@ func getEventIds(c *gin.Context) {
 // @Router /events/{eventId} [get]
 func getEvent(c *gin.Context) {
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
@@ -693,7 +705,11 @@ func getResponses(c *gin.Context) {
 
 	// Fetch event
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -826,7 +842,11 @@ func updateEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -1108,7 +1128,11 @@ func deleteEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -1213,7 +1237,11 @@ func renameUser(c *gin.Context) {
 		return
 	}
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -1252,7 +1280,11 @@ func userResponded(c *gin.Context) {
 
 	// Fetch event
 	eventId := c.Param("eventId")
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -1324,7 +1356,11 @@ func userResponded(c *gin.Context) {
 func declineInvite(c *gin.Context) {
 	// Fetch event
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event, eventErr := db.GetEventById(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -1386,7 +1422,11 @@ func getCalendarAvailabilities(c *gin.Context) {
 
 	// Fetch event
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event, eventErr := db.GetEventById(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -1604,7 +1644,11 @@ func duplicateEvent(c *gin.Context) {
 	}
 
 	// Get event
-	event := db.GetEventByEitherId(eventId)
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
 	if event == nil {
 		c.Status(http.StatusBadRequest)
 		return

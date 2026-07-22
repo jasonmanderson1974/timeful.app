@@ -229,7 +229,7 @@ func noRouteHandler() gin.HandlerFunc {
 		if match := regexp.MustCompile(`\/e\/(\w+)`).FindStringSubmatchIndex(path); match != nil {
 			// /e/:eventId
 			eventId := path[match[2]:match[3]]
-			event := db.GetEventByEitherId(eventId)
+			event, _ := db.GetEventByEitherId(eventId)
 
 			// params["enableStickyFooter"] = true
 

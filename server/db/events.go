@@ -13,11 +13,11 @@ import (
 )
 
 // Returns an event based on its _id
-func GetEventById(eventId string) *models.Event {
+func GetEventById(eventId string) (*models.Event, error) {
 	objectId, err := primitive.ObjectIDFromHex(eventId)
 	if err != nil {
 		// eventId is malformatted
-		return nil
+		return nil, nil
 	}
 	result := EventsCollection.FindOne(context.Background(), bson.M{
 		"$and": bson.A{
@@ -32,20 +32,21 @@ func GetEventById(eventId string) *models.Event {
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event does not exist!
-		return nil
+		return nil, nil
 	}
 
 	// Decode result
 	var event models.Event
 	if err := result.Decode(&event); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 
-	return &event
+	return &event, nil
 }
 
 // Returns an event based on its shortId
-func GetEventByShortId(shortEventId string) *models.Event {
+func GetEventByShortId(shortEventId string) (*models.Event, error) {
 	result := EventsCollection.FindOne(context.Background(), bson.M{
 		"$and": bson.A{
 			bson.M{"shortId": shortEventId},
@@ -59,20 +60,21 @@ func GetEventByShortId(shortEventId string) *models.Event {
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event does not exist!
-		return nil
+		return nil, nil
 	}
 
 	// Decode result
 	var event models.Event
 	if err := result.Decode(&event); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil, err
 	}
 
-	return &event
+	return &event, nil
 }
 
 // Returns an event by either its _id or shortId
-func GetEventByEitherId(id string) *models.Event {
+func GetEventByEitherId(id string) (*models.Event, error) {
 	if len(id) <= 10 {
 		return GetEventByShortId(id)
 	}
@@ -165,18 +167,18 @@ func GenerateShortEventId(eventId primitive.ObjectID) string {
 	}
 
 	i := 0
-	event := GetEventByShortId(id)
+	event, _ := GetEventByShortId(id)
 	for event != nil && i < 5 {
 		// Event exists, keep on adding letters until event doesn't exist anymore, max of 5 more letters
 		index := r.Intn(len(letters))
 		letter := letters[index : index+1]
 		id += letter
-		event = GetEventByShortId(id)
+		event, _ = GetEventByShortId(id)
 		i++
 	}
 
 	if event != nil {
-		logger.StdErr.Panicln("Couldn't generate unique id")
+		logger.StdErr.Println("Couldn't generate unique id")
 	}
 
 	return id
@@ -200,7 +202,7 @@ func UpdateGuestResponseName(eventId string, oldName string, newName string) {
 		},
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
 	}
 }
 
@@ -209,7 +211,7 @@ func UpdateGuestResponseName(eventId string, oldName string, newName string) {
 // Also returns true if the name matches a logged-in user's ObjectID (to prevent conflicts)
 // Only checks for guest users (non-logged-in users), not logged-in users
 func GuestNameExists(eventId string, guestName string) bool {
-	event := GetEventByEitherId(eventId)
+	event, _ := GetEventByEitherId(eventId)
 	if event == nil {
 		return false
 	}
