@@ -128,13 +128,26 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P1 — Structural debt that slows every future change
 
-- [ ] **A5 · Break up `ScheduleOverlap.vue` (4,638 lines, ~99 methods).** `L`
+- [ ] **A5 · Break up `ScheduleOverlap.vue` (was 4,638 lines, ~99 methods).** `L` — **IN PROGRESS
+  2026-07-22 (step 1 of ~3 done, CI-green).**
   This is the single largest maintenance liability in the repo — a god-component mixing drag-select
   grid math, availability animation, calendar-account plumbing, sign-up-block editing, and
   respondent hover/selection. Extract cohesive units: a composable/mixin for grid geometry
   (`getRowColFromXY`, `clamp*`, `normalizeXY`, drag lifecycle), one for availability
-  fetch/format/animate, and split sign-up-block editing into its own child. No behavior change;
-  do it incrementally behind the existing tests.
+  fetch/format/animate, and split sign-up-block editing into its own child.
+  - **Step 1 DONE:** grid geometry + drag lifecycle (8 contiguous methods: `normalizeXY`,
+    `clampRow`, `clampCol`, `getRowColFromXY`, `endDrag`, `inDragRange`, `moveDrag`, `startDrag`) →
+    `schedule_overlap/dragGridMixin.js`. Verbatim Vue 2 mixin move (behavior-preserving: same `this`).
+    Component 4,638 → 4,303 lines. Verified via `npm build` + eslint (no `no-undef`) + unit tests.
+  - **Remaining:** an availability fetch/format/animate mixin (`fetchResponses`,
+    `getResponsesFormatted`, `getAvailabilityFromCalendarEvents`, `animateAvailability`,
+    `stopAvailabilityAnim`, `reanimateAvailability` — non-contiguous, more intertwined), and the
+    sign-up-block editing split into a child component.
+  - **⚠️ Verification caveat:** frontend CI runs `npm build` + 3 unrelated vitest files — it checks
+    *compilation, not runtime behavior*. Mixin method-moves are behavior-preserving by Vue semantics
+    (build-verifiable). The **sign-up-block → child-component split is materially riskier** (template
+    + props + events, runtime-only behavior) and really wants the app run to verify — don't do it
+    blind. B3 (grid-math tests) can extract the pure bits of the geometry logic for real coverage.
 
 - [x] **A6 · Split `server/routes/events.go` (1,925 lines).** `M` — **DONE 2026-07-22 (CI-green,
   in 3 incremental commits).** Pure reorg, no behavior change; `InitEvents` (route registration)
