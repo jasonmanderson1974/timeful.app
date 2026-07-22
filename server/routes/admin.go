@@ -70,13 +70,10 @@ func effectiveTargetRole(email string) models.Role {
 // @Success 200 {array} allowlistMember
 // @Router /admin/allowlist [get]
 func getAllowlist(c *gin.Context) {
-	// Only admins may read the full roster. Members can invite (POST) but must
-	// not be able to enumerate every member's email/name/role.
-	if !authUserFromContext(c).EffectiveRole().CanManageUsers() {
-		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
-		return
-	}
-
+	// Any member+ may VIEW the full roll (the group's CanInviteRequired already
+	// excludes guests). This is an intentional product choice — the club is
+	// transparent about who's on the roll. Management actions (invite at an
+	// elevated role, change roles, strike) stay admin-only in their handlers.
 	entries := db.GetAllowlist()
 
 	// Batch-fetch the accounts for all listed emails in one query (avoids N+1).

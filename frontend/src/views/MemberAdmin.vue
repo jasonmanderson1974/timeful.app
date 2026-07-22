@@ -12,8 +12,8 @@
             and set each member's standing; strike an email to revoke access.
           </span>
           <span v-else>
-            Invite a guest to the Fellowship by adding their email below. Only an
-            admin may raise a member's standing or strike them from the roll.
+            Invite a guest below, and see everyone on the roll. Only an admin may
+            raise a member's standing or strike them from the roll.
           </span>
         </div>
       </div>
@@ -60,8 +60,8 @@
         </div>
       </div>
 
-      <!-- Roll (admins only) -->
-      <div v-if="canManageUsers" class="tw-flex tw-flex-col tw-gap-3">
+      <!-- Roll — visible to all members; management controls are admin-only -->
+      <div v-if="canInvite" class="tw-flex tw-flex-col tw-gap-3">
         <div class="tw-text-lg tw-font-medium tw-text-parchment">
           On the roll
           <span class="tw-text-parchment-dim">({{ members.length }})</span>
@@ -131,8 +131,9 @@
             {{ roleLabel(member.role) }}
           </span>
 
-          <!-- Strike -->
+          <!-- Strike (admins only) -->
           <v-btn
+            v-if="canManageUsers"
             icon
             small
             :disabled="!canStrike(member) || busyEmail === member.email"
@@ -273,11 +274,8 @@ export default {
       this.$router.replace({ name: "home" })
       return
     }
-    if (this.canManageUsers) {
-      await this.fetchAllowlist()
-    } else {
-      this.loading = false
-    }
+    // Members and admins alike may view the roll (read-only for members).
+    await this.fetchAllowlist()
   },
 
   methods: {
