@@ -30,7 +30,8 @@ func GetFriendRequestById(friendRequestId string) *models.FriendRequest {
 	// Decode result
 	var friendRequest models.FriendRequest
 	if err := result.Decode(&friendRequest); err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return nil
 	}
 
 	return &friendRequest
@@ -40,13 +41,14 @@ func DeleteFriendRequestById(friendRequestId string) {
 	objectId, err := primitive.ObjectIDFromHex(friendRequestId)
 	if err != nil {
 		// friendRequestId is malformatted
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return
 	}
 	_, err = FriendRequestsCollection.DeleteOne(context.Background(), bson.M{
 		"_id": objectId,
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
 	}
 }
 
@@ -59,7 +61,7 @@ Note: we find the log localized to the user's month/day/year in order to track i
 own timezone, rather than the server's timezone. For example, if a user signed in at 11pm on Monday, then signed in at 8am on Tuesday,
 it could theoretically count as the same day if we were to use server time
 */
-func GetDailyUserLogByDate(date time.Time, timezoneOffset int) *models.DailyUserLog {
+func GetDailyUserLogByDate(date time.Time, timezoneOffset int) (*models.DailyUserLog, error) {
 	timezoneOffsetDuration, _ := time.ParseDuration(fmt.Sprintf("%dm", timezoneOffset))
 	adjustedDate := date.Add(timezoneOffsetDuration)
 	startDate := utils.GetDateAtTime(adjustedDate, "00:00:00")
@@ -82,21 +84,26 @@ func GetDailyUserLogByDate(date time.Time, timezoneOffset int) *models.DailyUser
 		}
 		result, err := DailyUserLogCollection.InsertOne(context.Background(), log)
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			return nil, err
 		}
 		log.Id = result.InsertedID.(primitive.ObjectID)
 	} else {
 		// Parse daily user log object
 		if err := result.Decode(&log); err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			return nil, err
 		}
 	}
 
-	return &log
+	return &log, nil
 }
 
 func UpdateDailyUserLog(user *models.User) {
-	log := GetDailyUserLogByDate(time.Now(), user.TimezoneOffset)
+	log, err := GetDailyUserLogByDate(time.Now(), user.TimezoneOffset)
+	if err != nil {
+		return
+	}
 	for _, id := range log.UserIds {
 		if id == user.Id {
 			return
@@ -104,8 +111,8 @@ func UpdateDailyUserLog(user *models.User) {
 	}
 
 	log.UserIds = append(log.UserIds, user.Id)
-	_, err := DailyUserLogCollection.UpdateByID(context.Background(), log.Id, bson.M{"$set": log})
+	_, err = DailyUserLogCollection.UpdateByID(context.Background(), log.Id, bson.M{"$set": log})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
 	}
 }

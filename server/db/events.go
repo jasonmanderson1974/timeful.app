@@ -132,7 +132,7 @@ func GetAttendees(eventId string) []models.Attendee {
 	return attendees
 }
 
-func GetEventsCreatedThisMonth(userId primitive.ObjectID) int {
+func GetEventsCreatedThisMonth(userId primitive.ObjectID) (int, error) {
 	// Get the start of this month
 	now := time.Now()
 	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
@@ -144,10 +144,11 @@ func GetEventsCreatedThisMonth(userId primitive.ObjectID) int {
 		},
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return 0, err
 	}
 
-	return int(result)
+	return int(result), nil
 }
 
 // Returns a random unique short event id seeded by the actual event id

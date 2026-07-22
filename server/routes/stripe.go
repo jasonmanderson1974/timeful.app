@@ -320,8 +320,8 @@ func stripeWebhook(c *gin.Context) {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		user := db.GetUserByStripeCustomerId(inv.Customer.ID)
-		if user == nil {
+		user, err := db.GetUserByStripeCustomerId(inv.Customer.ID)
+		if err != nil || user == nil {
 			logger.StdErr.Printf("Error getting user: %v", err)
 			return
 		}
@@ -338,8 +338,8 @@ func stripeWebhook(c *gin.Context) {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		user := db.GetUserByStripeCustomerId(sub.Customer.ID)
-		if user == nil {
+		user, err := db.GetUserByStripeCustomerId(sub.Customer.ID)
+		if err != nil || user == nil {
 			logger.StdErr.Printf("Error getting user: %v", err)
 			return
 		}
