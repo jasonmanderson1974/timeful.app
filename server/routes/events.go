@@ -1563,6 +1563,12 @@ func duplicateEvent(c *gin.Context) {
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
 
+	// Guests may respond to events but not create them (incl. via duplicate).
+	if !user.EffectiveRole().CanCreateEvents() {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
+		return
+	}
+
 	// Get event
 	event := db.GetEventByEitherId(eventId)
 	if event == nil {
@@ -1671,6 +1677,12 @@ func importEvent(c *gin.Context) {
 
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
+
+	// Guests may respond to events but not create them (incl. via import).
+	if !user.EffectiveRole().CanCreateEvents() {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
+		return
+	}
 
 	// Parse the URL to extract base URL and event ID
 	parsed, err := url.Parse(payload.URL)

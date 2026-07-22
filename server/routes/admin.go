@@ -68,6 +68,13 @@ func effectiveTargetRole(email string) models.Role {
 // @Success 200 {array} allowlistMember
 // @Router /admin/allowlist [get]
 func getAllowlist(c *gin.Context) {
+	// Only admins may read the full roster. Members can invite (POST) but must
+	// not be able to enumerate every member's email/name/role.
+	if !authUserFromContext(c).EffectiveRole().CanManageUsers() {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
+		return
+	}
+
 	entries := db.GetAllowlist()
 	members := make([]allowlistMember, 0, len(entries))
 	for _, entry := range entries {
