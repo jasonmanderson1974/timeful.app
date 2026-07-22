@@ -62,6 +62,18 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   If desired later, do it **incrementally, one function at a time, gated by Backend CI** — not as a
   single sweep. `db/init.go` panics are startup/fail-fast and should stay.
 
+  **Incremental refactor — batch 1 DONE 2026-07-22 (CI-green):** de-panicked the lowest-caller
+  getters — `db/utils.go` (`GetDailyUserLogByDate`→`(_, error)`, `UpdateDailyUserLog`,
+  `GetFriendRequestById`/`DeleteFriendRequestById` — the last two have 0 callers, i.e. **dead code**,
+  candidates for deletion), `GetEventsCreatedThisMonth`→`(int, error)`, `GetUserByStripeCustomerId`
+  →`(*User, error)`. **Remaining tiers (heads-up — entangled/high-caller):** the event getters
+  (`GetEventById`, `GetEventByShortId`, `GetEventByEitherId`, `GenerateShortEventId`) are a **single
+  cluster** — `GetEventByEitherId` (11 callers) calls the other two, so they must move together
+  (~17 call sites). `GetUserById` (20 callers) and `GetUserByEmail` (8) are the other big ones, plus
+  `GetEventResponses`/`GetAttendees` (slices) and the `services/` functions (`CallApi`,
+  `GetTokensFromAuthCode`, `RefreshAccessToken`, `GetUserInfo`, `CreateEmailTask`). These are the
+  high-effort/low-benefit end (all already recovered → 500); decide whether they're worth it.
+
 - [x] **A3 · Unchecked writes in loops.** `S` — **DONE 2026-07-22 (the 3 listed sites).**
   `createEvent` now builds an `[]interface{}` and uses a single `InsertMany` with an error check
   (returns 500 on failure — it runs before the event is inserted, so no partial event). The
