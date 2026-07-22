@@ -128,32 +128,30 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P1 — Structural debt that slows every future change
 
-- [ ] **A5 · Break up `ScheduleOverlap.vue` (was 4,638 lines, ~99 methods).** `L` — **IN PROGRESS
-  2026-07-22 (2 mixin slices done, CI-green; component 4,638 → 4,125 lines).**
+- [ ] **A5 · Break up `ScheduleOverlap.vue` (was 4,638 lines, ~99 methods).** `L` — **SAFE PART DONE
+  2026-07-22 (3 mixin slices, CI-green; component 4,638 → 3,744 lines, ~19% smaller). Only the
+  riskier child-component split remains — see caveat.**
   This is the single largest maintenance liability in the repo — a god-component mixing drag-select
   grid math, availability animation, calendar-account plumbing, sign-up-block editing, and
-  respondent hover/selection. Extract cohesive units: a composable/mixin for grid geometry
-  (`getRowColFromXY`, `clamp*`, `normalizeXY`, drag lifecycle), one for availability
-  fetch/format/animate, and split sign-up-block editing into its own child.
-  - **Step 1 DONE:** grid geometry + drag lifecycle (8 contiguous methods: `normalizeXY`,
-    `clampRow`, `clampCol`, `getRowColFromXY`, `endDrag`, `inDragRange`, `moveDrag`, `startDrag`) →
-    `schedule_overlap/dragGridMixin.js`. 4,638 → 4,303 lines.
-  - **Step 2 DONE:** the "Aggregate user availability" region (`fetchResponses`,
-    `getResponsesFormatted`, `getRespondentsForHoursOffset`, `showAvailability`) →
-    `schedule_overlap/availabilityMixin.js`. 4,303 → 4,125 lines.
-  - Both are verbatim Vue 2 mixin moves (behavior-preserving: methods run on the same instance `this`;
-    template bindings and cross-`this.*` calls resolve unchanged). Verified per step via `npm build`
-    (compiles + wires the mixin), eslint (no `no-undef` ⇒ imports resolve), and unit tests (23/23).
-  - **Remaining:** the *animation* half of availability (`animateAvailability`, `stopAvailabilityAnim`,
-    `reanimateAvailability`, `setAvailabilityAutomatically`, `getAvailabilityFromCalendarEvents` —
-    scattered/intertwined, another mixin candidate), and the **sign-up-block editing → child
-    component** split.
-  - **⚠️ Verification caveat / deliberate stopping point:** frontend CI runs `npm build` + 3 unrelated
-    vitest files — it checks *compilation, not runtime behavior*. Mixin method-moves are
-    behavior-preserving by Vue semantics (build-verifiable) — safe to continue blind. The
-    **sign-up-block → child-component split is materially riskier** (template + props + events,
-    runtime-only behavior) and should NOT be done blind — do it when someone can run the app to
-    smoke-test. B3 (grid-math tests) can extract the pure bits of the geometry logic for real coverage.
+  respondent hover/selection.
+  - **Step 1 DONE:** grid geometry + drag lifecycle (`normalizeXY`, `clampRow`, `clampCol`,
+    `getRowColFromXY`, `endDrag`, `inDragRange`, `moveDrag`, `startDrag`) →
+    `schedule_overlap/dragGridMixin.js`. 4,638 → 4,303.
+  - **Step 2 DONE:** "Aggregate user availability" (`fetchResponses`, `getResponsesFormatted`,
+    `getRespondentsForHoursOffset`, `showAvailability`) → `availabilityMixin.js`. 4,303 → 4,125.
+  - **Step 3 DONE:** "Current user availability" incl. the animate cluster (`refreshAuthUser`,
+    `resetCurUserAvailability`, `populateUserAvailability`, `getIsTimeBlockInFirstSplit`,
+    `getTimeBlockStyle`, `getAvailabilityFromCalendarEvents`, `setAvailabilityAutomatically`,
+    `animateAvailability`, `stopAvailabilityAnim`) → `currentAvailabilityMixin.js`. 4,125 → 3,744.
+  - All three are verbatim Vue 2 mixin moves (behavior-preserving: methods run on the same instance
+    `this`; template bindings and cross-`this.*` calls resolve unchanged). Verified per step via
+    `npm build`, **eslint `no-undef`** (the real gate — it caught a `dayjs` free-reference in step 3
+    that `npm build` bundled silently), and unit tests (23/23).
+  - **Remaining — do NOT do blind:** split **sign-up-block editing into a child component** (template
+    + props + events = runtime-only behavior `npm build` can't verify). Frontend CI checks
+    *compilation, not runtime behavior*, so this needs someone to run the app and smoke-test. Optional
+    smaller mixin candidates also remain (respondent hover/selection, timeslot styling, options).
+    B3 (grid-math tests) can extract the pure bits of the geometry logic for real coverage.
 
 - [x] **A6 · Split `server/routes/events.go` (1,925 lines).** `M` — **DONE 2026-07-22 (CI-green,
   in 3 incremental commits).** Pure reorg, no behavior change; `InitEvents` (route registration)
