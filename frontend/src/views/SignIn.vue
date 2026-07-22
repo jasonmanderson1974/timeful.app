@@ -32,47 +32,6 @@
           </v-card-title>
           <v-card-text class="tw-flex tw-flex-col tw-items-center tw-pt-6">
             <div class="tw-mb-4 tw-flex tw-w-full tw-flex-col tw-gap-y-2">
-              <v-btn
-                block
-                @click="signIn(calendarTypes.GOOGLE)"
-                class="tw-bg-white"
-              >
-                <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
-                  <v-img
-                    class="tw-flex-initial"
-                    width="20"
-                    height="20"
-                    src="@/assets/google_logo.svg"
-                  />
-                  <v-spacer />
-                  {{ isSignUp ? "Sign up with" : "Continue with" }} Google
-                  <v-spacer />
-                </div>
-              </v-btn>
-              <v-btn
-                block
-                @click="signIn(calendarTypes.OUTLOOK)"
-                class="tw-bg-white"
-              >
-                <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
-                  <v-img
-                    class="tw-flex-initial"
-                    width="20"
-                    height="20"
-                    src="@/assets/outlook_logo.svg"
-                  />
-                  <v-spacer />
-                  {{ isSignUp ? "Sign up with" : "Continue with" }} Outlook
-                  <v-spacer />
-                </div>
-              </v-btn>
-
-              <div class="tw-my-2 tw-flex tw-items-center tw-gap-3">
-                <v-divider />
-                <span class="tw-text-xs tw-text-parchment-dim">or</span>
-                <v-divider />
-              </div>
-
               <div>
                 <div class="tw-mb-1 tw-text-sm tw-font-medium">
                   Email address
@@ -94,7 +53,7 @@
                   :disabled="sending"
                   @click="submitEmail"
                 >
-                  {{ isSignUp ? "Sign up with" : "Continue with" }} Email
+                  {{ isSignUp ? "Join the Fellowship" : "Continue" }}
                 </v-btn>
               </div>
             </div>
@@ -256,8 +215,7 @@
 </template>
 
 <script>
-import { authTypes, calendarTypes } from "@/constants"
-import { post, signInGoogle, signInOutlook } from "@/utils"
+import { post } from "@/utils"
 import { mapMutations } from "vuex"
 import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
 
@@ -288,7 +246,6 @@ export default {
 
   data() {
     return {
-      calendarTypes,
       isSignUp: this.initialIsSignUp,
       step: "select",
       email: "",
@@ -307,16 +264,6 @@ export default {
 
   methods: {
     ...mapMutations(["setAuthUser"]),
-    signIn(provider) {
-      const state = this.upgradeRedirect
-        ? { type: authTypes.UPGRADE, upgradeParams: this.$route.query.upgradeParams }
-        : null
-      if (provider === calendarTypes.GOOGLE) {
-        signInGoogle({ state, selectAccount: true })
-      } else if (provider === calendarTypes.OUTLOOK) {
-        signInOutlook({ state, selectAccount: true })
-      }
-    },
     validateEmail() {
       const email = this.email.trim()
       if (!email) {

@@ -15,8 +15,14 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 - **Primary auth = passwordless EMAIL CODE (OTP), gated by an allowlist.**
   Enter email → server checks the **`allowlist`** → on it: email a 6-digit code → verify → in.
   Not on it: show *"The Fellowship is by invitation only"*, **no account created, no code sent**.
-- **Google OAuth = optional second door**, checked against the **same allowlist** (kept because it
-  powers calendar autofill for those who have Google). Can be dropped later if user wants email-only.
+- **Google OAuth = REMOVED as a LOGIN path (2026-07-21).** Login is now **email-OTP-only** — the
+  Google/Outlook buttons were stripped from the sign-in surfaces (`SignIn.vue`, `SignInDialog.vue`, and
+  the pure-login link in `groups/NotSignedIn.vue`). Google OAuth is **kept only for calendar autofill /
+  contacts import** (Event availability, Settings → calendar accounts, create-event/group flows) — a
+  post-login feature, still gated by the same allowlist. Rationale: user plans to go live with the
+  Google consent screen open (allowlist is the real gate), and OTP is the sole desired auth path.
+  NOTE: the autofill feature still uses the Google consent screen, so connecting a Google calendar
+  still hits Google's test-user/verification limits — but that's opt-in and does not affect login.
 - **Email transport = plain Gmail account via SMTP + app password** (`smtp.gmail.com`). Low volume
   (login codes for ~40 people) is well within Gmail's ~500/day limit. "From" = the gmail address.
 - **Guest (no-login) event responses: LEFT OPEN.** Members share Gathering links internally; we are

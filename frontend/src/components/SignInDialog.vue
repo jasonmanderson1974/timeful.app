@@ -11,47 +11,6 @@
         <v-card-title>Sign in</v-card-title>
         <v-card-text class="tw-flex tw-flex-col tw-items-center">
           <div class="tw-mb-4 tw-flex tw-w-full tw-flex-col tw-gap-y-2">
-            <v-btn
-              block
-              @click="signIn(calendarTypes.GOOGLE)"
-              class="tw-bg-white"
-            >
-              <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
-                <v-img
-                  class="tw-flex-initial"
-                  width="20"
-                  height="20"
-                  src="@/assets/google_logo.svg"
-                />
-                <v-spacer />
-                Continue with Google
-                <v-spacer />
-              </div>
-            </v-btn>
-            <v-btn
-              block
-              @click="signIn(calendarTypes.OUTLOOK)"
-              class="tw-bg-white"
-            >
-              <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
-                <v-img
-                  class="tw-flex-initial"
-                  width="20"
-                  height="20"
-                  src="@/assets/outlook_logo.svg"
-                />
-                <v-spacer />
-                Continue with Outlook
-                <v-spacer />
-              </div>
-            </v-btn>
-
-            <div class="tw-my-2 tw-flex tw-items-center tw-gap-3">
-              <v-divider />
-              <span class="tw-text-parchment-dim tw-text-xs">or</span>
-              <v-divider />
-            </div>
-
             <div>
               <div class="tw-mb-1 tw-text-sm tw-font-medium">Email address</div>
               <v-text-field
@@ -71,7 +30,7 @@
                 :disabled="sending"
                 @click="submitEmail"
               >
-                Continue with Email
+                Continue
               </v-btn>
             </div>
           </div>
@@ -198,7 +157,6 @@
 </template>
 
 <script>
-import { calendarTypes } from "@/constants"
 import { post } from "@/utils"
 
 export default {
@@ -208,7 +166,6 @@ export default {
   },
   data() {
     return {
-      calendarTypes,
       step: "select",
       email: "",
       firstName: "",
@@ -224,9 +181,6 @@ export default {
     }
   },
   methods: {
-    signIn(provider) {
-      this.$emit("signIn", provider)
-    },
     validateEmail() {
       const email = this.email.trim()
       if (!email) {

@@ -103,19 +103,9 @@ export default {
       })
     },
     signIn() {
-      if (isWebview(navigator.userAgent)) {
-        this.webviewDialog = true
-        return
-      }
-
-      const state = {
-        type: authTypes.GROUP_SIGN_IN,
-        groupId: this.$route.params.groupId,
-      }
-      signInGoogle({
-        state,
-        selectAccount: true,
-      })
+      // Login is email-OTP-only; send them to the sign-in page. (The
+      // "join with your calendar" path above still uses Google for autofill.)
+      this.$router.push({ name: "sign-in" })
     },
   },
 
