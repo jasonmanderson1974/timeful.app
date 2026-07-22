@@ -1,7 +1,7 @@
 import Vue from "vue"
 import Vuex from "vuex"
 import { get, isPremiumUser } from "@/utils"
-import { roles, normalizeRole } from "@/constants"
+import { roleGetters } from "./role_getters"
 import {
   createFolder,
   deleteFolder,
@@ -46,32 +46,7 @@ export default new Vuex.Store({
     isPremiumUser(state) {
       return isPremiumUser(state.authUser)
     },
-    // Effective role of the signed-in user (empty ⇒ member; null user ⇒ guest-less)
-    role(state) {
-      return state.authUser ? normalizeRole(state.authUser.role) : null
-    },
-    isGuest(state, getters) {
-      return getters.role === roles.GUEST
-    },
-    isSuperAdmin(state, getters) {
-      return getters.role === roles.SUPER_ADMIN
-    },
-    // Can add emails to the allowlist (member and up)
-    canInvite(state, getters) {
-      return [roles.MEMBER, roles.ADMIN, roles.SUPER_ADMIN].includes(
-        getters.role
-      )
-    },
-    // Can manage users / change roles (admin and up)
-    canManageUsers(state, getters) {
-      return [roles.ADMIN, roles.SUPER_ADMIN].includes(getters.role)
-    },
-    // Everyone except guests may create events. Anonymous (not signed in) is
-    // allowed too, matching the backend createEvent, which rejects only
-    // signed-in guests — they'll be prompted to sign in when they try to save.
-    canCreateEvents(state, getters) {
-      return getters.role !== roles.GUEST
-    },
+    ...roleGetters,
   },
   mutations: {
     setError(state, error) {

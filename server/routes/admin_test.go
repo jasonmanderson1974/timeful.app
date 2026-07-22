@@ -6,6 +6,33 @@ import (
 	"schej.it/server/models"
 )
 
+func TestIsValidEmail(t *testing.T) {
+	valid := []string{
+		"a@b.com",
+		"stf-admin@jasonmanderson.com",
+		"user@example.co.uk",
+	}
+	for _, e := range valid {
+		if !isValidEmail(e) {
+			t.Errorf("isValidEmail(%q) = false, want true", e)
+		}
+	}
+
+	invalid := []string{
+		"",                    // empty
+		"plainaddress",        // no @
+		"user+tag@gmail.com",  // '+' aliases rejected
+		"<a@b.com>",           // angle-bracket form (addr.Address != input)
+		"Name <a@b.com>",      // display name form
+		"a b@c.com",           // space in local part
+	}
+	for _, e := range invalid {
+		if isValidEmail(e) {
+			t.Errorf("isValidEmail(%q) = true, want false", e)
+		}
+	}
+}
+
 func TestCanGrantRole(t *testing.T) {
 	cases := []struct {
 		name          string

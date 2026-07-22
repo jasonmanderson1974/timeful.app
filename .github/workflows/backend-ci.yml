@@ -1,0 +1,42 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths:
+      - "server/**"
+      - ".github/workflows/backend-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "server/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  backend-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache-dependency-path: server/go.sum
+
+      # Compiles the whole server (main package + all its imports). The one-off
+      # migration scripts under server/scripts are standalone main packages that
+      # aren't imported, so this doesn't touch them (they reference outdated
+      # models and don't compile — see reference-vm-go-test).
+      - name: Compile server
+        run: go build .
+
+      # Unit tests that need no external services (Mongo/SMTP/Google). db and
+      # services/* tests require a live Mongo / credentials, so they're excluded.
+      - name: Run unit tests
+        run: go test ./models/ ./routes/ ./utils/
