@@ -235,10 +235,16 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   `User.Email` stripping, entangled with the `shouldKeep` DB call) and `updateEventResponse`'s
   signed-in / GROUP / sign-up-form branches are still uncovered.
 
-- [ ] **B2 · Cover access-control end to end.** `S` · **P1**
-  `models/roles.go` has unit tests, but the middleware wiring (`middleware/auth.go` allowlist
-  enforcement + `CanInviteRequired`) is the actual gate for an invite-only app. Add handler-level
-  tests that a struck-off member's session is rejected and a guest cannot create events.
+- [x] **B2 · Cover access-control end to end.** `S` · **P1** — **DONE 2026-07-22 (CI-green).**
+  New `routes/access_control_test.go` exercises the invite-only gate end to end (not just the
+  `models/roles.go` unit level). `AuthRequired` is driven through a real gin engine + session
+  middleware, with the session cookie minted via a `test-login` helper route (the way a real sign-in
+  would): not-signed-in → 401; **struck-off member** (valid session, email no longer allowlisted) →
+  401 (a sentinel allowlist entry keeps the list non-empty so `IsAccessAllowed` can't fail open);
+  allowlisted member → 200. `CanInviteRequired` (pure): guest → 403 + aborted, member → passes.
+  Handler role check: a **guest POSTing `/events` → 403** before any event is built. DB-backed cases
+  gate on `requireDB` (skip without Mongo; run in CI).
+  *(Fixed one CI-caught bug: `primitive.DateTime` binds from an RFC3339 string, not epoch-ms.)*
 
 - [ ] **B3 · Frontend: cover the grid/availability math extracted in A5.** `M` · **P2**
   The geometry helpers are pure functions once extracted — high-value, easy-to-test, and currently
