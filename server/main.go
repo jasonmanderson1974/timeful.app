@@ -133,6 +133,7 @@ func main() {
 	routes.InitEvents(apiRouter)
 	routes.InitStripe(apiRouter)
 	routes.InitFolders(apiRouter)
+	routes.InitAdmin(apiRouter)
 	slackbot.InitSlackbot(apiRouter)
 
 	frontendDist := os.Getenv("FRONTEND_DIST")

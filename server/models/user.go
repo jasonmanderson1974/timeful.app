@@ -18,6 +18,10 @@ type User struct {
 	// Whether the user has set a custom name for themselves, i.e. don't change their name when they sign in
 	HasCustomName *bool `json:"hasCustomName" bson:"hasCustomName,omitempty"`
 
+	// CanInvite designates a member who may manage the invite-only allowlist
+	// (add/remove emails, promote other inviters) via the /admin routes.
+	CanInvite *bool `json:"canInvite" bson:"canInvite,omitempty"`
+
 	// CalendarAccounts is a mapping from {`email_CALENDARTYPE` => CalendarAccount} that contains all the
 	// additional accounts the user wants to see google calendar events for
 	CalendarAccounts map[string]CalendarAccount `json:"calendarAccounts" bson:"calendarAccounts,omitempty"`

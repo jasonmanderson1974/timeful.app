@@ -55,6 +55,30 @@ func GetUserByStripeCustomerId(stripeCustomerId string) *models.User {
 	return &user
 }
 
+// SetUserCanInvite sets the canInvite flag on the user with the given email
+// (case-insensitive). Returns the number of users matched (0 if no account
+// exists for that email yet).
+func SetUserCanInvite(email string, canInvite bool) (int64, error) {
+	e := strings.ToLower(strings.TrimSpace(email))
+	if e == "" {
+		return 0, nil
+	}
+	opts := options.Update().SetCollation(&options.Collation{
+		Locale:   "en",
+		Strength: 2, // case-insensitive match on email
+	})
+	res, err := UsersCollection.UpdateOne(
+		context.Background(),
+		bson.M{"email": e},
+		bson.M{"$set": bson.M{"canInvite": canInvite}},
+		opts,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return res.MatchedCount, nil
+}
+
 func GetUserByEmail(email string) *models.User {
 	emailQuery := strings.TrimSpace(email)
 	if emailQuery == "" {

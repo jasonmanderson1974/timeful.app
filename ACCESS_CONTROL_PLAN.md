@@ -82,10 +82,22 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 - [ ] **Manual (user, on VM):** set `GMAIL_APP_PASSWORD` + `SCHEJ_EMAIL_ADDRESS` in `server/.env`, then
       `docker compose up -d --build server`. Send a test code to confirm delivery (check spam).
 
-### Phase C — Inviter role + admin UI
-- [ ] `User.canInvite` flag; protect invite/admin endpoints by it.
-- [ ] Endpoints: list allowlist, add email (invite), remove email, toggle `canInvite` on a user.
-- [ ] A simple **member-admin page** (Fellowship-themed) visible only to `canInvite` users.
+### Phase C — Inviter role + admin UI  *(DONE 2026-07-21, code complete; awaits VM deploy + bootstrap)*
+- [x] `User.canInvite *bool` (`models/user.go`) — returned by `/user/profile`, so `authUser.canInvite`
+      drives UI. `db.SetUserCanInvite(email, bool)` accessor (`db/users.go`, case-insensitive).
+- [x] `middleware.CanInviteRequired()` (chained after `AuthRequired`) → 403 `errs.NotAuthorized`.
+- [x] `routes/admin.go` (`InitAdmin`, group `/api/admin`, both middlewares): `GET /allowlist`
+      (enriched w/ hasAccount + name + canInvite), `POST /allowlist` (invite, validates email),
+      `DELETE /allowlist` (remove; blocks self via `errs.CannotRemoveSelf`),
+      `POST /member/can-invite` (promote/demote; blocks self-demote; 404 if no account yet).
+      New errs: `NotAuthorized`, `InvalidEmail`, `CannotRemoveSelf`. Registered in `main.go`.
+- [x] Frontend: **`views/MemberAdmin.vue`** ("The Roll", Fellowship-themed) at route `/members`
+      (name `admin`, added to router auth-guard list); invite form + roll list w/ Member/Invited badge,
+      inviter toggle, strike button. "Members" link in `AuthUserMenu.vue` shown only when
+      `authUser.canInvite`. Client guard redirects non-inviters home (endpoints enforce server-side).
+- [ ] **Manual (user, on VM after deploy):** bootstrap the first admin —
+      `docker compose exec mongo mongosh schej-it --eval 'db.users.updateOne({email:"jason@jasonmanderson.com"},{$set:{canInvite:true}})'`
+      then reload the site; the "Members" menu item appears. Promote others via the UI thereafter.
 
 ### Phase D — Self-service contact info
 - [ ] Settings page: edit **email + phone** (name already editable).
@@ -104,7 +116,13 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 - 2026-07-21: **Phase B code DONE** — OTP codes now sent via `utils.SendEmail` (Gmail SMTP), themed
   HTML email, Listmonk OTP dependency removed. Reused `GMAIL_APP_PASSWORD`/`SCHEJ_EMAIL_ADDRESS`.
   Awaits: user sets those two vars in `server/.env` on the VM + rebuild/deploy + delivery test.
-- Phases C–E: ☐ not started. **Next after B ships = Phase C** (inviter role + admin UI).
+- 2026-07-21: **Login made email-OTP-only** (Google/Outlook sign-in buttons removed; Google kept for
+  calendar autofill only). Commit `88772a1`, deployed.
+- 2026-07-21: **Phase C code DONE** — `canInvite` role + `/api/admin` allowlist endpoints +
+  `CanInviteRequired` middleware + "The Roll" admin page (`/members`) + gated menu link. Awaits VM
+  deploy (server rebuild) + first-admin bootstrap (set `canInvite:true` on jason@ in Mongo).
+- Phases D–E: ☐ not started. **Next = Phase D** (self-service email/phone edit in Settings;
+  email-change → auto-add to allowlist) then **Phase E** (seed script for initial ~40 emails/admins).
 
 ## 6. Needs-from-user / manual steps
 

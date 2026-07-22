@@ -26,6 +26,12 @@ const (
 	InvalidIdToken        string = "invalid-id-token"
 	// NotInvited: the email is not on the invite-only allowlist
 	NotInvited string = "not-invited"
+	// NotAuthorized: the user is signed in but lacks permission (e.g. not an inviter)
+	NotAuthorized string = "not-authorized"
+	// InvalidEmail: the provided email failed validation
+	InvalidEmail string = "invalid-email"
+	// CannotRemoveSelf: an admin tried to remove their own access / inviter role
+	CannotRemoveSelf string = "cannot-remove-self"
 )
 
 // Sentinel error returned by signInHelper when an email is not allowlisted, so

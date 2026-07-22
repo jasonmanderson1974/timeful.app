@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"schej.it/server/db"
 	"schej.it/server/errs"
+	"schej.it/server/models"
 	"schej.it/server/responses"
 )
 
@@ -31,6 +32,29 @@ func AuthRequired() gin.HandlerFunc {
 		}
 
 		c.Set("authUser", user)
+
+		c.Next()
+	}
+}
+
+// CanInviteRequired must be chained AFTER AuthRequired. It rejects signed-in
+// users who are not designated inviters (User.canInvite), gating the /admin
+// allowlist-management routes.
+func CanInviteRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userInterface, exists := c.Get("authUser")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
+			c.Abort()
+			return
+		}
+		user := userInterface.(*models.User)
+
+		if user.CanInvite == nil || !*user.CanInvite {
+			c.JSON(http.StatusForbidden, responses.Error{Error: errs.NotAuthorized})
+			c.Abort()
+			return
+		}
 
 		c.Next()
 	}

@@ -34,6 +34,16 @@
             Give feedback
           </v-list-item-title>
         </v-list-item>
+        <v-list-item
+          v-if="authUser.canInvite"
+          id="members-btn"
+          @click="goToAdmin"
+        >
+          <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
+            <v-icon class="tw-mr-1" small color="black">mdi-account-group</v-icon>
+            Members
+          </v-list-item-title>
+        </v-list-item>
         <v-list-item id="settings-btn" @click="goToSettings">
           <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
             <v-icon class="tw-mr-1" small color="black">mdi-cog</v-icon>
@@ -96,6 +106,9 @@ export default {
     },
     goToSettings() {
       this.$router.replace({ name: "settings" })
+    },
+    goToAdmin() {
+      this.$router.replace({ name: "admin" })
     },
     addTeamMember() {
       this.$posthog?.capture("add_team_member_clicked")
