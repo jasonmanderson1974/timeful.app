@@ -143,6 +143,65 @@
           </v-btn>
         </div>
       </div>
+
+      <!-- Role reference (admins only) -->
+      <div v-if="canManageUsers" class="tw-flex tw-flex-col tw-gap-3">
+        <div class="tw-text-lg tw-font-medium tw-text-parchment">
+          What the standings mean
+        </div>
+        <div
+          class="tw-overflow-x-auto tw-rounded-xl tw-border tw-border-brass-dim tw-bg-leather/40"
+        >
+          <table class="tw-w-full tw-min-w-[560px] tw-text-sm">
+            <thead>
+              <tr class="tw-border-b tw-border-brass-dim">
+                <th
+                  class="tw-p-3 tw-text-left tw-font-medium tw-text-parchment-dim"
+                >
+                  Privilege
+                </th>
+                <th
+                  v-for="col in roleMatrix.cols"
+                  :key="col"
+                  class="tw-p-3 tw-text-center"
+                >
+                  <span
+                    class="tw-whitespace-nowrap tw-rounded-full tw-border tw-px-2 tw-py-0.5 tw-text-xs"
+                    :class="roleBadgeClass(col)"
+                    >{{ roleLabel(col) }}</span
+                  >
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(row, i) in roleMatrix.rows"
+                :key="i"
+                :class="
+                  i < roleMatrix.rows.length - 1
+                    ? 'tw-border-b tw-border-brass-dim/40'
+                    : ''
+                "
+              >
+                <td class="tw-p-3 tw-text-parchment">{{ row.label }}</td>
+                <td
+                  v-for="(cap, j) in row.caps"
+                  :key="j"
+                  class="tw-p-3 tw-text-center"
+                >
+                  <v-icon v-if="cap" small color="brass">mdi-check</v-icon>
+                  <span v-else class="tw-text-parchment-dim">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tw-text-xs tw-text-parchment-dim">
+          Admins may manage everyone except a Super Admin. The Super Admin
+          standing is set directly in the records and cannot be granted,
+          changed, or revoked through the app.
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -168,6 +227,24 @@ export default {
       loading: true,
       adding: false,
       busyEmail: "",
+      // Static reference chart: what each standing may do (columns ascend in privilege)
+      roleMatrix: {
+        cols: [roles.GUEST, roles.MEMBER, roles.ADMIN, roles.SUPER_ADMIN],
+        rows: [
+          { label: "Respond to gatherings", caps: [true, true, true, true] },
+          { label: "Create gatherings", caps: [false, true, true, true] },
+          { label: "Invite guests", caps: [false, true, true, true] },
+          { label: "Invite members & admins", caps: [false, false, true, true] },
+          {
+            label: "Manage the roll — set standings, strike members",
+            caps: [false, false, true, true],
+          },
+          {
+            label: "Cannot be removed or demoted in the app",
+            caps: [false, false, false, true],
+          },
+        ],
+      },
     }
   },
 
