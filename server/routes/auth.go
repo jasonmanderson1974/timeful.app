@@ -446,12 +446,19 @@ func sendOtp(c *gin.Context) {
 	// Email the code via Gmail SMTP (utils.SendEmail — GMAIL_APP_PASSWORD +
 	// SCHEJ_EMAIL_ADDRESS). Invite-only instance: low volume, well within
 	// Gmail's daily cap.
-	utils.SendEmail(
+	if sendErr := utils.SendEmail(
 		email,
 		fmt.Sprintf("%s is your Fellowship sign-in code", code),
 		buildOtpEmailBody(code),
 		"text/html",
-	)
+	); sendErr != nil {
+		// Delivery failed (e.g. missing/invalid SMTP creds). Remove the code we
+		// just stored — it's useless if it never reached the user — and surface
+		// the failure so the UI can tell them instead of pretending success.
+		db.OtpCodesCollection.DeleteMany(context.Background(), bson.M{"email": email})
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.OtpSendFailed})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{})
 }

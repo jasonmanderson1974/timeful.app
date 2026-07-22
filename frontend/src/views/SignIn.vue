@@ -163,6 +163,12 @@
             >
               Continue
             </v-btn>
+            <p
+              v-if="otpError"
+              class="tw-mt-3 tw-text-sm tw-text-oxblood"
+            >
+              {{ otpError }}
+            </p>
           </v-card-text>
         </template>
 
@@ -349,7 +355,10 @@ export default {
           this.otpError = ""
         }
       } catch (err) {
-        this.emailError = "Something went wrong. Please try again."
+        this.emailError =
+          err && err.parsed && err.parsed.error === "otp-send-failed"
+            ? this.otpSendErrorMessage(err)
+            : "Something went wrong. Please try again."
       } finally {
         this.sending = false
       }
@@ -363,7 +372,7 @@ export default {
         this.otpCode = ""
         this.otpError = ""
       } catch (err) {
-        this.otpError = "Failed to send code. Please try again."
+        this.otpError = this.otpSendErrorMessage(err)
       } finally {
         this.sending = false
       }
@@ -371,6 +380,14 @@ export default {
     async sendOtpEmail() {
       await post("/auth/otp/send", { email: this.email })
       this.startResendCooldown()
+    },
+    // Themed message for a failed code send. Distinguishes an actual delivery
+    // failure (server couldn't reach the mail relay) from a generic error.
+    otpSendErrorMessage(err) {
+      if (err && err.parsed && err.parsed.error === "otp-send-failed") {
+        return "The code could not be dispatched — the post has failed us. Try again shortly, or send word to a member if it persists."
+      }
+      return "Failed to send code. Please try again."
     },
     async resendOtp() {
       if (this.sending || this.resendCooldown > 0) return

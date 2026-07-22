@@ -12,8 +12,10 @@ import (
 	"schej.it/server/logger"
 )
 
-// Send email to the given email
-func SendEmail(toEmail string, subject string, body string, contentType string) {
+// Send email to the given email. Returns an error if the email could not be
+// sent (e.g. missing/invalid SMTP credentials) so callers can surface the
+// failure instead of silently swallowing it.
+func SendEmail(toEmail string, subject string, body string, contentType string) error {
 	if contentType == "" {
 		contentType = "text/plain"
 	}
@@ -29,10 +31,11 @@ func SendEmail(toEmail string, subject string, body string, contentType string) 
 
 	d := gomail.NewDialer("smtp.gmail.com", 587, fromEmail, appPassword)
 
-	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
 		logger.StdErr.Println(err)
+		return err
 	}
+	return nil
 }
 
 func AddUserToMailchimp(email string, firstName string, lastName string) {
