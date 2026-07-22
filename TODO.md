@@ -136,11 +136,20 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   fetch/format/animate, and split sign-up-block editing into its own child. No behavior change;
   do it incrementally behind the existing tests.
 
-- [ ] **A6 · Split `server/routes/events.go` (1,925 lines).** `M`
-  One file owns event CRUD, responses, calendar availability, and import, with several 200–300-line
-  handlers (`updateEventResponse` ~290, `getEvent` ~180, `importEvent` ~190). Split by concern —
-  `events.go` (CRUD), `event_responses.go`, `event_calendar.go`, `event_import.go` — keeping the
-  `InitEvents` registration in one place. Pure reorg; keeps diffs reviewable going forward.
+- [x] **A6 · Split `server/routes/events.go` (1,925 lines).** `M` — **DONE 2026-07-22 (CI-green,
+  in 3 incremental commits).** Pure reorg, no behavior change; `InitEvents` (route registration)
+  stays in `events.go`. All handlers/helpers moved within `package routes`, so cross-file references
+  resolve without changes. Final layout:
+  - `events.go` (946 lines) — CRUD/read: `InitEvents`, `createEvent`, `editEvent`, `getEventIds`,
+    `getEvent`, `deleteEvent`, `duplicateEvent`, `archiveEvent`.
+  - `event_responses.go` (837) — `getResponses`, `updateEventResponse`, `deleteEventResponse`,
+    `renameUser`, `userResponded`, `declineInvite` + helpers `findResponse`,
+    `shouldKeepGroupResponseUserEmails`, `stripSensitiveUserFields`, `getResponsesMap`.
+  - `event_import.go` (226) — `importEvent`.
+  - `event_calendar.go` (150) — `getCalendarAvailabilities`.
+  Each file's import block was hand-curated (no local Go — verified per-commit by Backend CI, since
+  Go errors on unused imports). No route/comment content changed, so Swagger `docs/` need no regen.
+  **Now testable in isolation → unblocks B1.**
 
 - [ ] **A7 · Consolidate date libraries (drop `moment`, ideally `spacetime`).** `S`
   `package.json` ships **three** date libs. `moment` has **0** references in `src/` — it's pure dead
