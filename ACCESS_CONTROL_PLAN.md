@@ -108,9 +108,9 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
       (so per-request access keeps passing), then remove the old email (no dangling invite at the old
       address). New errs `email-unchanged`, `email-taken`.
 
-### Phase E — Seed
-- [ ] Seed script (`server/scripts/` dated-folder convention) to load the initial ~30–40 emails
-      and mark the initial `canInvite` admins.
+### Phase E — Seed  *(DROPPED 2026-07-22 — not needed)*
+- Decided not to build a seed script; members are added ad-hoc via **The Roll** (`/members`) or
+  directly in Mongo. **Access control is COMPLETE** through Phase D.
 
 ## 5. Status / progress  (update each session)
 
