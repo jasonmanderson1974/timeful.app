@@ -86,7 +86,7 @@ func createEvent(c *gin.Context) {
 		Attendees []string `json:"attendees"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 	session := sessions.Default(c)
@@ -215,15 +215,25 @@ func createEvent(c *gin.Context) {
 
 		}
 
-		for _, attendee := range attendees {
-			db.AttendeesCollection.InsertOne(context.Background(), attendee)
+		if len(attendees) > 0 {
+			attendeeDocs := make([]interface{}, len(attendees))
+			for i, attendee := range attendees {
+				attendeeDocs[i] = attendee
+			}
+			if _, err := db.AttendeesCollection.InsertMany(context.Background(), attendeeDocs); err != nil {
+				logger.StdErr.Println(err)
+				c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+				return
+			}
 		}
 	}
 
 	// Insert event
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 
@@ -278,7 +288,7 @@ func editEvent(c *gin.Context) {
 		Attendees []string `json:"attendees"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		logger.StdErr.Println(err)
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -416,11 +426,13 @@ func editEvent(c *gin.Context) {
 				"groupName": event.Name,
 				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 			}, false)
-			db.AttendeesCollection.InsertOne(context.Background(), models.Attendee{
+			if _, err := db.AttendeesCollection.InsertOne(context.Background(), models.Attendee{
 				Email:    addedEmail.Value,
 				Declined: utils.FalsePtr(),
 				EventId:  event.Id,
-			})
+			}); err != nil {
+				logger.StdErr.Println(err)
+			}
 		}
 
 		// Send group update emails
@@ -451,7 +463,9 @@ func editEvent(c *gin.Context) {
 	)
 
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	c.Status(http.StatusOK)
@@ -673,6 +687,7 @@ func getResponses(c *gin.Context) {
 		TimeMax time.Time `form:"timeMax" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -806,6 +821,7 @@ func updateEventResponse(c *gin.Context) {
 		SignUpBlockIds []primitive.ObjectID `json:"signUpBlockIds"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 	session := sessions.Default(c)
@@ -936,12 +952,15 @@ func updateEventResponse(c *gin.Context) {
 				},
 			})
 		} else {
-			db.EventResponsesCollection.InsertOne(context.Background(), models.EventResponse{
+			if _, err := db.EventResponsesCollection.InsertOne(context.Background(), models.EventResponse{
 				UserId:   userIdString,
 				Response: &response,
 				EventId:  event.Id,
-			})
-			*event.NumResponses++
+			}); err != nil {
+				logger.StdErr.Println(err)
+			} else {
+				*event.NumResponses++
+			}
 		}
 	} else {
 		var response models.SignUpResponse
@@ -1061,7 +1080,9 @@ func updateEventResponse(c *gin.Context) {
 		bson.M{"$set": event},
 	)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
@@ -1082,6 +1103,7 @@ func deleteEventResponse(c *gin.Context) {
 		Name   string `json:"name"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 	session := sessions.Default(c)
@@ -1164,7 +1186,9 @@ func deleteEventResponse(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
@@ -1185,6 +1209,7 @@ func renameUser(c *gin.Context) {
 		NewName string `json:"newName"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 	eventId := c.Param("eventId")
@@ -1221,6 +1246,7 @@ func userResponded(c *gin.Context) {
 		Email string `json:"email" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -1354,6 +1380,7 @@ func getCalendarAvailabilities(c *gin.Context) {
 		TimeMax time.Time `form:"timeMax" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -1508,7 +1535,9 @@ func deleteEvent(c *gin.Context) {
 		})
 		err = result.Decode(&event)
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
 		}
 	} else {
 		// If event has no responses, actually delete the event object
@@ -1518,7 +1547,9 @@ func deleteEvent(c *gin.Context) {
 		})
 		err = result.Decode(&event)
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
 		}
 
 		// Delete folder associations
@@ -1526,7 +1557,9 @@ func deleteEvent(c *gin.Context) {
 			"eventId": objectId,
 		})
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+			return
 		}
 	}
 
@@ -1556,6 +1589,7 @@ func duplicateEvent(c *gin.Context) {
 		CopyAvailability *bool  `json:"copyAvailability" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -1594,7 +1628,9 @@ func duplicateEvent(c *gin.Context) {
 			eventResponse.EventId = event.Id
 			_, err := db.EventResponsesCollection.InsertOne(context.Background(), eventResponse)
 			if err != nil {
-				logger.StdErr.Panicln(err)
+				logger.StdErr.Println(err)
+				c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+				return
 			}
 			*event.NumResponses++
 		}
@@ -1607,7 +1643,9 @@ func duplicateEvent(c *gin.Context) {
 	// Insert new event
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
@@ -1627,7 +1665,7 @@ func archiveEvent(c *gin.Context) {
 		Archive *bool `json:"archive" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		c.Status(http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -1654,7 +1692,9 @@ func archiveEvent(c *gin.Context) {
 	var event models.Event
 	err = result.Decode(&event)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	c.Status(http.StatusOK)
@@ -1672,6 +1712,7 @@ func importEvent(c *gin.Context) {
 		URL string `json:"url" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
 		return
 	}
 
@@ -1815,7 +1856,9 @@ func importEvent(c *gin.Context) {
 
 	_, err = db.EventsCollection.InsertOne(context.Background(), remoteEvent)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
 	}
 
 	// Import responses as guest entries
@@ -1843,7 +1886,8 @@ func importEvent(c *gin.Context) {
 
 		_, err := db.EventResponsesCollection.InsertOne(context.Background(), eventResponse)
 		if err != nil {
-			logger.StdErr.Panicln(err)
+			logger.StdErr.Println(err)
+			continue
 		}
 		*remoteEvent.NumResponses++
 	}

@@ -16,28 +16,37 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P0 — Correctness & risk (do first)
 
-- [ ] **A1 · Fix silent request failures on bad input (`c.Bind` → `fmt.Println; return`).** `S`
-  `server/routes/events.go:88-91` (`createEvent`) binds the payload and, on error, prints to
-  stdout and `return`s — sending an HTTP **200 with an empty body** instead of a 400. The client
-  can't tell a malformed request from success. Audit all **33** `c.Bind` call sites and return
-  `c.JSON(http.StatusBadRequest, responses.Error{...})` consistently. Replace the `fmt.Println`
-  debug prints while here.
+- [x] **A1 · Standardize `c.Bind` failure responses.** `S` — **DONE 2026-07-22 (events.go).**
+  Correction to the original finding: the `events.go` sites use `c.Bind` (not `c.ShouldBind`), and
+  Gin's `c.Bind` **already** calls `AbortWithError(400)` internally — so these returned a **400 with
+  an empty body**, not a silent 200. (A true 200-on-bad-input would only occur at `ShouldBind`
+  sites, which already return proper JSON.) So A1 was a *consistency* issue, not a silent-success
+  bug. Fixed all **11** `events.go` bind handlers to return `c.JSON(http.StatusBadRequest,
+  responses.Error{Error: err.Error()})` (removing the lone `fmt.Println` debug print and the
+  bare/`c.Status`-only variants). **Follow-up:** the other route files' bind handlers already use
+  either `ShouldBindJSON` with a JSON error body or `BindJSON` (also auto-400) — spot-check for
+  consistency but no silent-200 bug found.
 
-- [ ] **A2 · Stop panicking inside request handlers on DB errors.** `M`
-  ~**73** `logger.StdErr.Panicln(...)` / `Panic` calls across `routes/`, `db/`, `services/`
-  (e.g. `events.go:226` on `InsertOne` failure). `gin.Recovery()` catches these, but the client
-  gets an opaque 500 and the pattern makes every transient Mongo hiccup a stack-trace. Convert
-  hot-path handlers to return a proper error response; reserve panics for truly-unrecoverable
-  startup/init. Start with the highest-traffic handlers in `events.go`.
+- [x] **A2 · Stop panicking inside request handlers on DB errors.** `M` — **DONE for `events.go`
+  (all 12 sites); ~61 remain in other files.** Converted every `logger.StdErr.Panicln(err)` in
+  `events.go` to `logger.StdErr.Println(err)` + `c.JSON(500, responses.Error{Error: errs.Internal})`
+  + `return`. The one exception is the `importEvent` response-import loop, where the event is already
+  inserted, so a failed response insert now logs and `continue`s (best-effort import) instead of
+  aborting mid-way. **Follow-up (still P0-class):** the same `Panicln`-on-DB-error pattern remains in
+  `routes/auth.go`, `routes/user.go`, `routes/admin.go`, `routes/folders.go`, `routes/stripe.go`,
+  and throughout `db/`. Do those next, file by file.
 
-- [ ] **A3 · Unchecked writes in loops.** `S`
-  `events.go:218-220` inserts attendees one-by-one in a loop, ignoring every error
-  (`db.AttendeesCollection.InsertOne(...)` with no `err` capture). Use `InsertMany` and check the
-  error. Same pattern recurs at `events.go:419`, `939`. Partial failures currently pass silently.
+- [x] **A3 · Unchecked writes in loops.** `S` — **DONE 2026-07-22 (the 3 listed sites).**
+  `createEvent` now builds an `[]interface{}` and uses a single `InsertMany` with an error check
+  (returns 500 on failure — it runs before the event is inserted, so no partial event). The
+  `editEvent` added-attendees insert and the `updateEventResponse` new-response insert now capture
+  and log the error (the latter only increments `NumResponses` on success). **Follow-up:** this is a
+  subset of a broader pattern — many `UpdateOne`/`UpdateByID` calls across the routes ignore their
+  error too (e.g. `updateEventResponse:947`); worth a dedicated unchecked-write sweep.
 
-- [ ] **A4 · Remove duplicate `refreshAuthUser` store action.** `S`
-  `frontend/src/store/index.js` defines `refreshAuthUser` **twice** (lines 144 and 248). The second
-  silently shadows the first (identical body today, but a latent footgun). Delete one.
+- [x] **A4 · Remove duplicate `refreshAuthUser` store action.** `S` — **DONE 2026-07-22.**
+  Deleted the second (shadowing) definition in `frontend/src/store/index.js`; the original at the
+  top of `actions` remains.
 
 ### P1 — Structural debt that slows every future change
 

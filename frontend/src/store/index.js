@@ -245,10 +245,6 @@ export default new Vuex.Store({
         console.error(err)
       }
     },
-    async refreshAuthUser({ commit }) {
-      const authUser = await get("/user/profile")
-      commit("setAuthUser", authUser)
-    },
   },
   modules: {},
 })
