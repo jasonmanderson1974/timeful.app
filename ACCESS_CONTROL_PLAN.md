@@ -65,11 +65,16 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 - [x] VERIFIED live: empty list ⇒ fail-open (no lockout); add 1 email ⇒ enforces (listed=invited,
       others=invited:false); cleared ⇒ dormant. **Allowlist is currently EMPTY (dormant).**
 
-### Phase B — Gmail SMTP for the codes
-- [ ] Replace the Listmonk send in `sendOtp` with Gmail SMTP (host `smtp.gmail.com:587` STARTTLS).
-- [ ] New env vars in `server/.env` (names TBD, proposed): `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
-      `SMTP_PASS` (app password), `SMTP_FROM`. **User adds the real app password on the VM** (secret).
-- [ ] Simple branded code email (plain/HTML): "Your Fellowship code is NNNNNN".
+### Phase B — Gmail SMTP for the codes  *(DONE 2026-07-21, code complete; awaits VM env + deploy)*
+- [x] Replaced the Listmonk send in `sendOtp` with **`utils.SendEmail`** (existing Gmail SMTP helper,
+      `smtp.gmail.com:587` via gomail). **Reused the existing env vars** `GMAIL_APP_PASSWORD` +
+      `SCHEJ_EMAIL_ADDRESS` instead of inventing new `SMTP_*` names — the helper already existed.
+- [x] Fellowship-themed HTML code email (`buildOtpEmailBody` in `routes/auth.go`): dark leather/brass,
+      inline styles, 10-min-expiry copy. Subject: "NNNNNN is your Fellowship sign-in code".
+- [x] Dropped `strconv` + `LISTMONK_OTP_EMAIL_TEMPLATE_ID` from the OTP path; `.env.template` updated
+      (GMAIL vars now marked *required for email OTP auth*; Listmonk OTP template marked no-longer-used).
+- [ ] **Manual (user, on VM):** set `GMAIL_APP_PASSWORD` + `SCHEJ_EMAIL_ADDRESS` in `server/.env`, then
+      `docker compose up -d --build server`. Send a test code to confirm delivery (check spam).
 
 ### Phase C — Inviter role + admin UI
 - [ ] `User.canInvite` flag; protect invite/admin endpoints by it.
@@ -90,8 +95,10 @@ Companion to `REDESIGN_PLAN.md`. Memory: `project-fellowship-access-control`.
 - 2026-06-20: Design finalized + documented.
 - 2026-06-20: **Phase A DONE & deployed** (`5853a06`) — allowlist + sign-in gate, fail-open while
   empty, verified live. Allowlist currently EMPTY ⇒ gate dormant, site behaves as before.
-- Phases B–E: ☐ not started. **Next = Phase B** (Listmonk→Gmail SMTP for the OTP code email;
-  needs the user's Gmail app password in `server/.env`).
+- 2026-07-21: **Phase B code DONE** — OTP codes now sent via `utils.SendEmail` (Gmail SMTP), themed
+  HTML email, Listmonk OTP dependency removed. Reused `GMAIL_APP_PASSWORD`/`SCHEJ_EMAIL_ADDRESS`.
+  Awaits: user sets those two vars in `server/.env` on the VM + rebuild/deploy + delivery test.
+- Phases C–E: ☐ not started. **Next after B ships = Phase C** (inviter role + admin UI).
 
 ## 6. Needs-from-user / manual steps
 
