@@ -115,6 +115,10 @@
                 </v-list-item-content>
               </v-list-item>
               <v-divider />
+              <v-list-item :href="icsUrl">
+                <v-icon small class="tw-mr-2">mdi-calendar-plus</v-icon>
+                <v-list-item-title>Add to calendar</v-list-item-title>
+              </v-list-item>
               <v-list-item @click="(e) => $emit('scheduleEvent', e)">
                 <v-list-item-title>Reschedule</v-list-item-title>
               </v-list-item>
@@ -223,7 +227,7 @@ import GCalWeekSelector from "./GCalWeekSelector.vue"
 import { isPhone } from "@/utils"
 import ExpandableSection from "../ExpandableSection.vue"
 import EventOptions from "./EventOptions.vue"
-import { timeTypes, guestUserId } from "@/constants"
+import { timeTypes, guestUserId, serverURL } from "@/constants"
 import { mapState, mapGetters } from "vuex"
 
 export default {
@@ -346,6 +350,11 @@ export default {
       const r = this.event.gatheringReminder
       if (!r || !r.enabled) return "No reminder email"
       return `Reminder ${r.leadTimeHours ?? 24}h before`
+    },
+    // Universal .ics download for the confirmed gathering (served by getEventIcs)
+    icsUrl() {
+      const id = this.event.shortId ?? this.event._id
+      return `${serverURL}/events/${id}/ics`
     },
   },
 }

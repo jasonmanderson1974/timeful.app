@@ -21,6 +21,15 @@
           class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-leather tw-px-2 tw-font-medium sm:tw-px-3"
           >Imported from when2meet</v-chip
         >
+        <v-chip
+          v-if="event.scheduledEvent"
+          :href="icsUrl"
+          :small="isPhone"
+          class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-brass tw-px-2 tw-font-medium tw-text-wood-deep sm:tw-px-3"
+        >
+          <v-icon small left class="tw-text-wood-deep">mdi-calendar-plus</v-icon>
+          Add to calendar
+        </v-chip>
         <template v-if="isGroup">
           <div class="">
             <v-chip
@@ -155,6 +164,7 @@
 <script>
 import { isPhone } from "@/utils"
 import { mapState } from "vuex"
+import { serverURL } from "@/constants"
 import HelpDialog from "@/components/HelpDialog.vue"
 
 /**
@@ -205,6 +215,12 @@ export default {
     ...mapState(["authUser"]),
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+    // Universal "add to calendar" (.ics) download for a confirmed gathering —
+    // works without any calendar account. Served by the backend getEventIcs.
+    icsUrl() {
+      const id = this.event.shortId ?? this.event._id
+      return `${serverURL}/events/${id}/ics`
     },
   },
 }

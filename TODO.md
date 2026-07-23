@@ -388,11 +388,31 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     pre-existing drift (the committed docs are already badly stale); left for a dedicated
     docs-regen pass.
 
-- [ ] **C3 · "Add to calendar" / `.ics` export for confirmed gatherings.** `S`
-  Many club members (esp. spouses) have no Google account (per `ACCESS_CONTROL_PLAN`), so the
-  Google-calendar scheduling path doesn't serve them. A universal `.ics` download / "add to
-  calendar" link works for everyone and needs no OAuth. The server already parses ICS
-  (`services/calendar/ics_calendar.go`) — generation is the mirror of that.
+- [x] **C3 · "Add to calendar" / `.ics` export for confirmed gatherings.** `S` — **DONE
+  2026-07-23 (CI-green; backend build/vet/tests + frontend build/lint/tests pass; live .ics
+  download verified against local Mongo).** Builds directly on **[C2]**'s persisted
+  `scheduledEvent`: a universal, no-OAuth "add to calendar" that works for everyone (incl.
+  spouses without a Google account).
+  - **Generation** (`services/calendar/ics_generate.go` — the mirror of `ics_calendar.go`'s
+    parsing, same `emersion/go-ical` lib): `GenerateEventICS(event)` builds a `VCALENDAR` +
+    one `VEVENT` from `event.ScheduledEvent` — stable `UID` (`{id}@timeful.app`), UTC
+    DTSTART/DTEND, SUMMARY, DESCRIPTION (+ event link), URL, `STATUS:CONFIRMED`,
+    `METHOD:PUBLISH`. Errors if the event has no confirmed gathering.
+  - **Endpoint** (`routes/events.go`): public `GET /events/:eventId/ics` — no auth so any
+    invitee can add it; returns `text/calendar` with `Content-Disposition: attachment;
+    filename="<slug>.ics"`. 404 (`gathering-not-scheduled`, new `errs` code) until a time is
+    locked in.
+  - **Reminder email** (`services/reminders`): the C2 pre-gathering email now carries an
+    **"Add to calendar"** button pointing at `/api/events/{id}/ics` — closes the loop for the
+    no-Google-account members right in the reminder.
+  - **Frontend**: an "Add to calendar" chip on `EventHeader.vue` (visible to **everyone** who
+    opens the event once it's scheduled) + an item in the owner's `ToolRow` "Gathering set"
+    menu; both `:href` the `.ics` URL (`serverURL` + `/events/{id}/ics`), a plain download —
+    no JS, works for guests.
+  - **Tests**: `ics_generate_test.go` (structure/UTC formatting/escaping + no-gathering error).
+    Live-verified end to end: 404 before scheduling → 200 with correct headers + a valid,
+    comma-escaped `VEVENT` after. **Note:** `createEvent` still doesn't accept a `description`
+    (only `editEvent` does) — pre-existing, unrelated; the generator includes it when present.
 
 - [ ] **C4 · Plus-one / guest handling on responses.** `S–M`
   The club is "≈12 men + wives." Let a respondent indicate they're bringing a spouse/guest so

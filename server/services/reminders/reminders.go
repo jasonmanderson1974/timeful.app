@@ -165,6 +165,9 @@ func buildReminderEmail(event *models.Event, start time.Time) (subject, body str
 
 	subject = fmt.Sprintf("Reminder: %s", event.Name)
 	eventUrl := fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId())
+	// Universal "add to calendar" (.ics) — works for members without a Google
+	// account. Same-origin /api path (prod), served by getEventIcs.
+	icsUrl := fmt.Sprintf("%s/api/events/%s/ics", utils.GetBaseUrl(), event.GetId())
 
 	descriptionRow := ""
 	if event.Description != nil && *event.Description != "" {
@@ -189,8 +192,11 @@ func buildReminderEmail(event *models.Event, start time.Time) (subject, body str
               <div style="font-size:16px;color:#ede4d3;margin-bottom:6px;"><strong>%s</strong></div>
               <div style="font-size:14px;color:#e3c578;margin-bottom:24px;">%s</div>
               %s
-              <div style="text-align:center;margin-bottom:24px;">
+              <div style="text-align:center;margin-bottom:16px;">
                 <a href="%s" style="display:inline-block;background-color:#c9a44c;color:#1c1410;font-weight:bold;text-decoration:none;padding:12px 28px;border-radius:8px;letter-spacing:0.04em;">View the Gathering</a>
+              </div>
+              <div style="text-align:center;margin-bottom:24px;">
+                <a href="%s" style="display:inline-block;color:#e3c578;text-decoration:none;font-size:13px;border:1px solid #8a7333;padding:9px 22px;border-radius:8px;">Add to calendar</a>
               </div>
               <div style="font-size:12px;color:#b8ad97;line-height:1.5;">
                 Or visit: <span style="color:#e3c578;">%s</span>
@@ -202,7 +208,7 @@ func buildReminderEmail(event *models.Event, start time.Time) (subject, body str
     </tr>
   </table>
 </body>
-</html>`, event.Name, when, descriptionRow, eventUrl, eventUrl)
+</html>`, event.Name, when, descriptionRow, eventUrl, icsUrl, eventUrl)
 
 	return subject, body
 }

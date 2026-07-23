@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/calendar"
 	"schej.it/server/services/gcloud"
 	"schej.it/server/services/listmonk"
 	"schej.it/server/utils"
@@ -41,6 +43,7 @@ func InitEvents(router *gin.RouterGroup) {
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 	eventRouter.POST("/:eventId/archive", middleware.AuthRequired(), archiveEvent)
 	eventRouter.POST("/:eventId/schedule", scheduleEvent)
+	eventRouter.GET("/:eventId/ics", getEventIcs)
 }
 
 // @Summary Creates a new event
@@ -1029,4 +1032,57 @@ func scheduleEvent(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+// icsFilename turns an event name into a safe .ics download filename.
+func icsFilename(name string) string {
+	slug := strings.Map(func(r rune) rune {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+			return r
+		case r == ' ' || r == '-' || r == '_':
+			return '-'
+		default:
+			return -1
+		}
+	}, name)
+	slug = strings.Trim(slug, "-")
+	if slug == "" {
+		slug = "gathering"
+	}
+	return slug + ".ics"
+}
+
+// @Summary Downloads an .ics calendar file for the event's confirmed gathering
+// @Description Universal "add to calendar" — returns a text/calendar file for the gathering's locked-in time. No auth required so any invitee (incl. members without a Google account) can add it. 404 if the event has no confirmed gathering yet.
+// @Tags events
+// @Produce text/calendar
+// @Param eventId path string true "Event ID"
+// @Success 200
+// @Router /events/{eventId}/ics [get]
+func getEventIcs(c *gin.Context) {
+	eventId := c.Param("eventId")
+	event, err := db.GetEventByEitherId(eventId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+	if event.ScheduledEvent == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.GatheringNotScheduled})
+		return
+	}
+
+	ics, err := calendar.GenerateEventICS(event)
+	if err != nil {
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%q", icsFilename(event.Name)))
+	c.Data(http.StatusOK, "text/calendar; charset=utf-8", ics)
 }

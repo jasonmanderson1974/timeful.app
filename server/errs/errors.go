@@ -43,6 +43,8 @@ const (
 	EmailUnchanged string = "email-unchanged"
 	// EmailTaken: the requested new email already belongs to another account
 	EmailTaken string = "email-taken"
+	// GatheringNotScheduled: the event has no confirmed gathering time yet
+	GatheringNotScheduled string = "gathering-not-scheduled"
 )
 
 // Sentinel error returned by signInHelper when an email is not allowlisted, so
