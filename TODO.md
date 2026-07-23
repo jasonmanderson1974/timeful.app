@@ -594,16 +594,23 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     migration for no user benefit). **GCP project id `schej-it`** → **LEAVE** (that Cloud Tasks path is
     dead on this fork). Both are D2 and intentionally not changed.
 
-- [ ] **D1 · Safe code/brand renames (mechanical, CI-gated).** `M` · **P3**
-  - **Go module path** `schej.it/server` → new path: edit `server/go.mod` `module` directive and the
-    `schej.it/server/...` import prefix in **59 `.go` files**. Purely mechanical but touches nearly
-    every backend file — **no local Go toolchain, so gate strictly on Backend CI** (do it as one
-    dedicated commit so a red build is easy to bisect/revert). `swag init` will also regenerate
-    `docs/` with the new path.
-  - **User-facing brand strings**: "Timeful"/"Schej.it" in the frontend (`frontend/` — titles, OG
-    meta in `main.go`'s NoRoute handler, `package.json` name) and in **email templates / listmonk**
-    copy. Cosmetic; low risk once the brand name is decided.
-  - `kill-sw.js`, `maintenance_page/`, `server/README.md`, `.env.template` comments — string swaps.
+- [x] **D1 · Safe code/brand renames (mechanical, CI-gated).** `M` · **P3 — DONE 2026-07-23 (two
+  commits; verified locally with Go 1.26.5 + eslint/build, both blocking-clean).**
+  - **Go module path** `schej.it/server` → **`sirtom/server`**: `go.mod` module directive + the import
+    prefix in **74 `.go` files** (the survey's "59" undercounted; the other machine had since added
+    comments/waitlist/location routes). Isolated commit. `docs/` doesn't import the module path, so no
+    swag regen was needed. (The `no local Go toolchain` caveat is stale — dev box now has Go 1.26.5, so
+    this was `go build`/`vet`/`test`-verified locally before push, not just on CI.)
+  - **User-facing brand + domain/URL**: OG event title, Swagger title, CORS default origins, email/
+    event `baseUrl`, slackbot urls, ICS UID/ProductID, the Settings contact email
+    (`sirthomasfoolery24@gmail.com`), removed the upstream cal.com link, dropped dead commented Timeful
+    OG block in index.html, `package.json` name, maintenance page, stray code comments, and factual
+    doc fixes (CLAUDE.md/DEVELOPMENT.md now say `sirtom/server`).
+  - **Intentionally LEFT (see D0/D2):** Mongo DB name `schej-it`, `SCHEJ_EMAIL_ADDRESS` env var, GCP
+    project id in the dead Cloud Tasks code, Discord channel names, the unused upstream
+    `deploy_scripts/nginx` configs, dead Stripe/paywall log strings. Remaining `schej`/`timeful` hits in
+    the tree are exactly these leaves + historical plan docs (REDESIGN_PLAN/ACCESS_CONTROL_PLAN) + the
+    upstream root `README.md`.
 
 - [ ] **D2 · Dangerous / infra-coupled references (NOT a code-only change).** `L` · **P3**
   These are tied to live infrastructure and data — changing the string in code without the matching
