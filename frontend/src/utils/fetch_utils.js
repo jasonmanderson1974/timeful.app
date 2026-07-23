@@ -55,17 +55,26 @@ export const fetchMethod = (method, route, body = {}) => {
         }
       }
 
-      // Check if response was ok and throw a readable error if not
+      // If the request failed, throw an error that exposes the server response
+      // in both shapes call sites use, so error handling is consistent:
+      //   err.error  -> the server error code, e.g. `switch (err.error)` or
+      //                 `err.error?.code` (the body's `error` field, or the raw
+      //                 body if it isn't an object)
+      //   err.parsed -> the full parsed body, e.g. `err.parsed?.error`
+      // plus err.status and a readable err.message for debugging.
       if (!res.ok) {
         const snippet =
-        typeof returnValue === "string" ? returnValue.slice(0, 500) : JSON.stringify(returnValue).slice(0, 500);
-        const err = new Error(`HTTP ${res.status} ${res.statusText} - ${snippet}`);
-        err.status = res.status;
-        err.url = url;
-        err.responseBody = text.slice(0, 2000);
-        err.parsed = returnValue;
-        err.headers = res.headers ? Object.fromEntries(res.headers.entries()) : undefined;
-        throw err;
+          typeof returnValue === "string"
+            ? returnValue.slice(0, 500)
+            : JSON.stringify(returnValue).slice(0, 500)
+        const err = new Error(`HTTP ${res.status} ${res.statusText} - ${snippet}`)
+        err.status = res.status
+        err.parsed = returnValue
+        err.error =
+          returnValue && typeof returnValue === "object"
+            ? returnValue.error
+            : returnValue
+        throw err
       }
 
       return returnValue
