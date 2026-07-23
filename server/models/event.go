@@ -61,8 +61,12 @@ type SignUpBlock struct {
 }
 
 type SignUpResponse struct {
-	// The IDs of the sign up blocks that the user has signed up for
+	// The IDs of the sign up blocks the user is CONFIRMED for (within capacity)
 	SignUpBlockIds []primitive.ObjectID `json:"signUpBlockIds" bson:"signUpBlockIds,omitempty"`
+
+	// The IDs of the sign up blocks the user is WAITLISTED for (block was full).
+	// Assigned server-side by capacity; see assignSignUpBlocks (C9).
+	WaitlistBlockIds []primitive.ObjectID `json:"waitlistBlockIds" bson:"waitlistBlockIds,omitempty"`
 
 	// Guest information
 	Name  string `json:"name" bson:"name,omitempty"`

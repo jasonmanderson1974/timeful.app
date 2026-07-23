@@ -480,10 +480,29 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   so the client half is partly there. Push for invitations and "the time is set" closes the loop
   without relying only on email.
 
-- [ ] **C9 · Sign-up-block capacity + waitlist.** `S`
-  The `SignUpBlock` model **already has a `Capacity *int` field** that isn't fully enforced/surfaced.
-  Enforce capacity and add a simple waitlist when full — useful for limited-seat gatherings (dinners,
-  outings).
+- [x] **C9 · Sign-up-block capacity + waitlist.** `S` — **DONE 2026-07-23 (CI-green; backend
+  build/vet/tests + frontend build/lint/tests pass; capacity+waitlist verified live).** The
+  `SignUpBlock.Capacity` field was only *displayed* (client hid the join link when full) and **not
+  enforced server-side**, and there was no waitlist. Now capacity is authoritative and overflow is
+  waitlisted.
+  - **Model** (`models/event.go`): added `WaitlistBlockIds []ObjectID` to `SignUpResponse`
+    (`SignUpBlockIds` = confirmed, within capacity; `WaitlistBlockIds` = waitlisted). No migration.
+  - **Enforcement** (`routes/event_responses.go`): new `assignSignUpBlocks(event, user, requested)`
+    splits requested blocks into confirmed/waitlisted by each block's `Capacity` (nil = unlimited),
+    excluding the user's own prior signup from the count and **preserving an already-confirmed spot
+    on re-submit**. The sign-up branch of `updateEventResponse` now routes through it — a direct API
+    call can no longer overfill a slot.
+  - **Frontend**: `resetSignUpForm` (`ScheduleOverlap.vue`) populates a per-block `waitlist`;
+    `handleSignUpBlockClick` now lets a **full** block be clicked (→ server waitlists);
+    `SignUpBlock.vue` shows a "Waitlist" roster and the join link reads **"+ Join waitlist"** when
+    full instead of disappearing. (The compact calendar-tile variant is joinable via the same
+    handler; detailed waitlist lives in the list view.)
+  - **Tests**: `TestAssignSignUpBlocks` (full→waitlist, unlimited→confirmed, already-confirmed keeps
+    spot, fresh user on full block→waitlist). Live-verified: 3 guests → capacity-2 block → first two
+    confirmed, third waitlisted.
+  - **Follow-up (not v1):** auto-promotion — when a confirmed signup is removed, the earliest
+    waitlisted user isn't auto-promoted (they get confirmed on their next re-submit, since a spot is
+    now free). Proper promotion needs a signup timestamp/order on `SignUpResponse`; deferred.
 
 ### P3 — Nice-to-have / thematic
 

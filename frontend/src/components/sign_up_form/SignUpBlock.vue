@@ -89,6 +89,29 @@
       </div>
     </div>
 
+    <!-- Waitlist (people beyond capacity) -->
+    <div v-if="waitlist.length" class="tw-mt-2">
+      <div class="tw-text-xs tw-font-medium tw-text-parchment-dim">
+        Waitlist
+      </div>
+      <div
+        v-for="(response, i) in waitlist"
+        :key="`wl-${i}`"
+        class="tw-relative tw-flex tw-items-center tw-opacity-70"
+      >
+        <div class="tw-ml-1 tw-mr-2">
+          <v-avatar :size="16"><v-icon small>mdi-account-clock</v-icon></v-avatar>
+        </div>
+        <div
+          v-if="!anonymize || response.user._id == authUser._id"
+          class="tw-text-sm tw-italic"
+        >
+          {{ response.user.firstName + " " + response.user.lastName }}
+        </div>
+        <div v-else class="tw-text-sm tw-italic">Attendee</div>
+      </div>
+    </div>
+
     <div v-if="isEditing" class="tw-mt-2">
       <a
         class="tw-text-xs tw-text-red"
@@ -98,13 +121,10 @@
       >
     </div>
 
-    <div v-if="!isOwner && hasCapacity && !infoOnly" class="tw-mt-2">
-      <a
-        class="tw-text-xs tw-text-brass"
-        text
-        @click="joinSlot"
-        >+ Join this slot</a
-      >
+    <div v-if="!isOwner && !infoOnly" class="tw-mt-2">
+      <a class="tw-text-xs tw-text-brass" text @click="joinSlot">{{
+        hasCapacity ? "+ Join this slot" : "+ Join waitlist"
+      }}</a>
     </div>
   </div>
 </template>
@@ -147,6 +167,9 @@ export default {
     },
     numberResponses() {
       return this.signUpBlock.responses ? this.signUpBlock.responses.length : 0
+    },
+    waitlist() {
+      return this.signUpBlock.waitlist ?? []
     },
     anonymize() {
       return this.anonymous && !this.isOwner

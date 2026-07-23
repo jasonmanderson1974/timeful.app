@@ -335,11 +335,9 @@ func updateEventResponse(c *gin.Context) {
 		// Populate response differently if guest vs signed in user
 		if *payload.Guest {
 			userIdString = payload.Name
-
 			response = models.SignUpResponse{
-				SignUpBlockIds: payload.SignUpBlockIds,
-				Name:           payload.Name,
-				Email:          payload.Email,
+				Name:  payload.Name,
+				Email: payload.Email,
 			}
 		} else {
 			userIdInterface := session.Get("userId")
@@ -349,12 +347,14 @@ func updateEventResponse(c *gin.Context) {
 				return
 			}
 			userIdString = userIdInterface.(string)
-
 			response = models.SignUpResponse{
-				SignUpBlockIds: payload.SignUpBlockIds,
-				UserId:         utils.StringToObjectID(userIdString),
+				UserId: utils.StringToObjectID(userIdString),
 			}
 		}
+
+		// Enforce block capacity server-side: confirmed within capacity, the rest
+		// waitlisted (C9). Authoritative — the client can't overfill a slot.
+		response.SignUpBlockIds, response.WaitlistBlockIds = assignSignUpBlocks(event, userIdString, payload.SignUpBlockIds)
 
 		// Check if user has responded to event before (edit response) or not (new response)
 		_, userHasResponded = event.SignUpResponses[userIdString]
@@ -833,6 +833,51 @@ func getResponsesMap(responses []models.EventResponse) map[string]*models.Respon
 		result[resp.UserId] = resp.Response
 	}
 	return result
+}
+
+// assignSignUpBlocks splits the blocks a user requested into confirmed (within
+// the block's capacity) and waitlisted (block already full) — the server-side
+// enforcement + waitlist for C9. A block with no capacity set is unlimited. The
+// user's own existing signup is excluded from the counts, and any block they
+// were already confirmed for keeps its spot (a re-submit never bumps you to the
+// waitlist). Order follows the requested slice for determinism.
+func assignSignUpBlocks(event *models.Event, userIdString string, requested []primitive.ObjectID) (confirmed, waitlisted []primitive.ObjectID) {
+	capacityByBlock := make(map[primitive.ObjectID]*int)
+	if event.SignUpBlocks != nil {
+		for _, b := range *event.SignUpBlocks {
+			capacityByBlock[b.Id] = b.Capacity
+		}
+	}
+
+	// Confirmed count per block across OTHER users, plus which blocks this user
+	// was already confirmed for.
+	confirmedCount := make(map[primitive.ObjectID]int)
+	alreadyConfirmed := make(map[primitive.ObjectID]bool)
+	for uid, resp := range event.SignUpResponses {
+		if resp == nil {
+			continue
+		}
+		if uid == userIdString {
+			for _, bid := range resp.SignUpBlockIds {
+				alreadyConfirmed[bid] = true
+			}
+			continue // exclude self from the counts
+		}
+		for _, bid := range resp.SignUpBlockIds {
+			confirmedCount[bid]++
+		}
+	}
+
+	for _, bid := range requested {
+		capacity, known := capacityByBlock[bid]
+		if !known || capacity == nil || alreadyConfirmed[bid] || confirmedCount[bid] < *capacity {
+			confirmed = append(confirmed, bid)
+			confirmedCount[bid]++ // reserve the seat for any later duplicate
+		} else {
+			waitlisted = append(waitlisted, bid)
+		}
+	}
+	return confirmed, waitlisted
 }
 
 // clampGuestCount bounds a plus-one count to a sane range. A plus-one only

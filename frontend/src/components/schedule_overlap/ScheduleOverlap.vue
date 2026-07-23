@@ -2800,16 +2800,21 @@ export default {
 
       this.resetSignUpBlocksToAddByDay()
 
-      /** Populate sign up block responses */
+      /** Populate sign up block responses (confirmed) + waitlist */
+      const allBlocks = this.signUpBlocksByDay.flat()
       for (const userId in this.event.signUpResponses) {
         const signUpResponse = this.event.signUpResponses[userId]
-        for (const signUpBlockId of signUpResponse.signUpBlockIds) {
-          const signUpBlock = this.signUpBlocksByDay
-            .flat()
-            .find((signUpBlock) => signUpBlock._id === signUpBlockId)
-
+        for (const signUpBlockId of signUpResponse.signUpBlockIds ?? []) {
+          const signUpBlock = allBlocks.find((b) => b._id === signUpBlockId)
+          if (!signUpBlock) continue
           if (!signUpBlock.responses) signUpBlock.responses = []
           signUpBlock.responses.push(signUpResponse)
+        }
+        for (const signUpBlockId of signUpResponse.waitlistBlockIds ?? []) {
+          const signUpBlock = allBlocks.find((b) => b._id === signUpBlockId)
+          if (!signUpBlock) continue
+          if (!signUpBlock.waitlist) signUpBlock.waitlist = []
+          signUpBlock.waitlist.push(signUpResponse)
         }
       }
     },
@@ -2822,10 +2827,10 @@ export default {
       }
     },
 
-    /** Emits sign up for block to parent element */
+    /** Emits sign up for block to parent element. A full block is still
+     * clickable — the server waitlists the signup (C9). */
     handleSignUpBlockClick(block) {
-      const blockFull = (block.responses?.length || 0) >= block.capacity
-      if (!this.alreadyRespondedToSignUpForm && !blockFull && !this.isOwner)
+      if (!this.alreadyRespondedToSignUpForm && !this.isOwner)
         this.$emit("signUpForBlock", block)
     },
 
