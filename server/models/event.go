@@ -41,7 +41,11 @@ const (
 )
 
 type Rsvp struct {
-	Status      RsvpStatus         `json:"status" bson:"status"`
+	Status RsvpStatus `json:"status" bson:"status"`
+	// GuestCount is the number of ADDITIONAL people this responder is bringing
+	// (a spouse/plus-one), i.e. the headcount for this RSVP is 1 + GuestCount.
+	// Only meaningful for going/maybe.
+	GuestCount  int                `json:"guestCount" bson:"guestCount,omitempty"`
 	Name        string             `json:"name" bson:"name,omitempty"`
 	Email       string             `json:"email" bson:"email,omitempty"`
 	UserId      primitive.ObjectID `json:"userId" bson:"userId,omitempty"`

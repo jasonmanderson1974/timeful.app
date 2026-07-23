@@ -438,10 +438,21 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     comma-escaped `VEVENT` after. **Note:** `createEvent` still doesn't accept a `description`
     (only `editEvent` does) — pre-existing, unrelated; the generator includes it when present.
 
-- [ ] **C4 · Plus-one / guest handling on responses.** `S–M`
-  The club is "≈12 men + wives." Let a respondent indicate they're bringing a spouse/guest so
-  headcounts (C1) are accurate without every spouse needing an account. Small model addition on the
-  response/attendee.
+- [x] **C4 · Plus-one / guest handling on responses.** `S–M` — **DONE 2026-07-23 (CI-green;
+  backend build/vet/tests + frontend build/lint/tests pass; plus-one persist + clamp verified
+  live).** A small extension of **[C1]**: a respondent can indicate how many extra people
+  (spouse/guests) they're bringing, so the headcount is accurate for the "≈12 men + wives" reality
+  without every spouse needing an account.
+  - **Model** (`models/event.go`): added `GuestCount int` to `Rsvp` — the number of *additional*
+    people (headcount for an RSVP = 1 + GuestCount). The room the C1 struct left, now filled; no
+    migration.
+  - **Endpoint** (`routes/event_responses.go`): `rsvpToEvent` accepts `guestCount`, clamped by
+    `clampGuestCount` (0..20; forced to 0 for `no` — decliners can't bring guests).
+  - **Frontend** (`GatheringRsvp.vue`): a "Bringing guests: [− N +]" stepper that appears once
+    you're going/maybe and re-submits the RSVP on change; the headcount now reads
+    "N going (+G) · M maybe (+g) · K can't" and the roster shows "Alice (+2)".
+  - **Tests**: `clampGuestCount` unit test (negative→0, over-max→20, decliner→0). Live-verified:
+    going +2 / maybe +1 persist; `no +5`→0; `going +999`→20.
 
 ### P2 — Strong quality-of-life
 

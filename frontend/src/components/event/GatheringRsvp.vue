@@ -5,7 +5,8 @@
     <div class="tw-flex tw-flex-wrap tw-items-center tw-gap-x-3 tw-gap-y-1">
       <div class="tw-text-base tw-font-medium">Who's coming?</div>
       <div class="tw-text-sm tw-text-parchment-dim">
-        {{ counts.going }} going · {{ counts.maybe }} maybe ·
+        {{ counts.going }} going{{ guestSuffix(counts.goingGuests) }} ·
+        {{ counts.maybe }} maybe{{ guestSuffix(counts.maybeGuests) }} ·
         {{ counts.no }} can't
       </div>
     </div>
@@ -37,6 +38,37 @@
       >
         <v-icon small left>{{ opt.icon }}</v-icon>
         {{ opt.label }}
+      </v-btn>
+    </div>
+
+    <!-- Plus-one stepper (only once you're going/maybe) -->
+    <div
+      v-if="canBringGuests"
+      class="tw-mt-3 tw-flex tw-items-center tw-gap-2 tw-text-sm"
+    >
+      <span class="tw-text-parchment-dim">Bringing guests:</span>
+      <v-btn
+        icon
+        x-small
+        outlined
+        class="tw-text-brass"
+        :disabled="localGuestCount <= 0"
+        @click="changeGuests(-1)"
+      >
+        <v-icon small>mdi-minus</v-icon>
+      </v-btn>
+      <span class="tw-w-4 tw-text-center tw-font-medium">{{
+        localGuestCount
+      }}</span>
+      <v-btn
+        icon
+        x-small
+        outlined
+        class="tw-text-brass"
+        :disabled="localGuestCount >= 20"
+        @click="changeGuests(1)"
+      >
+        <v-icon small>mdi-plus</v-icon>
       </v-btn>
     </div>
 
@@ -72,6 +104,7 @@ export default {
 
   data: () => ({
     guestName: "",
+    localGuestCount: 0,
     options: [
       { value: "going", label: "Going", icon: "mdi-check" },
       { value: "maybe", label: "Maybe", icon: "mdi-help" },
@@ -90,16 +123,22 @@ export default {
       return Object.keys(this.rsvps).length > 0
     },
     counts() {
-      const c = { going: 0, maybe: 0, no: 0 }
+      const c = { going: 0, maybe: 0, no: 0, goingGuests: 0, maybeGuests: 0 }
       for (const r of Object.values(this.rsvps)) {
-        if (r && c[r.status] !== undefined) c[r.status]++
+        if (!r || c[r.status] === undefined) continue
+        c[r.status]++
+        if (r.status === "going") c.goingGuests += r.guestCount || 0
+        else if (r.status === "maybe") c.maybeGuests += r.guestCount || 0
       }
       return c
     },
     rosters() {
       const r = { going: [], maybe: [], no: [] }
       for (const [key, rsvp] of Object.entries(this.rsvps)) {
-        if (rsvp && r[rsvp.status]) r[rsvp.status].push(rsvp.name || key)
+        if (!rsvp || !r[rsvp.status]) continue
+        const name = rsvp.name || key
+        const extra = rsvp.guestCount > 0 ? ` (+${rsvp.guestCount})` : ""
+        r[rsvp.status].push(`${name}${extra}`)
       }
       return r
     },
@@ -109,25 +148,54 @@ export default {
       const name = this.guestName.trim()
       return name.length > 0 ? name : null
     },
+    myRsvp() {
+      return this.myKey ? this.rsvps[this.myKey] : null
+    },
     myStatus() {
-      const entry = this.myKey ? this.rsvps[this.myKey] : null
-      return entry?.status ?? null
+      return this.myRsvp?.status ?? null
+    },
+    // Plus-ones only make sense once you're (tentatively) attending.
+    canBringGuests() {
+      return this.myStatus === "going" || this.myStatus === "maybe"
+    },
+  },
+
+  watch: {
+    // Keep the local stepper in sync with the persisted RSVP.
+    myRsvp: {
+      immediate: true,
+      handler(rsvp) {
+        this.localGuestCount = rsvp?.guestCount ?? 0
+      },
     },
   },
 
   methods: {
+    guestSuffix(n) {
+      return n > 0 ? ` (+${n})` : ""
+    },
     choose(status) {
       // Clicking the active choice again clears the RSVP.
       if (this.myStatus === status) {
         this.clear()
         return
       }
+      this.submit(status, status === "no" ? 0 : this.localGuestCount)
+    },
+    changeGuests(delta) {
+      const next = Math.min(20, Math.max(0, this.localGuestCount + delta))
+      if (next === this.localGuestCount) return
+      this.localGuestCount = next
+      // Re-submit the existing RSVP with the new guest count.
+      if (this.canBringGuests) this.submit(this.myStatus, next)
+    },
+    submit(status, guestCount) {
       if (this.authUser) {
-        this.$emit("set-rsvp", { status, guest: false })
+        this.$emit("set-rsvp", { status, guest: false, guestCount })
       } else {
         const name = this.guestName.trim()
         if (!name) return
-        this.$emit("set-rsvp", { status, guest: true, name })
+        this.$emit("set-rsvp", { status, guest: true, name, guestCount })
       }
     },
     clear() {

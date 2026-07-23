@@ -835,6 +835,20 @@ func getResponsesMap(responses []models.EventResponse) map[string]*models.Respon
 	return result
 }
 
+// clampGuestCount bounds a plus-one count to a sane range. A plus-one only
+// makes sense when the responder is (tentatively) attending, so decliners are
+// forced to 0.
+func clampGuestCount(status models.RsvpStatus, count int) int {
+	if status == models.RsvpNo || count < 0 {
+		return 0
+	}
+	const maxGuests = 20
+	if count > maxGuests {
+		return maxGuests
+	}
+	return count
+}
+
 // rsvpKey resolves the map key + (for signed-in users) the user id for an RSVP,
 // mirroring how updateEventResponse keys guests vs signed-in users. Returns
 // ok=false and writes the response when a guest omits a name or a signed-in
@@ -869,10 +883,11 @@ func rsvpKey(c *gin.Context, isGuest bool, name string) (key string, userId prim
 // @Router /events/{eventId}/rsvp [post]
 func rsvpToEvent(c *gin.Context) {
 	payload := struct {
-		Status models.RsvpStatus `json:"status" binding:"required"`
-		Guest  *bool             `json:"guest" binding:"required"`
-		Name   string            `json:"name"`
-		Email  string            `json:"email"`
+		Status     models.RsvpStatus `json:"status" binding:"required"`
+		Guest      *bool             `json:"guest" binding:"required"`
+		Name       string            `json:"name"`
+		Email      string            `json:"email"`
+		GuestCount int               `json:"guestCount"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
@@ -905,6 +920,7 @@ func rsvpToEvent(c *gin.Context) {
 
 	rsvp := models.Rsvp{
 		Status:      payload.Status,
+		GuestCount:  clampGuestCount(payload.Status, payload.GuestCount),
 		Email:       payload.Email,
 		RespondedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}

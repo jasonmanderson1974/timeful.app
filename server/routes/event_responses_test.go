@@ -214,3 +214,22 @@ func TestFilterBlind_Enabled_AnonymousSeesNothing(t *testing.T) {
 		t.Fatalf("blind on, anonymous: got %d, want 0 (sees nothing)", len(got))
 	}
 }
+
+func TestClampGuestCount(t *testing.T) {
+	cases := []struct {
+		status models.RsvpStatus
+		in     int
+		want   int
+	}{
+		{models.RsvpGoing, 2, 2},
+		{models.RsvpMaybe, 0, 0},
+		{models.RsvpGoing, -3, 0},   // negative -> 0
+		{models.RsvpGoing, 999, 20}, // clamped to max
+		{models.RsvpNo, 5, 0},       // decliner can't bring guests
+	}
+	for _, tc := range cases {
+		if got := clampGuestCount(tc.status, tc.in); got != tc.want {
+			t.Errorf("clampGuestCount(%q, %d) = %d, want %d", tc.status, tc.in, got, tc.want)
+		}
+	}
+}
