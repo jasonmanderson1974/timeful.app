@@ -894,11 +894,11 @@ func clampGuestCount(status models.RsvpStatus, count int) int {
 	return count
 }
 
-// rsvpKey resolves the map key + (for signed-in users) the user id for an RSVP,
-// mirroring how updateEventResponse keys guests vs signed-in users. Returns
-// ok=false and writes the response when a guest omits a name or a signed-in
-// caller has no session.
-func rsvpKey(c *gin.Context, isGuest bool, name string) (key string, userId primitive.ObjectID, ok bool) {
+// responderKey resolves the identity key + (for signed-in users) the user id
+// for a guest-or-member action (RSVP, comment), mirroring how updateEventResponse
+// keys guests vs signed-in users. Returns ok=false and writes the response when a
+// guest omits a name or a signed-in caller has no session.
+func responderKey(c *gin.Context, isGuest bool, name string) (key string, userId primitive.ObjectID, ok bool) {
 	if isGuest {
 		if strings.TrimSpace(name) == "" {
 			c.JSON(http.StatusBadRequest, responses.Error{Error: "name-required"})
@@ -958,7 +958,7 @@ func rsvpToEvent(c *gin.Context) {
 		return
 	}
 
-	key, userId, ok := rsvpKey(c, *payload.Guest, payload.Name)
+	key, userId, ok := responderKey(c, *payload.Guest, payload.Name)
 	if !ok {
 		return
 	}
@@ -1024,7 +1024,7 @@ func deleteRsvp(c *gin.Context) {
 		return
 	}
 
-	key, _, ok := rsvpKey(c, *payload.Guest, payload.Name)
+	key, _, ok := responderKey(c, *payload.Guest, payload.Name)
 	if !ok {
 		return
 	}

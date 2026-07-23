@@ -46,6 +46,9 @@ func InitEvents(router *gin.RouterGroup) {
 	eventRouter.GET("/:eventId/ics", getEventIcs)
 	eventRouter.POST("/:eventId/rsvp", rsvpToEvent)
 	eventRouter.DELETE("/:eventId/rsvp", deleteRsvp)
+	eventRouter.POST("/:eventId/comments", addComment)
+	eventRouter.PUT("/:eventId/comments/:commentId", editComment)
+	eventRouter.DELETE("/:eventId/comments/:commentId", deleteComment)
 }
 
 // @Summary Creates a new event
@@ -650,6 +653,11 @@ func getEvent(c *gin.Context) {
 
 	// Update event.ResponsesMap to match the final responsesMap
 	event.ResponsesMap = responsesMap
+
+	// Attach the discussion thread (C7). Best-effort — non-critical to the page.
+	if comments, commentsErr := db.GetComments(event.Id.Hex()); commentsErr == nil {
+		event.Comments = comments
+	}
 
 	// Apply privacy logic based on blindAvailabilityEnabled
 	if !utils.Coalesce(event.BlindAvailabilityEnabled) {

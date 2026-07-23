@@ -1,4 +1,4 @@
-import { post, _delete } from "../fetch_utils"
+import { post, put, _delete } from "../fetch_utils"
 
 export const archiveEvent = (eventId, archive) => {
   return post(`/events/${eventId}/archive`, {
@@ -28,4 +28,21 @@ export const setRsvp = (eventId, payload) => {
 /** Remove the caller's RSVP. */
 export const clearRsvp = (eventId, payload) => {
   return _delete(`/events/${eventId}/rsvp`, payload)
+}
+
+// --- Discussion thread (C7) ---
+
+/** Post a comment. payload: {text, guest, name?} */
+export const addComment = (eventId, payload) => {
+  return post(`/events/${eventId}/comments`, payload)
+}
+
+/** Edit your own comment. payload: {text, guest, name?} */
+export const editComment = (eventId, commentId, payload) => {
+  return put(`/events/${eventId}/comments/${commentId}`, payload)
+}
+
+/** Delete a comment (own, or any if you're the owner). payload: {guest, name?} */
+export const deleteComment = (eventId, commentId, payload) => {
+  return _delete(`/events/${eventId}/comments/${commentId}`, payload)
 }

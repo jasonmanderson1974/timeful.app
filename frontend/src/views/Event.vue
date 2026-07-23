@@ -164,6 +164,16 @@
             @setCurGuestId="(id) => (curGuestId = id)"
             @signUpForBlock="initiateSignUpFlow"
           />
+
+          <!-- Discussion thread (C7) -->
+          <div v-if="!isSettingSpecificTimes" class="tw-mx-4">
+            <EventComments
+              :event="event"
+              @add-comment="onAddComment"
+              @edit-comment="onEditComment"
+              @delete-comment="onDeleteComment"
+            />
+          </div>
         </div>
       </div>
 
@@ -239,7 +249,14 @@ import EventBottomBar from "@/components/event/EventBottomBar.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
 import EventLocation from "@/components/event/EventLocation.vue"
 import GatheringRsvp from "@/components/event/GatheringRsvp.vue"
-import { setRsvp, clearRsvp } from "@/utils/services/EventService"
+import EventComments from "@/components/event/EventComments.vue"
+import {
+  setRsvp,
+  clearRsvp,
+  addComment,
+  editComment,
+  deleteComment,
+} from "@/utils/services/EventService"
 import pluginMessagesMixin from "@/components/event/pluginMessagesMixin"
 export default {
   name: "Event",
@@ -268,6 +285,7 @@ export default {
     EventDescription,
     EventLocation,
     GatheringRsvp,
+    EventComments,
   },
 
   data: () => ({
@@ -474,6 +492,35 @@ export default {
         await this.refreshEvent()
       } catch (err) {
         this.showError("Could not update your RSVP. Please try again.")
+      }
+    },
+
+    /** Discussion thread (C7): persist then refresh. */
+    async onAddComment(payload) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await addComment(id, payload)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not post your message. Please try again.")
+      }
+    },
+    async onEditComment({ commentId, payload }) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await editComment(id, commentId, payload)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not save your edit. Please try again.")
+      }
+    },
+    async onDeleteComment({ commentId, payload }) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await deleteComment(id, commentId, payload)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not delete the message. Please try again.")
       }
     },
 

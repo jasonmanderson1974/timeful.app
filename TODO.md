@@ -471,9 +471,30 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   Extend the availability-poll concept to "where / what" — a lightweight multiple-choice poll so the
   club can vote on venue or activity. Overlaps with the sign-up-block UI already built.
 
-- [ ] **C7 · Per-gathering discussion thread / comments.** `M`
-  A place to coordinate details ("I'll bring cigars," "parking is out back") attached to the event.
-  Fits the club's social nature; keeps coordination off scattered group texts.
+- [x] **C7 · Per-gathering discussion thread / comments.** `M` — **DONE 2026-07-23 (CI-green;
+  backend build/vet/tests + frontend build/lint/tests pass; post/edit/delete verified live).** A
+  discussion thread on every event for coordinating details ("I'll bring cigars", "parking's out
+  back"), keeping it off scattered group texts.
+  - **Decisions (confirmed):** members **and** guests (by name, same trust model as RSVP/
+    availability — guest posting stays open on enforced instances); **full** management (edit +
+    delete-own, owner deletes any).
+  - **Storage:** a dedicated `comments` collection (mirrors `eventResponses` — many-per-event,
+    append-heavy), keyed by `eventId`; `models/comment.go` + `db/comments.go` + registered in
+    `db/init.go`. `getEvent` attaches `event.Comments` (like it does `ResponsesMap`/`Attendees`),
+    so the existing `refreshEvent()` surfaces them with no extra fetch.
+  - **Endpoints** (`routes/comments.go`, registered in `InitEvents`): `POST …/comments`,
+    `PUT …/comments/:id` (own-only), `DELETE …/comments/:id` (own OR event owner). Text trimmed +
+    capped at 2000; empty → 400. Reused the guest/signed-in key helper — renamed `rsvpKey` →
+    `responderKey` (generic) and shared it.
+  - **Frontend:** `EventComments.vue` — thread with author/time/"edited", inline edit + delete
+    controls on your own (delete also on any when you're the owner), and a composer (members post
+    directly; guests enter a name first, like `GatheringRsvp`). Mounted below the calendar in
+    `Event.vue`; `EventService.addComment/editComment/deleteComment` persist then `refreshEvent`.
+  - **Tests:** `sanitizeCommentText` unit test + DB-gated integration (guest post→appears in
+    getEvent; edit sets `updatedAt`; other-guest delete→403; owner deletes another's). Live-verified
+    the full post/edit/delete/authz flow.
+  - **Non-goal (v1):** no new-comment notifications (email/web-push) — follow-up tying into
+    **[C2]**/**[C8]**. Optional later polish: enrich member comments with account avatars at read time.
 
 - [ ] **C8 · Web push notifications for "new gathering" / "you were invited."** `M`
   A service worker is **already registered** (`register-service-worker`, `kill-sw.js` kill switch),

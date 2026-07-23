@@ -170,6 +170,7 @@ func importEvent(c *gin.Context) {
 	remoteEvent.Remindees = nil
 	remoteEvent.Attendees = nil
 	remoteEvent.ResponsesMap = nil
+	remoteEvent.Comments = nil
 	remoteEvent.When2meetHref = nil
 	remoteEvent.ScheduledEvent = nil
 	remoteEvent.CalendarEventId = ""

@@ -134,6 +134,9 @@ type Event struct {
 	// RSVPs to the confirmed gathering, keyed by guest name / signed-in user id
 	Rsvps map[string]*Rsvp `json:"rsvps" bson:"rsvps,omitempty"`
 
+	// Discussion thread (fetched from the comments collection; not stored here)
+	Comments []Comment `json:"comments" bson:"-"`
+
 	// Remindees
 	Remindees *[]Remindee `json:"remindees" bson:"remindees,omitempty"`
 
