@@ -1072,12 +1072,18 @@ import SpecificTimesInstructions from "./SpecificTimesInstructions.vue"
 import dragGridMixin from "./dragGridMixin"
 import availabilityMixin from "./availabilityMixin"
 import currentAvailabilityMixin from "./currentAvailabilityMixin"
+import respondentSelectionMixin from "./respondentSelectionMixin"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
 export default {
   name: "ScheduleOverlap",
-  mixins: [dragGridMixin, availabilityMixin, currentAvailabilityMixin],
+  mixins: [
+    dragGridMixin,
+    availabilityMixin,
+    currentAvailabilityMixin,
+    respondentSelectionMixin,
+  ],
   props: {
     event: { type: Object, required: true },
     ownerIsPremium: { type: Boolean, default: false },
@@ -2338,72 +2344,6 @@ export default {
         }
       }
       return date
-    },
-    //#endregion
-
-    // -----------------------------------
-    //#region Respondent
-    // -----------------------------------
-    mouseOverRespondent(e, id) {
-      if (this.curRespondents.length === 0) {
-        if (this.state === this.defaultState) {
-          this.state = this.states.SINGLE_AVAILABILITY
-        }
-
-        this.curRespondent = id
-      }
-    },
-    mouseLeaveRespondent(e) {
-      if (this.curRespondents.length === 0) {
-        if (this.state === this.states.SINGLE_AVAILABILITY) {
-          this.state = this.defaultState
-        }
-
-        this.curRespondent = ""
-      }
-    },
-    clickRespondent(e, id) {
-      this.state = this.states.SUBSET_AVAILABILITY
-      this.curRespondent = ""
-
-      if (this.curRespondentsSet.has(id)) {
-        // Remove id
-        this.curRespondents = this.curRespondents.filter((r) => r != id)
-
-        // Go back to default state if all users deselected
-        if (this.curRespondents.length === 0) {
-          this.state = this.defaultState
-        }
-      } else {
-        // Add id
-        this.curRespondents.push(id)
-      }
-
-      e.stopPropagation()
-    },
-    deselectRespondents(e) {
-      // Don't deselect respondents if toggled best times
-      // or if this was fired by clicking on a timeslot
-      if (
-        e?.target?.previousElementSibling?.id === "show-best-times-toggle" ||
-        e?.target?.firstChild?.firstChild?.id === "show-best-times-toggle" ||
-        e?.target?.classList?.contains("timeslot") //&& this.isPhone)
-      )
-        return
-
-      if (this.state === this.states.SUBSET_AVAILABILITY) {
-        this.state = this.defaultState
-      }
-
-      this.curRespondents = []
-
-      // Stop persisting timeslot
-      this.timeslotSelected = false
-      this.resetCurTimeslot()
-    },
-
-    isGuest(user) {
-      return user._id == user.firstName
     },
     //#endregion
 
