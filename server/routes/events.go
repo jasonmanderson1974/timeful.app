@@ -727,14 +727,21 @@ func getEvent(c *gin.Context) {
 // @Success 200
 // @Router /events/{eventId} [delete]
 func deleteEvent(c *gin.Context) {
-	eventId := c.Param("eventId")
-
-	objectId, err := primitive.ObjectIDFromHex(eventId)
+	// Resolve by either the short id or the Mongo _id, consistent with the rest
+	// of the event routes (which all use GetEventByEitherId). Previously this
+	// handler only accepted the _id and 400'd on a short id (TODO E2).
+	resolvedEvent, err := db.GetEventByEitherId(c.Param("eventId"))
 	if err != nil {
-		// eventId is malformatted
-		c.Status(http.StatusBadRequest)
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return
 	}
+	if resolvedEvent == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+	objectId := resolvedEvent.Id
+	eventId := objectId.Hex()
 
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
