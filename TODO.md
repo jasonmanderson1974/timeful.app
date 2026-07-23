@@ -147,10 +147,15 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     `this`; template bindings and cross-`this.*` calls resolve unchanged). Verified per step via
     `npm build`, **eslint `no-undef`** (the real gate — it caught a `dayjs` free-reference in step 3
     that `npm build` bundled silently), and unit tests (23/23).
+  - **Steps 4–6 DONE 2026-07-22 (Tier 1 slices, runtime-verified via headless Chromium against the
+    local stack):** respondent hover/selection → `respondentSelectionMixin.js`; the whole Timeslot
+    region (484 lines: sizing, class/style maps, von handlers, valid-time-ranges) →
+    `timeslotStylingMixin.js`; Options-panel handlers → `optionsMixin.js`. Component now **3,166**
+    lines (was 4,638 pre-A5). Verified in-browser: grid renders, respondent hover/click switches
+    single/subset availability views, best-times toggle re-renders + persists.
   - **Remaining — do NOT do blind:** split **sign-up-block editing into a child component** (template
-    + props + events = runtime-only behavior `npm build` can't verify). Frontend CI checks
-    *compilation, not runtime behavior*, so this needs someone to run the app and smoke-test. Optional
-    smaller mixin candidates also remain (respondent hover/selection, timeslot styling, options).
+    + props + events = runtime-only behavior `npm build` can't verify — Tier 2 of the runtime-refactor
+    plan; browser-verify locally like the Tier 1 slices).
     B3 (grid-math tests) can extract the pure bits of the geometry logic for real coverage.
 
 - [x] **A6 · Split `server/routes/events.go` (1,925 lines).** `M` — **DONE 2026-07-22 (CI-green,
@@ -223,6 +228,10 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   into `utils/`.
   - **Done:** removed `Event.vue`'s dead `interceptPluginResponses` debug method (listener was
     commented out) → 1,815 → 1,776.
+  - **Done 2026-07-22:** `pluginMessagesMixin` extracted (`components/event/pluginMessagesMixin.js`
+    — `handleMessage`/`setSlots`/`getSlots`, 567 lines, verbatim; orphaned + pre-existing unused
+    imports pruned) → Event.vue **1,175**. Plugin API runtime-verified via headless Chromium:
+    get-slots/set-slots round-trip on a real event (guest write + readback + UI), no console errors.
   - **⚠️ Verification caveat (learned the hard way here):** `Event.vue` is mostly `this`-coupled
     action handlers, not the pure/geometry code A5 had. The only large "method" appeared to be ~595
     lines but was actually THREE methods — `interceptPluginResponses` (dead) **plus the active
