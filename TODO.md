@@ -153,9 +153,12 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     `timeslotStylingMixin.js`; Options-panel handlers → `optionsMixin.js`. Component now **3,166**
     lines (was 4,638 pre-A5). Verified in-browser: grid renders, respondent hover/click switches
     single/subset availability views, best-times toggle re-renders + persists.
-  - **Remaining — do NOT do blind:** split **sign-up-block editing into a child component** (template
-    + props + events = runtime-only behavior `npm build` can't verify — Tier 2 of the runtime-refactor
-    plan; browser-verify locally like the Tier 1 slices).
+  - **Sign-up-block child split DONE 2026-07-22 (Tier 2):** the per-day grid overlay (dragged block +
+    saved blocks + blocks-to-add) → `SignUpBlocksOverlay.vue` (presentational; state stays in the
+    parent since dragGridMixin shares it; parent handles `block-click`). Runtime-verified end-to-end
+    in headless Chromium: created a sign-up event, dragged a slot out (dragged branch renders live),
+    saved, and as guest clicked the block → Join-slot dialog. **A5 is now DONE** — remaining
+    ScheduleOverlap size (~3.1k lines) is inherent grid complexity; further splits optional.
     B3 (grid-math tests) can extract the pure bits of the geometry logic for real coverage.
 
 - [x] **A6 · Split `server/routes/events.go` (1,925 lines).** `M` — **DONE 2026-07-22 (CI-green,
@@ -232,6 +235,11 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     — `handleMessage`/`setSlots`/`getSlots`, 567 lines, verbatim; orphaned + pre-existing unused
     imports pruned) → Event.vue **1,175**. Plugin API runtime-verified via headless Chromium:
     get-slots/set-slots round-trip on a real event (guest write + readback + UI), no console errors.
+  - **Done 2026-07-22 (Tier 2 child splits, both browser-verified):** `EventHeader.vue` (title/chips/
+    date + 8-event action-button block; helpDialog moves in) and `EventBottomBar.vue` (phone action
+    bar + mobile button-text computeds; 7 events) → Event.vue **1,006** (was 1,815 pre-A11).
+  - **Remaining candidates:** `NewEvent.vue` (1,010) and `RespondentsList.vue` (844) child splits —
+    same verify-with-app-running discipline (headless-Chromium loop per DEVELOPMENT.md/memory).
   - **⚠️ Verification caveat (learned the hard way here):** `Event.vue` is mostly `this`-coupled
     action handlers, not the pure/geometry code A5 had. The only large "method" appeared to be ~595
     lines but was actually THREE methods — `interceptPluginResponses` (dead) **plus the active
