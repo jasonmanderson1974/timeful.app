@@ -1073,45 +1073,6 @@ export default {
       }
     },
 
-    // TEMPORARY: Intercept plugin responses for debugging
-    interceptPluginResponses(event) {
-      // Only intercept messages from our own window (plugin responses)
-      if (event.data?.type === "FILL_CALENDAR_EVENT_RESPONSE") {
-        const { command, requestId, ok, error, payload } = event.data
-
-        if (ok) {
-          // Flatten get-slots output so slots are easy to scan in the console
-          if (command === "get-slots" && payload?.slots) {
-            console.log(
-              `[PLUGIN RESPONSE - SUCCESS] ${command} | timeIncrement: ${
-                payload.timeIncrement
-              } | timezone: ${payload.timezone ?? "—"}`
-            )
-            Object.entries(payload.slots).forEach(([userId, u]) => {
-              const label =
-                [u.name, u.email].filter(Boolean).join(" ") || userId
-              console.log(`  ${label}:`, {
-                availability: u.availability,
-                ifNeeded: u.ifNeeded,
-              })
-            })
-          } else {
-            console.log(`[PLUGIN RESPONSE - SUCCESS] ${command}`, {
-              requestId,
-              payload,
-              timestamp: new Date().toISOString(),
-            })
-          }
-        } else {
-          console.error(`[PLUGIN RESPONSE - ERROR] ${command}`, {
-            requestId,
-            error: error?.message || error,
-            timestamp: new Date().toISOString(),
-          })
-        }
-      }
-    },
-
     async setSlots(event) {
       const requestId = event.data?.requestId
       const command = "set-slots"
@@ -1704,8 +1665,6 @@ export default {
   async created() {
     window.addEventListener("beforeunload", this.onBeforeUnload)
     window.addEventListener("message", this.handleMessage)
-    // for dev:
-    // window.addEventListener("message", this.interceptPluginResponses)
 
     // Get event details
     try {
@@ -1776,8 +1735,6 @@ export default {
   beforeDestroy() {
     window.removeEventListener("beforeunload", this.onBeforeUnload)
     window.removeEventListener("message", this.handleMessage)
-    // for dev:
-    // window.removeEventListener("message", this.interceptPluginResponses)
   },
 
   watch: {
