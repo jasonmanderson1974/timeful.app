@@ -24,17 +24,6 @@
           </v-list-item-title>
         </v-list-item> -->
         <v-list-item
-          v-if="showFeedbackBtn"
-          id="feedback-btn"
-          href="https://forms.gle/A96i4TTWeKgH3P1W6"
-          target="_blank"
-        >
-          <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
-            <v-icon class="tw-mr-1" small color="black">mdi-message</v-icon>
-            Give feedback
-          </v-list-item-title>
-        </v-list-item>
-        <v-list-item
           v-if="canInvite"
           id="fellowship-btn"
           @click="goToFellowship"
@@ -103,9 +92,6 @@ export default {
     },
     size() {
       return this.isPhone ? 32 : 42
-    },
-    showFeedbackBtn() {
-      return !(!this.isPhone || this.$route.name === "home")
     },
   },
 
