@@ -96,158 +96,29 @@
       >
         <div class="tw-mx-auto tw-max-w-5xl tw-flex-1">
           <div v-if="!isSettingSpecificTimes" class="tw-mx-4">
-            <!-- Title and copy link -->
-            <div class="tw-flex tw-items-center tw-text-parchment">
-              <div>
-                <div
-                  class="sm:mb-2 tw-flex tw-flex-wrap tw-items-center tw-gap-x-4 tw-gap-y-2"
-                >
-                  <div
-                    class="tw-text-xl sm:tw-text-3xl"
-                    :class="
-                      canEdit &&
-                      '-tw-mx-2 -tw-my-1 tw-cursor-pointer tw-rounded tw-px-2 tw-py-1 tw-transition-all hover:tw-bg-leather'
-                    "
-                    @click="canEdit && editEvent()"
-                  >
-                    {{ event.name }}
-                  </div>
-                  <v-chip
-                    v-if="event.when2meetHref?.length > 0"
-                    :href="`https://when2meet.com${event.when2meetHref}`"
-                    :small="isPhone"
-                    class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-leather tw-px-2 tw-font-medium sm:tw-px-3"
-                    >Imported from when2meet</v-chip
-                  >
-                  <template v-if="isGroup">
-                    <div class="">
-                      <v-chip
-                        :small="isPhone"
-                        class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-leather tw-px-2 tw-font-medium sm:tw-px-3"
-                        @click="helpDialog = true"
-                        >Availability group</v-chip
-                      >
-                    </div>
-                    <HelpDialog v-model="helpDialog">
-                      <template v-slot:header>Availability group</template>
-                      <div class="mb-4">
-                        Use availability groups to see group members' weekly
-                        calendar availabilities from Google Calendar. Your
-                        actual calendar events are NOT visible to others.
-                      </div>
-                    </HelpDialog>
-                  </template>
-                </div>
-                <div class="tw-flex tw-items-baseline tw-gap-1">
-                  <div
-                    class="tw-text-sm tw-font-normal tw-text-parchment-dim sm:tw-text-base"
-                  >
-                    {{ dateString }}
-                  </div>
-                  <template v-if="canEdit">
-                    <v-btn
-                      id="edit-event-btn"
-                      @click="editEvent"
-                      class="tw-px-2 tw-text-sm tw-text-brass"
-                      text
-                    >
-                      Edit {{ isGroup ? "group" : "event" }}
-                    </v-btn>
-                  </template>
-                </div>
-              </div>
-              <v-spacer />
-              <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
-                <div v-if="isGroup">
-                  <v-btn
-                    v-if="
-                      event.startOnMonday ? weekOffset != 1 : weekOffset != 0
-                    "
-                    :icon="isPhone"
-                    text
-                    class="tw-mr-1 tw-text-parchment-dim sm:tw-mr-2.5"
-                    @click="resetWeekOffset"
-                  >
-                    <v-icon class="sm:tw-mr-2">mdi-calendar-today</v-icon>
-                    <span v-if="!isPhone">Today</span>
-                  </v-btn>
-                  <v-btn
-                    :icon="isPhone"
-                    :outlined="!isPhone"
-                    class="tw-text-brass"
-                    @click="refreshCalendar"
-                    :loading="loading"
-                  >
-                    <v-icon class="tw-mr-1" v-if="!isPhone">mdi-refresh</v-icon>
-                    <span v-if="!isPhone" class="tw-mr-2">Refresh</span>
-                    <v-icon class="tw-text-brass" v-else>mdi-refresh</v-icon>
-                  </v-btn>
-                </div>
-                <div v-else>
-                  <v-btn
-                    :icon="isPhone"
-                    :outlined="!isPhone"
-                    class="tw-text-brass"
-                    @click="copyLink"
-                  >
-                    <span v-if="!isPhone" class="tw-mr-2 tw-text-brass"
-                      >Copy link</span
-                    >
-                    <v-icon class="tw-text-brass" v-if="!isPhone"
-                      >mdi-content-copy</v-icon
-                    >
-                    <v-icon class="tw-text-brass" v-else>mdi-share</v-icon>
-                  </v-btn>
-                </div>
-                <div
-                  v-if="!isPhone && (!isSignUp || canEdit)"
-                  class="tw-flex tw-w-40"
-                >
-                  <template v-if="!isEditing">
-                    <v-btn
-                      v-if="!isGroup && !authUser && selectedGuestRespondent"
-                      min-width="10.25rem"
-                      class="tw-bg-brass tw-text-wood-deep tw-transition-opacity"
-                      :style="{ opacity: availabilityBtnOpacity }"
-                      @click="editGuestAvailability"
-                    >
-                      {{
-                        event.blindAvailabilityEnabled
-                          ? "Edit availability"
-                          : `Edit ${selectedGuestRespondent}'s availability`
-                      }}
-                    </v-btn>
-                    <v-btn
-                      v-else
-                      width="10.25rem"
-                      class="tw-text-white tw-transition-opacity"
-                      :class="'tw-bg-brass'"
-                      :disabled="loading && !userHasResponded"
-                      :style="{ opacity: availabilityBtnOpacity }"
-                      @click="() => addAvailability()"
-                    >
-                      {{ actionButtonText }}
-                    </v-btn>
-                  </template>
-                  <template v-else>
-                    <v-btn
-                      class="tw-mr-1 tw-w-20 tw-text-red"
-                      @click="cancelEditing"
-                      outlined
-                    >
-                      Cancel
-                    </v-btn>
-                    <v-btn
-                      class="tw-w-20 tw-text-white"
-                      :class="'tw-bg-brass'"
-                      @click="() => saveChanges()"
-                    >
-                      Save
-                    </v-btn></template
-                  >
-                </div>
-              </div>
-            </div>
+            <!-- Title, chips, date, and action buttons -->
+            <EventHeader
+              :event="event"
+              :canEdit="canEdit"
+              :isGroup="isGroup"
+              :isSignUp="isSignUp"
+              :isEditing="isEditing"
+              :dateString="dateString"
+              :actionButtonText="actionButtonText"
+              :weekOffset="weekOffset"
+              :loading="loading"
+              :userHasResponded="userHasResponded"
+              :selectedGuestRespondent="selectedGuestRespondent"
+              :availabilityBtnOpacity="availabilityBtnOpacity"
+              @edit-event="editEvent"
+              @reset-week-offset="resetWeekOffset"
+              @refresh-calendar="refreshCalendar"
+              @copy-link="copyLink"
+              @edit-guest-availability="editGuestAvailability"
+              @add-availability="addAvailability"
+              @cancel-editing="cancelEditing"
+              @save-changes="saveChanges"
+            />
 
             <!-- Description -->
             <EventDescription
@@ -421,7 +292,7 @@ import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/calendar_permission_dialogs/MarkAvailabilityDialog.vue"
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
-import HelpDialog from "@/components/HelpDialog.vue"
+import EventHeader from "@/components/event/EventHeader.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
 import pluginMessagesMixin from "@/components/event/pluginMessagesMixin"
 export default {
@@ -446,7 +317,7 @@ export default {
     SignInNotSupportedDialog,
     MarkAvailabilityDialog,
     InvitationDialog,
-    HelpDialog,
+    EventHeader,
     EventDescription,
   },
 
@@ -460,7 +331,6 @@ export default {
     editEventDialog: false,
     invitationDialog: false,
     pagesNotVisitedDialog: false,
-    helpDialog: false,
 
     loading: true,
     calendarEventsMap: {},
