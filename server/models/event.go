@@ -29,6 +29,25 @@ type GatheringReminder struct {
 	SentAt        *primitive.DateTime `json:"sentAt" bson:"sentAt,omitempty"`     // nil = not yet sent
 }
 
+// RSVP to a confirmed gathering (paired with ScheduledEvent). Stored on the
+// Event as a map keyed by guest name or signed-in user id, mirroring
+// SignUpResponses.
+type RsvpStatus string
+
+const (
+	RsvpGoing RsvpStatus = "going"
+	RsvpMaybe RsvpStatus = "maybe"
+	RsvpNo    RsvpStatus = "no"
+)
+
+type Rsvp struct {
+	Status      RsvpStatus         `json:"status" bson:"status"`
+	Name        string             `json:"name" bson:"name,omitempty"`
+	Email       string             `json:"email" bson:"email,omitempty"`
+	UserId      primitive.ObjectID `json:"userId" bson:"userId,omitempty"`
+	RespondedAt primitive.DateTime `json:"respondedAt" bson:"respondedAt,omitempty"`
+}
+
 type SignUpBlock struct {
 	Id        primitive.ObjectID  `json:"_id" bson:"_id,omitempty"`
 	Name      string              `json:"name" bson:"name,omitempty"`
@@ -100,6 +119,9 @@ type Event struct {
 
 	// Pre-gathering reminder email config/state (paired with ScheduledEvent)
 	GatheringReminder *GatheringReminder `json:"gatheringReminder" bson:"gatheringReminder,omitempty"`
+
+	// RSVPs to the confirmed gathering, keyed by guest name / signed-in user id
+	Rsvps map[string]*Rsvp `json:"rsvps" bson:"rsvps,omitempty"`
 
 	// Remindees
 	Remindees *[]Remindee `json:"remindees" bson:"remindees,omitempty"`

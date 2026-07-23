@@ -44,6 +44,8 @@ func InitEvents(router *gin.RouterGroup) {
 	eventRouter.POST("/:eventId/archive", middleware.AuthRequired(), archiveEvent)
 	eventRouter.POST("/:eventId/schedule", scheduleEvent)
 	eventRouter.GET("/:eventId/ics", getEventIcs)
+	eventRouter.POST("/:eventId/rsvp", rsvpToEvent)
+	eventRouter.DELETE("/:eventId/rsvp", deleteRsvp)
 }
 
 // @Summary Creates a new event

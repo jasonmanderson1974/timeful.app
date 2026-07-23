@@ -86,19 +86,28 @@ func processDueReminders(now time.Time, send SendFunc) {
 			continue
 		}
 
-		responses, respErr := db.GetEventResponses(event.Id.Hex())
-		if respErr != nil {
-			// Transient DB error — skip (don't mark sent) so we retry next tick.
-			continue
-		}
-
-		emails := collectRecipientEmails(responses, func(userId string) string {
+		lookupEmail := func(userId string) string {
 			user, err := db.GetUserById(userId)
 			if err != nil || user == nil {
 				return ""
 			}
 			return user.Email
-		})
+		}
+
+		// Prefer RSVPs once anyone has responded (remind going + maybe, skip
+		// decliners). Before any RSVP exists, fall back to all availability
+		// respondents so reminders keep working.
+		var emails []string
+		if len(event.Rsvps) > 0 {
+			emails = collectRsvpRecipientEmails(&event, lookupEmail)
+		} else {
+			responses, respErr := db.GetEventResponses(event.Id.Hex())
+			if respErr != nil {
+				// Transient DB error — skip (don't mark sent) so we retry next tick.
+				continue
+			}
+			emails = collectRecipientEmails(responses, lookupEmail)
+		}
 
 		subject, body := buildReminderEmail(&event, start)
 		for _, email := range emails {
@@ -145,6 +154,44 @@ func collectRecipientEmails(responses []models.EventResponse, lookupEmail func(u
 		}
 		if _, err := primitive.ObjectIDFromHex(resp.UserId); err == nil {
 			add(lookupEmail(resp.UserId)) // signed-in responder
+		}
+	}
+
+	return emails
+}
+
+// collectRsvpRecipientEmails returns the deduped emails of everyone who RSVP'd
+// going or maybe (decliners excluded). Uses the RSVP's stored email, else
+// resolves a signed-in RSVP's account email via lookupEmail. Keyed like
+// collectRecipientEmails so both share the reminder pipeline. `key` is the map
+// key (guest name or user-id hex); it's the userId lookup source when a
+// signed-in RSVP has no stored email.
+func collectRsvpRecipientEmails(event *models.Event, lookupEmail func(userId string) string) []string {
+	seen := make(map[string]bool)
+	emails := make([]string, 0)
+
+	add := func(email string) {
+		if email == "" || seen[email] {
+			return
+		}
+		seen[email] = true
+		emails = append(emails, email)
+	}
+
+	for key, rsvp := range event.Rsvps {
+		if rsvp == nil {
+			continue
+		}
+		if rsvp.Status != models.RsvpGoing && rsvp.Status != models.RsvpMaybe {
+			continue // skip decliners
+		}
+		if rsvp.Email != "" {
+			add(rsvp.Email)
+			continue
+		}
+		// Signed-in RSVP with no stored email: the map key is the user-id hex.
+		if _, err := primitive.ObjectIDFromHex(key); err == nil {
+			add(lookupEmail(key))
 		}
 	}
 

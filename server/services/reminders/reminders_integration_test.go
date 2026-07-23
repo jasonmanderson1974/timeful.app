@@ -114,6 +114,60 @@ func TestProcessDueReminders_SendsAndMarksSent(t *testing.T) {
 	}
 }
 
+// When RSVPs exist, the reminder targets going+maybe (not decliners) instead of
+// all availability respondents.
+func TestProcessDueReminders_TargetsRsvps(t *testing.T) {
+	requireDB(t)
+	ctx := context.Background()
+
+	eventId := primitive.NewObjectID()
+	now := time.Now()
+	start := now.Add(1 * time.Hour)
+
+	_, err := db.EventsCollection.InsertOne(ctx, models.Event{
+		Id:   eventId,
+		Name: "RSVP Gathering",
+		Type: models.SPECIFIC_DATES,
+		ScheduledEvent: &models.CalendarEvent{
+			StartDate: primitive.NewDateTimeFromTime(start),
+			EndDate:   primitive.NewDateTimeFromTime(start.Add(2 * time.Hour)),
+		},
+		GatheringReminder: &models.GatheringReminder{Enabled: true, LeadTimeHours: 2},
+		Rsvps: map[string]*models.Rsvp{
+			"Going Guest": {Status: models.RsvpGoing, Email: "going@example.com"},
+			"Maybe Guest": {Status: models.RsvpMaybe, Email: "maybe@example.com"},
+			"No Guest":    {Status: models.RsvpNo, Email: "no@example.com"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("insert event: %v", err)
+	}
+	defer func() {
+		db.EventsCollection.DeleteOne(ctx, bson.M{"_id": eventId})
+		db.EventResponsesCollection.DeleteMany(ctx, bson.M{"eventId": eventId})
+	}()
+
+	// An availability response also exists — it must be ignored in favor of RSVPs.
+	_, _ = db.EventResponsesCollection.InsertOne(ctx,
+		models.EventResponse{Id: primitive.NewObjectID(), EventId: eventId, UserId: "Some Responder", Response: &models.Response{Email: "responder@example.com"}})
+
+	sent := map[string]bool{}
+	processDueReminders(now, func(to, subject, body, contentType string) error {
+		sent[to] = true
+		return nil
+	})
+
+	if !sent["going@example.com"] || !sent["maybe@example.com"] {
+		t.Errorf("expected going + maybe reminded, got %v", sent)
+	}
+	if sent["no@example.com"] {
+		t.Errorf("decliner should not be reminded, got %v", sent)
+	}
+	if sent["responder@example.com"] {
+		t.Errorf("availability responder should be ignored when RSVPs exist, got %v", sent)
+	}
+}
+
 // A gathering whose reminder window hasn't opened yet must not be sent.
 func TestProcessDueReminders_NotYetDue(t *testing.T) {
 	requireDB(t)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -832,4 +833,150 @@ func getResponsesMap(responses []models.EventResponse) map[string]*models.Respon
 		result[resp.UserId] = resp.Response
 	}
 	return result
+}
+
+// rsvpKey resolves the map key + (for signed-in users) the user id for an RSVP,
+// mirroring how updateEventResponse keys guests vs signed-in users. Returns
+// ok=false and writes the response when a guest omits a name or a signed-in
+// caller has no session.
+func rsvpKey(c *gin.Context, isGuest bool, name string) (key string, userId primitive.ObjectID, ok bool) {
+	if isGuest {
+		if strings.TrimSpace(name) == "" {
+			c.JSON(http.StatusBadRequest, responses.Error{Error: "name-required"})
+			return "", primitive.NilObjectID, false
+		}
+		return name, primitive.NilObjectID, true
+	}
+
+	session := sessions.Default(c)
+	userIdInterface := session.Get("userId")
+	if userIdInterface == nil {
+		c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
+		return "", primitive.NilObjectID, false
+	}
+	id := userIdInterface.(string)
+	return id, utils.StringToObjectID(id), true
+}
+
+// @Summary RSVP to a confirmed gathering (going / maybe / no)
+// @Description Records the caller's attendance for the event's confirmed gathering. Requires the event to have a locked-in time (scheduledEvent). Open to signed-in users and guests (by name), like availability responses.
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{status=string,guest=bool,name=string,email=string} true "RSVP status + responder identity"
+// @Success 200
+// @Router /events/{eventId}/rsvp [post]
+func rsvpToEvent(c *gin.Context) {
+	payload := struct {
+		Status models.RsvpStatus `json:"status" binding:"required"`
+		Guest  *bool             `json:"guest" binding:"required"`
+		Name   string            `json:"name"`
+		Email  string            `json:"email"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
+		return
+	}
+
+	if payload.Status != models.RsvpGoing && payload.Status != models.RsvpMaybe && payload.Status != models.RsvpNo {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: "invalid-rsvp-status"})
+		return
+	}
+
+	event, eventErr := db.GetEventByEitherId(c.Param("eventId"))
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+	if event.ScheduledEvent == nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.GatheringNotScheduled})
+		return
+	}
+
+	key, userId, ok := rsvpKey(c, *payload.Guest, payload.Name)
+	if !ok {
+		return
+	}
+
+	rsvp := models.Rsvp{
+		Status:      payload.Status,
+		Email:       payload.Email,
+		RespondedAt: primitive.NewDateTimeFromTime(time.Now()),
+	}
+	if *payload.Guest {
+		rsvp.Name = payload.Name
+	} else {
+		rsvp.UserId = userId
+		// Backfill identity from the account so the roster + reminder have it.
+		if user, err := db.GetUserById(key); err == nil && user != nil {
+			if rsvp.Email == "" {
+				rsvp.Email = user.Email
+			}
+			rsvp.Name = fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+		}
+	}
+
+	if event.Rsvps == nil {
+		event.Rsvps = make(map[string]*models.Rsvp)
+	}
+	event.Rsvps[key] = &rsvp
+
+	if _, err := db.EventsCollection.UpdateByID(context.Background(), event.Id, bson.M{"$set": bson.M{"rsvps": event.Rsvps}}); err != nil {
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Remove the caller's RSVP to a gathering
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{guest=bool,name=string} true "Responder identity"
+// @Success 200
+// @Router /events/{eventId}/rsvp [delete]
+func deleteRsvp(c *gin.Context) {
+	payload := struct {
+		Guest *bool  `json:"guest" binding:"required"`
+		Name  string `json:"name"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
+		return
+	}
+
+	event, eventErr := db.GetEventByEitherId(c.Param("eventId"))
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+
+	key, _, ok := rsvpKey(c, *payload.Guest, payload.Name)
+	if !ok {
+		return
+	}
+
+	if event.Rsvps != nil {
+		delete(event.Rsvps, key)
+	}
+
+	if _, err := db.EventsCollection.UpdateByID(context.Background(), event.Id, bson.M{"$set": bson.M{"rsvps": event.Rsvps}}); err != nil {
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }

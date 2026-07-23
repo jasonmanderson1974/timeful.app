@@ -345,11 +345,35 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P1 — High value, leverages infrastructure already present
 
-- [ ] **C1 · RSVP / attendance tracking for a *confirmed* gathering.** `M`
-  Today the app finds the best time and can schedule a calendar event, but there's no
-  yes/no/maybe headcount once a time is locked. For a club that actually meets, "who's coming to
-  Saturday's gathering" is the natural next step after "when works." Reuses the `Attendee` model
-  and the `Response`→scheduled-event flow.
+- [x] **C1 · RSVP / attendance tracking for a *confirmed* gathering.** `M` — **DONE 2026-07-23
+  (CI-green; backend build/vet/tests + frontend build/lint/tests pass; RSVP endpoints +
+  RSVP→reminder pipeline verified live against local Mongo).** Adds a 3-state RSVP
+  (Going / Maybe / Can't make it) to any event with a confirmed gathering (**[C2]**'s
+  `scheduledEvent`), a live headcount + roster, and wires the result into C2's reminder targeting.
+  - **Storage** (`models/event.go`): a new `Rsvps map[string]*Rsvp{status,name,email,userId,
+    respondedAt}` on the Event doc, keyed by guest-name / user-id — mirrors `SignUpResponses`.
+    **Not** the `Attendee` model (that's group-invite-specific: Email + Declined only). No new
+    collection / migration.
+  - **Endpoints** (`routes/event_responses.go`): `POST /events/:eventId/rsvp` (status +
+    guest/signed-in identity, keyed like `updateEventResponse`; signed-in RSVPs backfill
+    name/email from the account) and `DELETE …/rsvp` to un-RSVP. Requires a confirmed gathering
+    (400 `gathering-not-scheduled`) and validates the status enum.
+  - **C2 integration** (`services/reminders`): `processDueReminders` now prefers RSVPs — new
+    `collectRsvpRecipientEmails` reminds `going`+`maybe` (decliners excluded); if **no** RSVP
+    exists yet it falls back to all availability respondents, so reminders keep working before
+    anyone RSVPs.
+  - **Frontend**: `GatheringRsvp.vue` (shown when `event.scheduledEvent` exists) — headcount
+    ("N going · M maybe · K can't"), a roster grouped by status (visible to all — it's a club),
+    and 3 RSVP buttons highlighting the viewer's choice (re-click to clear). Signed-in users
+    RSVP directly; guests enter a name first (same trust model as guest availability). Mounted in
+    `Event.vue` between the description and the calendar; `EventService.setRsvp/clearRsvp` persist
+    then `refreshEvent`.
+  - **Tests**: `collectRsvpRecipientEmails` unit test (going/maybe in, no out, dedupe, signed-in
+    lookup) + a DB-gated integration test (RSVPs present → only going+maybe emailed, availability
+    responders ignored). Live-verified the full endpoint flow (pre-schedule 400 → RSVP →
+    change → un-RSVP).
+  - **Non-goal:** guest plus-ones/spouse headcount is **[C4]** — the `Rsvp` struct leaves room
+    for a `GuestCount` without migration.
 
 - [x] **C2 · Automated pre-gathering reminder emails.** `S–M` — **DONE 2026-07-23 (CI-green;
   backend build/vet/tests + frontend build/lint/tests all pass; API round-trip + DB-backed

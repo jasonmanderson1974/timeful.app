@@ -74,6 +74,47 @@ func TestCollectRecipientEmails(t *testing.T) {
 	}
 }
 
+func TestCollectRsvpRecipientEmails(t *testing.T) {
+	userGoing := primitive.NewObjectID().Hex()
+	userNoEmail := primitive.NewObjectID().Hex()
+
+	lookup := func(userId string) string {
+		if userId == userNoEmail {
+			return "signedin@example.com"
+		}
+		return ""
+	}
+
+	event := &models.Event{
+		Rsvps: map[string]*models.Rsvp{
+			"Guest Going":   {Status: models.RsvpGoing, Email: "going@example.com"},
+			"Guest Maybe":   {Status: models.RsvpMaybe, Email: "maybe@example.com"},
+			"Guest No":      {Status: models.RsvpNo, Email: "no@example.com"}, // excluded
+			userGoing:       {Status: models.RsvpGoing, Email: "user-going@example.com"},
+			userNoEmail:     {Status: models.RsvpMaybe},                             // resolved via lookup(key)
+			"Guest Dup":     {Status: models.RsvpGoing, Email: "going@example.com"}, // dedup
+			"Guest NilSkip": nil,
+		},
+	}
+
+	got := collectRsvpRecipientEmails(event, lookup)
+
+	want := map[string]bool{
+		"going@example.com":      true,
+		"maybe@example.com":      true,
+		"user-going@example.com": true,
+		"signedin@example.com":   true,
+	}
+	if len(got) != len(want) {
+		t.Fatalf("got %v (len %d), want %d unique addrs", got, len(got), len(want))
+	}
+	for _, e := range got {
+		if !want[e] {
+			t.Errorf("unexpected recipient %q (decliner or dup leaked?): %v", e, got)
+		}
+	}
+}
+
 func TestBuildReminderEmail(t *testing.T) {
 	desc := "Bring cigars."
 	event := &models.Event{

@@ -125,6 +125,14 @@
               :event.sync="event"
               :canEdit="event.ownerId != 0 && canEdit"
             />
+
+            <!-- RSVP to the confirmed gathering (C1) -->
+            <GatheringRsvp
+              v-if="event.scheduledEvent"
+              :event="event"
+              @set-rsvp="setRsvp"
+              @clear-rsvp="clearRsvp"
+            />
           </div>
 
           <!-- Calendar -->
@@ -223,6 +231,8 @@ import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import EventHeader from "@/components/event/EventHeader.vue"
 import EventBottomBar from "@/components/event/EventBottomBar.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
+import GatheringRsvp from "@/components/event/GatheringRsvp.vue"
+import { setRsvp, clearRsvp } from "@/utils/services/EventService"
 import pluginMessagesMixin from "@/components/event/pluginMessagesMixin"
 export default {
   name: "Event",
@@ -249,6 +259,7 @@ export default {
     EventHeader,
     EventBottomBar,
     EventDescription,
+    GatheringRsvp,
   },
 
   data: () => ({
@@ -437,6 +448,27 @@ export default {
       /* Show edit event dialog */
       this.editEventDialog = true
     },
+    /** Persist an RSVP to the confirmed gathering, then refresh (C1). */
+    async setRsvp(payload) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await setRsvp(id, payload)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not save your RSVP. Please try again.")
+      }
+    },
+    /** Remove the caller's RSVP, then refresh (C1). */
+    async clearRsvp(payload) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await clearRsvp(id, payload)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not update your RSVP. Please try again.")
+      }
+    },
+
     /** Refresh event details */
     async refreshEvent() {
       let sanitizedId = this.eventId.replaceAll(".", "")
