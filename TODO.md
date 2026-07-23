@@ -216,10 +216,22 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   centralized snackbar-on-error interceptor (auto-dispatching `showError` in the client would
   double-show or override the ~58 call sites that handle errors themselves).
 
-- [ ] **A11 · Trim remaining large components.** `M`
-  After A5: `Event.vue` (1,815), `NewEvent.vue` (1,011), `RespondentsList.vue` (844),
-  `NewSignUp.vue` (827). Each is a candidate for extracting presentational children and moving
-  pure helpers into `utils/`. Lower urgency than A5 but same class of problem.
+- [ ] **A11 · Trim remaining large components.** `M` — **STARTED 2026-07-22 (dead-code slice done;
+  larger extractions need app-run verification — see caveat).**
+  After A5: `Event.vue` (now 1,776), `NewEvent.vue` (1,010), `RespondentsList.vue` (844),
+  `NewSignUp.vue` (827). Candidates for extracting presentational children and moving pure helpers
+  into `utils/`.
+  - **Done:** removed `Event.vue`'s dead `interceptPluginResponses` debug method (listener was
+    commented out) → 1,815 → 1,776.
+  - **⚠️ Verification caveat (learned the hard way here):** `Event.vue` is mostly `this`-coupled
+    action handlers, not the pure/geometry code A5 had. The only large "method" appeared to be ~595
+    lines but was actually THREE methods — `interceptPluginResponses` (dead) **plus the active
+    `setSlots`/`getSlots` plugin handlers** (an `async`-method detection gap hid them). `npm build`
+    and eslint do NOT catch deleting an actively-`this`-called method, so a wrong boundary silently
+    breaks runtime (here: the plugin API). Remaining A11 extractions (a `pluginMessagesMixin` for
+    `handleMessage`/`setSlots`/`getSlots`, or child-component splits) should be done **with the app
+    running to smoke-test** — do not do them blind. Pre-existing unused imports in `Event.vue` (~7)
+    are separate baseline cruft, safe to prune later.
 
 - [x] **A12 · Remove stray `console.log` and backend `fmt.Println` debug prints.** `S` — **DONE
   2026-07-22 (CI-green).** Dropped the stray frontend logs: `SignUpForSlotDialog` (logged the block
