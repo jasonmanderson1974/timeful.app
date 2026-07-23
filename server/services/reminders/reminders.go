@@ -49,8 +49,11 @@ func StartReminderScheduler() func() {
 
 	tick := func() {
 		now := time.Now()
-		// Advance first so reminders act on the current (freshly-rolled) occurrence.
+		// Advance recurring gatherings first (this also captures each completed
+		// occurrence into the Chronicle before its RSVPs are cleared), then
+		// archive one-off gatherings that have ended, then send due reminders.
 		advanceRecurringGatherings(now)
+		archivePastGatherings(now)
 		if emailConfigured {
 			processDueReminders(now, utils.SendEmail)
 		}
@@ -111,6 +114,11 @@ func advanceRecurringGatherings(now time.Time) {
 			continue
 		}
 
+		// Capture the just-completed occurrence into the Chronicle (C10) BEFORE
+		// advancing, since AdvanceGathering clears this cycle's RSVPs. Dup-safe
+		// (unique index on eventId+startDate), so a racing tick can't double-record.
+		db.InsertChronicleEntry(buildChronicleEntry(&event, now))
+
 		newStart := primitive.NewDateTimeFromTime(next)
 		newEnd := primitive.NewDateTimeFromTime(next.Add(duration))
 		if _, err := db.AdvanceGathering(event.Id, event.ScheduledEvent.StartDate, newStart, newEnd); err != nil {
@@ -118,6 +126,79 @@ func advanceRecurringGatherings(now time.Time) {
 			continue
 		}
 	}
+}
+
+// archivePastGatherings captures one-off (non-recurring) gatherings whose
+// confirmed time has passed into the Chronicle, exactly once each (C10). On
+// first run after deploy this also backfills any already-past gatherings.
+func archivePastGatherings(now time.Time) {
+	events, err := db.GetPastNonRecurringGatheringsToArchive(primitive.NewDateTimeFromTime(now))
+	if err != nil {
+		return // already logged
+	}
+
+	for i := range events {
+		event := events[i]
+		if event.ScheduledEvent == nil {
+			continue
+		}
+		if err := db.InsertChronicleEntry(buildChronicleEntry(&event, now)); err != nil {
+			continue // transient — retry next tick (not yet marked chronicled)
+		}
+		db.MarkEventChronicled(event.Id)
+	}
+}
+
+// buildChronicleEntry snapshots a completed gathering (its confirmed time,
+// venue, description, and the roster of who was going/maybe) into a
+// ChronicleEntry. Pure apart from reading the event.
+func buildChronicleEntry(event *models.Event, capturedAt time.Time) models.ChronicleEntry {
+	attendees, headCount := chronicleAttendees(event.Rsvps)
+
+	entry := models.ChronicleEntry{
+		Id:          primitive.NewObjectID(),
+		EventId:     event.Id,
+		ShortId:     event.ShortId,
+		Name:        event.Name,
+		Description: event.Description,
+		Location:    event.Location,
+		Attendees:   attendees,
+		HeadCount:   headCount,
+		CapturedAt:  primitive.NewDateTimeFromTime(capturedAt),
+	}
+	if event.ScheduledEvent != nil {
+		entry.StartDate = event.ScheduledEvent.StartDate
+		entry.EndDate = event.ScheduledEvent.EndDate
+	}
+	return entry
+}
+
+// chronicleAttendees turns a gathering's RSVPs into the going/maybe roster plus
+// a total headcount (sum of 1 + guestCount over those attendees). Decliners are
+// excluded. Deterministic-ish; order isn't guaranteed (map iteration), so
+// callers that need stable order should sort.
+func chronicleAttendees(rsvps map[string]*models.Rsvp) ([]models.ChronicleAttendee, int) {
+	attendees := make([]models.ChronicleAttendee, 0)
+	headCount := 0
+	for key, rsvp := range rsvps {
+		if rsvp == nil {
+			continue
+		}
+		if rsvp.Status != models.RsvpGoing && rsvp.Status != models.RsvpMaybe {
+			continue
+		}
+		name := rsvp.Name
+		if name == "" {
+			name = key
+		}
+		attendees = append(attendees, models.ChronicleAttendee{
+			Name:       name,
+			Status:     rsvp.Status,
+			GuestCount: rsvp.GuestCount,
+		})
+		headCount += 1 + rsvp.GuestCount
+	}
+	return attendees, headCount
 }
 
 // processDueReminders sends reminders for every gathering that has entered its

@@ -128,9 +128,10 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P1 — Structural debt that slows every future change
 
-- [ ] **A5 · Break up `ScheduleOverlap.vue` (was 4,638 lines, ~99 methods).** `L` — **SAFE PART DONE
-  2026-07-22 (3 mixin slices, CI-green; component 4,638 → 3,744 lines, ~19% smaller). Only the
-  riskier child-component split remains — see caveat.**
+- [x] **A5 · Break up `ScheduleOverlap.vue` (was 4,638 lines, ~99 methods).** `L` — **DONE 2026-07-22
+  (checkbox flipped 2026-07-23; the body's final bullet already recorded "A5 is now DONE" after the
+  Tier-2 child split — the box was just never ticked). Component 4,638 → ~3.1k lines; remaining size is
+  inherent grid complexity.**
   This is the single largest maintenance liability in the repo — a god-component mixing drag-select
   grid math, availability animation, calendar-account plumbing, sign-up-block editing, and
   respondent hover/selection.
@@ -610,10 +611,39 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P3 — Nice-to-have / thematic
 
-- [ ] **C10 · Members-only gathering archive ("The Chronicle").** `M`
-  The redesign removed the public blog, but an internal, roll-gated history of past gatherings
-  (date, attendees, a photo or two) fits the "gentleman's club" theme and gives the Fellowship a
-  sense of continuity. Reuses the existing role-gated Fellowship directory work.
+- [x] **C10 · Members-only gathering archive ("The Chronicle").** `M` — **DONE 2026-07-23 (CI-green;
+  backend build/vet/tests + frontend build/lint/tests pass; auto-capture + member-gating verified live
+  against a local server + Mongo).** An internal, roll-gated history of past gatherings (date, venue,
+  attendees) — **auto-captured**, no manual upkeep. Resolves the C5/C10 tension flagged in C5: a
+  recurring gathering rolls forward and discards its past occurrence, so the Chronicle is where that
+  history is preserved.
+  - **Capture engine** (`services/reminders`): the C5 gathering scheduler now, each tick, snapshots
+    completed gatherings into a new `chronicle` collection. **Recurring** occurrences are captured in
+    `advanceRecurringGatherings` **before** the roll-forward clears their RSVPs (one entry per
+    occurrence); **one-off** gatherings are captured by a new `archivePastGatherings` pass once their
+    time passes (guarded by a `Chronicled` flag on the event so they're not re-snapshotted — this also
+    backfills already-past gatherings on first deploy). Runs email-independent (like C5's advance).
+  - **Storage** (`models/chronicle.go` + `db/chronicle.go`): `ChronicleEntry{eventId, shortId, name,
+    description, location, startDate, endDate, attendees []ChronicleAttendee, headCount, capturedAt}`
+    in its own collection so history survives even if the source event is deleted. Attendees =
+    going/maybe RSVPs (decliners excluded), headCount = Σ(1 + guestCount). A **unique index on
+    (eventId, startDate)** + dup-key-as-no-op in `InsertChronicleEntry` makes capture idempotent under
+    racing scheduler ticks / re-runs.
+  - **Endpoint** (`routes/chronicle.go`, registered as `InitChronicle` in `main.go`): `GET /chronicle`
+    behind `middleware.AuthRequired()` — **members only** (signed-in + allowlisted), most-recent-first.
+    Kept off the `/events/:id` group to avoid the wildcard-vs-static route conflict.
+  - **Frontend**: `Chronicle.vue` (role-gated like `Fellowship.vue` — non-members redirected home),
+    a timeline of past gatherings (name → event link, date, venue, "N attended: …" roster). New
+    `/chronicle` route + a "The Chronicle" item in `AuthUserMenu` (v-if `canInvite`, next to The
+    Fellowship / The Roll).
+  - **Tests**: pure (`chronicleAttendees` going/maybe/decliner/nameless/nil) + DB-gated
+    (`archivePastGatherings` captures once + skips future + marks chronicled + no-dup + shows via
+    `GetChronicleEntries`; recurring advance captures the occurrence before clearing RSVPs) + endpoint
+    401-gating. **Swagger regenerated** (pinned `swag@v1.16.1 + flags`) — `/chronicle` + the models.
+  - **Follow-ups (not v1):** no photos/notes per entry (the original "a photo or two" idea — would need
+    upload/storage; the free-text venue + description carry over for now); no per-year grouping / paging
+    beyond the 200-entry cap; RSVP-derived attendance only (pre-RSVP historical gatherings show
+    "no attendance recorded").
 
 - [x] **C11 · Printable / exportable roster of the Fellowship directory.** `S` — **DONE 2026-07-23
   (browser-verified; frontend-only).** Added an **Export** menu to `Fellowship.vue` with **Print /
@@ -716,11 +746,12 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     Caddy) on the VM. So D2's domain/nginx tail is resolved. **Still open (intentionally):** Mongo DB
     name `schej-it` (data migration) + GCP project id (dead code) — both LEFT per D0.
 
-- [ ] **D3 · Historical migration scripts — leave or annotate, don't rename.** `S` · **P3**
-  `server/scripts/*` account for ~13 of the `schej` matches but intentionally **don't compile** (they
-  reference outdated models — noted in `backend-ci.yml`) and are run-once history. Renaming identifiers
-  there is pointless and risks implying they're live. Overlaps with A15 (document the dated folders);
-  handle there, not as part of the rename.
+- [x] **D3 · Historical migration scripts — leave or annotate, don't rename.** `S` · **P3 — DONE
+  2026-07-23 (resolved via A15).** Decision: **leave** the `schej` identifiers in `server/scripts/*` —
+  they intentionally **don't compile** (reference outdated models; excluded from CI per
+  `backend-ci.yml`) and are run-once history, so renaming is pointless and risks implying they're live.
+  The "annotate" side is already satisfied by **A15**'s `server/scripts/README.md`, which documents that
+  each dated folder is a manual, run-once migration kept for history. No code change needed here.
 
 ---
 

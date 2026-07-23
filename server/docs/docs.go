@@ -398,6 +398,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/chronicle": {
+            "get": {
+                "description": "Members-only, read-only archive of gatherings that have taken place, most recent first. Auto-captured when a confirmed gathering's time passes.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chronicle"
+                ],
+                "summary": "Lists past gatherings (The Chronicle)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ChronicleEntry"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/events": {
             "post": {
                 "consumes": [
@@ -2760,6 +2783,68 @@ const docTemplate = `{
                 "ICSCalendarType"
             ]
         },
+        "models.ChronicleAttendee": {
+            "type": "object",
+            "properties": {
+                "guestCount": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "going / maybe",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.RsvpStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "models.ChronicleEntry": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "attendees": {
+                    "description": "Attendees recorded as going/maybe, plus the total headcount\n(sum of 1 + guestCount over those attendees).",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ChronicleAttendee"
+                    }
+                },
+                "capturedAt": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "endDate": {
+                    "type": "integer"
+                },
+                "eventId": {
+                    "type": "string"
+                },
+                "headCount": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "shortId": {
+                    "description": "to link back to the event",
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Comment": {
             "type": "object",
             "properties": {
@@ -2811,6 +2896,10 @@ const docTemplate = `{
                 },
                 "calendarEventId": {
                     "type": "string"
+                },
+                "chronicled": {
+                    "description": "Whether this (non-recurring) gathering has been captured into the\nChronicle (C10). Set once by the scheduler after the gathering ends so it\nisn't re-snapshotted. Recurring gatherings are captured per-occurrence at\nadvance time instead and don't use this flag.",
+                    "type": "boolean"
                 },
                 "collectEmails": {
                     "type": "boolean"

@@ -290,6 +290,12 @@ type Event struct {
 	// live on each option.
 	Polls []Poll `json:"polls" bson:"polls,omitempty"`
 
+	// Whether this (non-recurring) gathering has been captured into the
+	// Chronicle (C10). Set once by the scheduler after the gathering ends so it
+	// isn't re-snapshotted. Recurring gatherings are captured per-occurrence at
+	// advance time instead and don't use this flag.
+	Chronicled bool `json:"chronicled" bson:"chronicled,omitempty"`
+
 	// Discussion thread (fetched from the comments collection; not stored here)
 	Comments []Comment `json:"comments" bson:"-"`
 

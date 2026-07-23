@@ -37,6 +37,16 @@
         </v-list-item>
         <v-list-item
           v-if="canInvite"
+          id="chronicle-btn"
+          @click="goToChronicle"
+        >
+          <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
+            <v-icon class="tw-mr-1" small color="black">mdi-book-open-page-variant-outline</v-icon>
+            The Chronicle
+          </v-list-item-title>
+        </v-list-item>
+        <v-list-item
+          v-if="canInvite"
           id="members-btn"
           @click="goToAdmin"
         >
@@ -108,6 +118,9 @@ export default {
     },
     goToFellowship() {
       this.$router.replace({ name: "fellowship" })
+    },
+    goToChronicle() {
+      this.$router.replace({ name: "chronicle" })
     },
     goToAdmin() {
       this.$router.replace({ name: "admin" })

@@ -146,6 +146,7 @@ func main() {
 	routes.InitUser(apiRouter)
 	routes.InitUsers(apiRouter)
 	routes.InitEvents(apiRouter)
+	routes.InitChronicle(apiRouter)
 	routes.InitStripe(apiRouter)
 	routes.InitFolders(apiRouter)
 	routes.InitAdmin(apiRouter)

@@ -33,6 +33,11 @@ const routes = [
     component: () => import("@/views/Fellowship.vue"),
   },
   {
+    path: "/chronicle",
+    name: "chronicle",
+    component: () => import("@/views/Chronicle.vue"),
+  },
+  {
     path: "/e/:eventId",
     name: "event",
     component: () => import("@/views/Event.vue"),

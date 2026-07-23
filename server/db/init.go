@@ -24,6 +24,7 @@ var FolderEventsCollection *mongo.Collection
 var OtpCodesCollection *mongo.Collection
 var AllowlistCollection *mongo.Collection
 var CommentsCollection *mongo.Collection
+var ChronicleCollection *mongo.Collection
 
 func Init() func() {
 	// Establish mongodb connection
@@ -53,6 +54,16 @@ func Init() func() {
 	OtpCodesCollection = Db.Collection("otpCodes")
 	AllowlistCollection = Db.Collection("allowlist")
 	CommentsCollection = Db.Collection("comments")
+	ChronicleCollection = Db.Collection("chronicle")
+
+	// Unique per (eventId, startDate) so a gathering occurrence is captured into
+	// the Chronicle at most once (belt-and-suspenders against racing scheduler
+	// ticks / re-runs; see db/chronicle.go InsertChronicleEntry).
+	chronicleIndexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "eventId", Value: 1}, {Key: "startDate", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+	ChronicleCollection.Indexes().CreateOne(context.Background(), chronicleIndexModel)
 
 	// Create TTL index so expired OTP docs are auto-deleted
 	otpIndexModel := mongo.IndexModel{
