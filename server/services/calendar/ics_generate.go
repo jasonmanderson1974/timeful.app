@@ -39,7 +39,7 @@ func GenerateEventICS(event *models.Event) ([]byte, error) {
 	vevent := ical.NewEvent()
 	// Stable UID so re-downloading updates the same calendar entry rather than
 	// creating a duplicate.
-	vevent.Props.SetText(ical.PropUID, fmt.Sprintf("%s@timeful.app", event.Id.Hex()))
+	vevent.Props.SetText(ical.PropUID, fmt.Sprintf("%s@gathering.sirthomasfoolery.com", event.Id.Hex()))
 	vevent.Props.SetDateTime(ical.PropDateTimeStamp, time.Now().UTC())
 	vevent.Props.SetDateTime(ical.PropDateTimeStart, start)
 	vevent.Props.SetDateTime(ical.PropDateTimeEnd, end)
@@ -55,7 +55,7 @@ func GenerateEventICS(event *models.Event) ([]byte, error) {
 
 	cal := ical.NewCalendar()
 	cal.Props.SetText(ical.PropVersion, "2.0")
-	cal.Props.SetText(ical.PropProductID, "-//The Fellowship//Timeful//EN")
+	cal.Props.SetText(ical.PropProductID, "-//The Fellowship//The Gathering//EN")
 	cal.Props.SetText(ical.PropMethod, "PUBLISH")
 	cal.Children = append(cal.Children, vevent.Component)
 

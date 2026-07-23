@@ -210,9 +210,9 @@
           <div class="tw-text-parchment">
             Email us at
             <a
-              href="mailto:contact@timeful.app"
+              href="mailto:sirthomasfoolery24@gmail.com"
               class="tw-text-parchment tw-underline"
-              >contact@timeful.app</a
+              >sirthomasfoolery24@gmail.com</a
             >
             with any questions!
           </div>

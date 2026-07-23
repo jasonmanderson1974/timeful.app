@@ -118,7 +118,7 @@ func PrintHttpResponse(resp *http.Response) {
 func GetBaseUrl() string {
 	var baseUrl string
 	if IsRelease() {
-		baseUrl = "https://timeful.app"
+		baseUrl = "https://gathering.sirthomasfoolery.com"
 	} else {
 		baseUrl = "http://localhost:8080"
 	}

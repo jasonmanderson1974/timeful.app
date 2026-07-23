@@ -21,7 +21,7 @@ import (
 	"sirtom/server/responses"
 )
 
-// @Summary Import a Timeful event from a remote instance
+// @Summary Import an event from a remote instance
 // @Tags events
 // @Accept json
 // @Produce json

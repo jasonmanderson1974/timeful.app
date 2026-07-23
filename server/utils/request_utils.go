@@ -17,7 +17,7 @@ func ParseArrayQueryParam(s string) []string {
 	return arr
 }
 
-// Returns origin of the given request (i.e. http://localhost:8080 or http://localhost:3002 or https://schej.it)
+// Returns origin of the given request (i.e. http://localhost:8080 or http://localhost:3002 or https://gathering.sirthomasfoolery.com)
 func GetOrigin(c *gin.Context) string {
 	return c.Request.Header.Get("Origin")
 }

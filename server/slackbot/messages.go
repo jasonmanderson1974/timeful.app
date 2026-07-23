@@ -12,8 +12,8 @@ import (
 func SendEventCreatedMessage(insertedId string, creator string, event models.Event, numAttendees int) {
 	eventInfoText := fmt.Sprintf(
 		"*Name*: %s\n"+
-			"*Event url*: https://schej.it/e/%s\n"+
-			"*Short url*: https://schej.it/e/%s\n"+
+			"*Event url*: https://gathering.sirthomasfoolery.com/e/%s\n"+
+			"*Short url*: https://gathering.sirthomasfoolery.com/e/%s\n"+
 			"*Creator*: %s\n"+
 			"*Num days*: %v\n"+
 			"*Type*: %s\n",

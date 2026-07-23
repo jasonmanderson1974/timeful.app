@@ -103,7 +103,7 @@ happy-path, email-change/OTP flows, middleware. `go test` passing means "compile
 
 ## Conventions
 
-- Go module path stays `schej.it/server`; Mongo DB stays `schej-it` — internal
+- Go module path is `sirtom/server` (renamed 2026-07-23); Mongo DB stays `schej-it` — internal
   names keep the old branding, don't rename.
 - New API routes need Swag comments; run `swag init` in `server/` to regenerate
   `docs/`.

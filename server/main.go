@@ -34,9 +34,9 @@ import (
 	_ "sirtom/server/docs"
 )
 
-// @title Schej.it API
+// @title The Fellowship API
 // @version 1.0
-// @description This is the API for Schej.it!
+// @description This is the API for The Fellowship!
 
 // @host localhost:3002/api
 
@@ -103,7 +103,7 @@ func main() {
 	// Cors
 	corsOrigins := os.Getenv("CORS_ORIGINS")
 	if corsOrigins == "" {
-		corsOrigins = "https://www.schej.it,https://schej.it,https://www.timeful.app,https://timeful.app,http://localhost:8080"
+		corsOrigins = "https://gathering.sirthomasfoolery.com,http://localhost:8080"
 	}
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     strings.Split(corsOrigins, ","),
@@ -239,7 +239,7 @@ func noRouteHandler() gin.HandlerFunc {
 			// params["enableStickyFooter"] = true
 
 			if event != nil {
-				title := fmt.Sprintf("%s - Timeful (formerly Schej)", event.Name)
+				title := fmt.Sprintf("%s · The Fellowship", event.Name)
 				params["title"] = title
 				params["ogTitle"] = title
 

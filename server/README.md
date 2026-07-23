@@ -1,4 +1,4 @@
-# Schej.it API
+# The Fellowship API
 
 API docs (available when the server is running): http://localhost:3002/swagger/index.html
 

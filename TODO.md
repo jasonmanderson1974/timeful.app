@@ -581,13 +581,18 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 > bare `schej`) and **~69 `timeful*` matches**. Split into a safe/mechanical tier and a
 > dangerous/infra tier — **do NOT treat this as one find-replace.**
 
-- [ ] **D0 · Decide the target name(s) first.** `S` · **P3** — **prerequisite / open decision.**
-  Nothing below can start until we pick concrete replacements for each identifier class, because they
-  have *different* constraints: the **Go module path** (`schej.it/server`), a **public domain** (for
-  CORS/nginx/email links), the **Mongo DB name**, the **GCP project id**, and the **brand string**
-  ("Schej.it"/"Timeful" shown to users). The fork is "The Fellowship" — but e.g. a Go module path and a
-  GCP project id can't contain spaces/caps, so each needs its own decided value. Record them here once
-  chosen.
+- [x] **D0 · Decide the target name(s) first.** `S` · **P3 — DECIDED 2026-07-23.**
+  - **Go module path:** `schej.it/server` → **`sirtom/server`**.
+  - **Public domain:** **`gathering.sirthomasfoolery.com`** (final; for CORS/nginx/email links/ICS UIDs).
+  - **Brand string** ("Schej.it"/"Timeful" shown to users) → **"The Fellowship"** (org) / **"The
+    Gathering"** (the scheduling/event concept). Stray "Timeful(s)" in code comments → "gathering/event".
+  - **`timeful.app` refs:** technical/URL (e.g. ICS UID `@timeful.app`) → `@gathering.sirthomasfoolery.com`;
+    brand → The Fellowship/The Gathering.
+  - **Contact email:** `contact@timeful.app` → **`sirthomasfoolery24@gmail.com`**.
+  - **Remove** the upstream author's cal.com link in `TeamsNotReadyDialog.vue`.
+  - **Mongo DB name `schej-it`** → **LEAVE as-is** (internal/invisible; renaming is a risky live-data
+    migration for no user benefit). **GCP project id `schej-it`** → **LEAVE** (that Cloud Tasks path is
+    dead on this fork). Both are D2 and intentionally not changed.
 
 - [ ] **D1 · Safe code/brand renames (mechanical, CI-gated).** `M` · **P3**
   - **Go module path** `schej.it/server` → new path: edit `server/go.mod` `module` directive and the

@@ -42,7 +42,7 @@ func TestGenerateEventICS(t *testing.T) {
 		"DTEND:20260801T040000Z",
 		"STATUS:CONFIRMED",
 		"LOCATION:The Lodge\\, 123 Main St",
-		"UID:" + event.Id.Hex() + "@timeful.app",
+		"UID:" + event.Id.Hex() + "@gathering.sirthomasfoolery.com",
 		"END:VEVENT",
 		"END:VCALENDAR",
 	}

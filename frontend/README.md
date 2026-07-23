@@ -1,4 +1,4 @@
-# timeful
+# The Fellowship
 
 ## Project setup
 

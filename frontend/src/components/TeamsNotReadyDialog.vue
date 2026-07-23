@@ -14,13 +14,11 @@
         </v-btn>
       </v-card-title>
       <v-card-text class="tw-text-parchment-dim">
-        Teams are only available on the Fellowship organization plan. Book a call
-        with the founder to learn about how to upgrade.
+        Teams are only available on the Fellowship organization plan.
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn text @click="dialog = false">Close</v-btn>
-        <v-btn color="primary" @click="bookCall">Book a call</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -40,16 +38,6 @@ export default {
       set(val) {
         this.$emit("input", val)
       },
-    },
-  },
-  methods: {
-    bookCall() {
-      this.$posthog?.capture("book_call_for_organization_plan_clicked")
-      window.open(
-        "https://cal.com/jonathan-liu/timeful-organization-plan",
-        "_blank"
-      )
-      this.dialog = false
     },
   },
 }

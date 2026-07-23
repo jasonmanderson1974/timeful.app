@@ -1072,7 +1072,7 @@ export default {
     sampleCalendarEventsByDay: { type: Array, required: false }, // Sample calendar events to use for example calendars
     calendarPermissionGranted: { type: Boolean, default: false }, // Whether user has granted google calendar permissions
 
-    weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly Timefuls
+    weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly gatherings
 
     alwaysShowCalendarEvents: { type: Boolean, default: false }, // Whether to show calendar events all the time
     noEventNames: { type: Boolean, default: false }, // Whether to show "busy" instead of the event name
@@ -1717,7 +1717,7 @@ export default {
       style.height = `calc(${height} * 1rem)`
       return style
     },
-    /** Parses the responses to the Timeful, makes necessary changes based on the type of event, and returns it */
+    /** Parses the responses to the gathering, makes necessary changes based on the type of event, and returns it */
     parsedResponses() {
       const parsed = {}
 

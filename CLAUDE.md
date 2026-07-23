@@ -28,7 +28,7 @@ Monorepo for Timeful (formerly Schej.it), a group availability/scheduling app.
 - `compose.yaml` — Docker Compose: `mongo` + `frontend` (build-only, writes dist to a shared volume) + `server` (binds `127.0.0.1:3002`, mounts the dist volume read-only). See `DEPLOYMENT.md`.
 - `PLUGIN_API_README.md` — `window.postMessage` API used by browser plugins to read/write availability on the frontend.
 
-Internal identifiers (Go module `schej.it/server`, Mongo DB `schej-it`, prod email "Schej.it") still use the old name — leave them alone unless rebranding is the explicit task.
+The Go module is `sirtom/server` (renamed from `schej.it/server`, 2026-07-23). The Mongo DB name (`schej-it`) and the `SCHEJ_EMAIL_ADDRESS` env var are intentionally left unchanged (internal/infra — see TODO D0/D2).
 
 ## Common commands
 
@@ -85,7 +85,7 @@ The frontend exposes `get-slots` / `set-slots` over `window.postMessage` with a 
 
 ## Conventions worth knowing
 
-- The Go module path is `schej.it/server`; imports use that prefix throughout. Don't rename.
+- The Go module path is `sirtom/server`; imports use that prefix throughout.
 - Mongo collection naming and indexes are established by the dated migration scripts in `server/scripts/` — when adding a new collection or index, follow the same dated-folder pattern.
 - New API routes need Swag comments above the handler so `swag init` picks them up; otherwise they're invisible in `/swagger`.
 - The server panics on startup if `SESSION_SECRET` is missing or shorter than 32 chars (`validateSessionSecret` in `main.go`).
