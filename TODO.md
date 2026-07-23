@@ -636,9 +636,13 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     `projects/schej-it/locations/us-central1/queues/SendReminderEmail`): this is a real **GCP project
     id**. It can only change if the project itself is renamed/recreated — coordinate with whoever owns
     the GCP project or leave as-is.
-  - **Domains/CORS/nginx**: `main.go`'s default CORS origins (see also A14), `deploy_scripts/
-    nginx_configs/*`, `deploy_scripts/reboot_server_if_down.sh` — must match the **real deployed
-    domain**; only change alongside the actual DNS/hosting cutover.
+  - **Domains/CORS/nginx**: `main.go`'s default CORS origins — **DONE via A14/D1**
+    (→ `gathering.sirthomasfoolery.com`). The `deploy_scripts/` + `.github/workflows/deploy.yml`
+    ("Deploy Schej") were the **upstream's** screen-based auto-deploy to the old schej.it AWS VPS
+    (`workflow_dispatch`-only, targets `secrets.SSH_HOST` this fork doesn't have) — **DELETED
+    2026-07-23** rather than rewritten, since this fork deploys via `./deploy.sh` (docker compose +
+    Caddy) on the VM. So D2's domain/nginx tail is resolved. **Still open (intentionally):** Mongo DB
+    name `schej-it` (data migration) + GCP project id (dead code) — both LEFT per D0.
 
 - [ ] **D3 · Historical migration scripts — leave or annotate, don't rename.** `S` · **P3**
   `server/scripts/*` account for ~13 of the `schej` matches but intentionally **don't compile** (they
