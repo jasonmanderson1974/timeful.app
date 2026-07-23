@@ -2481,7 +2481,9 @@ export default {
           this.event.name
         )}&dates=${start}/${end}&details=${encodeURIComponent(
           `\n\nThis Gathering was called with The Fellowship: ${window.location.origin}/e/`
-        )}${eventId}&ctz=${this.curTimezone.value}&add=${emailsString}`
+        )}${eventId}&ctz=${this.curTimezone.value}&location=${encodeURIComponent(
+          this.event.location || ""
+        )}&add=${emailsString}`
       } else {
         url = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
           this.event.name

@@ -81,6 +81,7 @@ func createEvent(c *gin.Context) {
 		When2meetHref            *string  `json:"when2meetHref"`
 		CollectEmails            *bool    `json:"collectEmails"`
 		TimeIncrement            *int     `json:"timeIncrement"`
+		Location                 *string  `json:"location"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -138,6 +139,7 @@ func createEvent(c *gin.Context) {
 		When2meetHref:            payload.When2meetHref,
 		CollectEmails:            payload.CollectEmails,
 		TimeIncrement:            payload.TimeIncrement,
+		Location:                 payload.Location,
 		Type:                     payload.Type,
 		SignUpResponses:          make(map[string]*models.SignUpResponse),
 		NumResponses:             &numResponses,
@@ -258,6 +260,7 @@ func editEvent(c *gin.Context) {
 
 		// For both events and groups
 		Description *string `json:"description"`
+		Location    *string `json:"location"`
 
 		// Only for sign up form events
 		SignUpBlocks *[]models.SignUpBlock `json:"signUpBlocks"`
@@ -312,6 +315,7 @@ func editEvent(c *gin.Context) {
 	// Update event
 	event.Name = payload.Name
 	event.Description = payload.Description
+	event.Location = payload.Location
 	event.Duration = payload.Duration
 	event.Dates = payload.Dates
 	event.Times = payload.Times

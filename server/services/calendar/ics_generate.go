@@ -45,6 +45,9 @@ func GenerateEventICS(event *models.Event) ([]byte, error) {
 	vevent.Props.SetDateTime(ical.PropDateTimeEnd, end)
 	vevent.Props.SetText(ical.PropSummary, summary)
 	vevent.Props.SetText(ical.PropDescription, description)
+	if event.Location != nil && *event.Location != "" {
+		vevent.Props.SetText(ical.PropLocation, *event.Location)
+	}
 	if u, err := url.Parse(eventUrl); err == nil {
 		vevent.Props.SetURI(ical.PropURL, u)
 	}

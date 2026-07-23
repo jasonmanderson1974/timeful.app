@@ -11,6 +11,7 @@ import (
 
 func TestGenerateEventICS(t *testing.T) {
 	desc := "Bring cigars."
+	venue := "The Lodge, 123 Main St"
 	start := time.Date(2026, 8, 1, 2, 0, 0, 0, time.UTC)
 	end := start.Add(2 * time.Hour)
 
@@ -18,6 +19,7 @@ func TestGenerateEventICS(t *testing.T) {
 		Id:          primitive.NewObjectID(),
 		Name:        "Saturday Gathering",
 		Description: &desc,
+		Location:    &venue,
 		ScheduledEvent: &models.CalendarEvent{
 			Summary:   "Saturday Gathering",
 			StartDate: primitive.NewDateTimeFromTime(start),
@@ -39,6 +41,7 @@ func TestGenerateEventICS(t *testing.T) {
 		"DTSTART:20260801T020000Z",
 		"DTEND:20260801T040000Z",
 		"STATUS:CONFIRMED",
+		"LOCATION:The Lodge\\, 123 Main St",
 		"UID:" + event.Id.Hex() + "@timeful.app",
 		"END:VEVENT",
 		"END:VCALENDAR",

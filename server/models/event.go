@@ -84,8 +84,11 @@ type Event struct {
 	OwnerId     primitive.ObjectID `json:"ownerId" bson:"ownerId,omitempty"`
 	Name        string             `json:"name" bson:"name,omitempty"`
 	Description *string            `json:"description" bson:"description,omitempty"`
-	IsArchived  *bool              `json:"isArchived" bson:"isArchived,omitempty"`
-	IsDeleted   *bool              `json:"isDeleted" bson:"isDeleted,omitempty"`
+	// Free-text venue/address for the gathering (C12). Surfaced on the event
+	// page, in the .ics LOCATION, and in the reminder email.
+	Location   *string `json:"location" bson:"location,omitempty"`
+	IsArchived *bool   `json:"isArchived" bson:"isArchived,omitempty"`
+	IsDeleted  *bool   `json:"isDeleted" bson:"isDeleted,omitempty"`
 
 	Duration                 *float32             `json:"duration" bson:"duration,omitempty"`
 	Dates                    []primitive.DateTime `json:"dates" bson:"dates,omitempty"`

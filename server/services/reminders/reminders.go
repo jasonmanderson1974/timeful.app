@@ -9,6 +9,7 @@ package reminders
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 
@@ -216,6 +217,15 @@ func buildReminderEmail(event *models.Event, start time.Time) (subject, body str
 	// account. Same-origin /api path (prod), served by getEventIcs.
 	icsUrl := fmt.Sprintf("%s/api/events/%s/ics", utils.GetBaseUrl(), event.GetId())
 
+	locationRow := ""
+	if event.Location != nil && *event.Location != "" {
+		mapsUrl := "https://www.google.com/maps/search/?api=1&query=" + url.QueryEscape(*event.Location)
+		locationRow = fmt.Sprintf(
+			`<div style="font-size:14px;color:#ede4d3;margin-bottom:24px;">📍 <a href="%s" style="color:#e3c578;text-decoration:none;">%s</a></div>`,
+			mapsUrl, *event.Location,
+		)
+	}
+
 	descriptionRow := ""
 	if event.Description != nil && *event.Description != "" {
 		descriptionRow = fmt.Sprintf(
@@ -239,6 +249,7 @@ func buildReminderEmail(event *models.Event, start time.Time) (subject, body str
               <div style="font-size:16px;color:#ede4d3;margin-bottom:6px;"><strong>%s</strong></div>
               <div style="font-size:14px;color:#e3c578;margin-bottom:24px;">%s</div>
               %s
+              %s
               <div style="text-align:center;margin-bottom:16px;">
                 <a href="%s" style="display:inline-block;background-color:#c9a44c;color:#1c1410;font-weight:bold;text-decoration:none;padding:12px 28px;border-radius:8px;letter-spacing:0.04em;">View the Gathering</a>
               </div>
@@ -255,7 +266,7 @@ func buildReminderEmail(event *models.Event, start time.Time) (subject, body str
     </tr>
   </table>
 </body>
-</html>`, event.Name, when, descriptionRow, eventUrl, icsUrl, eventUrl)
+</html>`, event.Name, when, locationRow, descriptionRow, eventUrl, icsUrl, eventUrl)
 
 	return subject, body
 }

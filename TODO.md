@@ -515,9 +515,25 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   `Fellowship.vue` / `MemberAdmin.vue` already render the roll; a print-friendly or PDF/CSV export
   is a small addition members would use.
 
-- [ ] **C12 · Map / venue location on an event.** `S–M`
-  A `Location` model already exists (`models/location.go`, `location_utils.js`). Surfacing a venue
-  with a static map/address on the gathering page is a natural, mostly-wiring feature.
+- [x] **C12 · Venue / location on an event.** `S–M` — **DONE 2026-07-23 (CI-green; backend
+  build/vet/tests + frontend build/lint/tests pass; venue create/edit + .ics LOCATION verified
+  live).** **Correction to the finding:** the existing `models/location.go` / `location_utils.js`
+  are **IP-geolocation of the user** (country/city/lat-long), not a venue — and the Event had no
+  location field. So this added a real venue field, not just wiring.
+  - **Model** (`models/event.go`): `Location *string` on Event (free-text venue/address).
+  - **Endpoints** (`routes/events.go`): `location` accepted in `createEvent` + `editEvent`
+    (persists via the existing `$set: event` path).
+  - **Surfaced everywhere a gathering appears:** `services/calendar/ics_generate.go` sets the .ics
+    `LOCATION`; the C2 reminder email shows a "📍 venue" line linking to Google Maps; the schedule
+    Google/Outlook calendar URLs pass `&location=`.
+  - **Frontend**: new `EventLocation.vue` — inline-editable venue on the event page (mirrors
+    `EventDescription`); everyone sees the venue + an **"open in Google Maps"** link, the owner can
+    add/edit it. Mounted under the description in `Event.vue`.
+  - **Design choice:** keyless — a free-text address + a plain `google.com/maps/search` link (no
+    maps-provider API key, which this fork doesn't have). Tests: `.ics` `LOCATION` assertion.
+    Live-verified: set at create → persists; edit via PUT → updates; `.ics` carries `LOCATION`.
+  - **Follow-up (not v1):** an embedded **static-map image** needs a maps-provider API key
+    (Google Static Maps / Mapbox) + config; add if a key is ever provisioned.
 
 ---
 

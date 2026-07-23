@@ -126,6 +126,12 @@
               :canEdit="event.ownerId != 0 && canEdit"
             />
 
+            <!-- Venue / location (C12) -->
+            <EventLocation
+              :event.sync="event"
+              :canEdit="event.ownerId != 0 && canEdit"
+            />
+
             <!-- RSVP to the confirmed gathering (C1) -->
             <GatheringRsvp
               v-if="event.scheduledEvent"
@@ -231,6 +237,7 @@ import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import EventHeader from "@/components/event/EventHeader.vue"
 import EventBottomBar from "@/components/event/EventBottomBar.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
+import EventLocation from "@/components/event/EventLocation.vue"
 import GatheringRsvp from "@/components/event/GatheringRsvp.vue"
 import { setRsvp, clearRsvp } from "@/utils/services/EventService"
 import pluginMessagesMixin from "@/components/event/pluginMessagesMixin"
@@ -259,6 +266,7 @@ export default {
     EventHeader,
     EventBottomBar,
     EventDescription,
+    EventLocation,
     GatheringRsvp,
   },
 
