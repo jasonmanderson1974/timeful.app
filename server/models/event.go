@@ -179,6 +179,27 @@ type Rsvp struct {
 	RespondedAt primitive.DateTime `json:"respondedAt" bson:"respondedAt,omitempty"`
 }
 
+// Poll is a lightweight multiple-choice poll on an event (C6) — e.g. "Where
+// should we meet?" or "What should we do?". The owner creates it; members and
+// guests vote. Votes live on each option (keyed by responder) so counts + the
+// voter roster render straight from the event with no extra fetch. Stored as an
+// array on the Event, mirroring SignUpBlocks.
+type Poll struct {
+	Id    primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Title string             `json:"title" bson:"title,omitempty"`
+	// AllowMultiple lets a voter pick more than one option (else single-choice).
+	AllowMultiple bool         `json:"allowMultiple" bson:"allowMultiple,omitempty"`
+	Options       []PollOption `json:"options" bson:"options,omitempty"`
+}
+
+type PollOption struct {
+	Id    primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Label string             `json:"label" bson:"label,omitempty"`
+	// Votes maps a responder key (guest name / signed-in user-id hex) to that
+	// voter's display name — so a count is len(Votes) and the roster is its values.
+	Votes map[string]string `json:"votes" bson:"votes,omitempty"`
+}
+
 type SignUpBlock struct {
 	Id        primitive.ObjectID  `json:"_id" bson:"_id,omitempty"`
 	Name      string              `json:"name" bson:"name,omitempty"`
@@ -264,6 +285,10 @@ type Event struct {
 
 	// RSVPs to the confirmed gathering, keyed by guest name / signed-in user id
 	Rsvps map[string]*Rsvp `json:"rsvps" bson:"rsvps,omitempty"`
+
+	// Venue / activity polls (C6). Owner-created multiple-choice polls; votes
+	// live on each option.
+	Polls []Poll `json:"polls" bson:"polls,omitempty"`
 
 	// Discussion thread (fetched from the comments collection; not stored here)
 	Comments []Comment `json:"comments" bson:"-"`

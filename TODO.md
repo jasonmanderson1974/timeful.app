@@ -507,9 +507,39 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     Saturday") rule; comments accumulate across occurrences (single rolling event). Non-goal: per-
     occurrence history — that's **[C10]** (The Chronicle).
 
-- [ ] **C6 · Venue / activity poll (not just time).** `M`
-  Extend the availability-poll concept to "where / what" — a lightweight multiple-choice poll so the
-  club can vote on venue or activity. Overlaps with the sign-up-block UI already built.
+- [x] **C6 · Venue / activity poll (not just time).** `M` — **DONE 2026-07-23 (CI-green; backend
+  build/vet/tests + frontend build/lint/tests pass; create/vote/switch/clear/delete verified live
+  against a local server + Mongo).** Lightweight multiple-choice polls on an event ("Where should we
+  meet?", "What should we do?") so the club can vote on venue/activity. Mirrors the RSVP/comments
+  trust model rather than the sign-up-block editor (which is heavier, tied to the availability grid).
+  - **Model** (`models/event.go`): `Polls []Poll` on the Event (mirrors `SignUpBlocks`; no migration).
+    `Poll{Id, Title, AllowMultiple, Options []PollOption}`; `PollOption{Id, Label, Votes map[string]
+    string}` — votes are keyed by responder (guest name / signed-in user-id hex) → display name, so a
+    count is `len(Votes)` and the roster is its values, rendered straight from the event (no extra
+    fetch, like RSVP). Supports **multiple polls per event** (venue *and* activity).
+  - **Endpoints** (`routes/polls.go`, registered in `InitEvents`): `POST /events/:id/polls` (create —
+    owner), `DELETE /events/:id/polls/:pollId` (delete — owner), `POST /events/:id/polls/:pollId/vote`
+    (vote — members + guests). Owner gating via new `requireEventManager` (mirrors `scheduleEvent`:
+    owner-only when the event has an owner; owner-less/guest events require a signed-in member on
+    enforced instances). Voting reuses the shared `responderKey`. Pure, unit-tested helpers:
+    `sanitizePollInput` (trim, dedupe, drop empty, require title + ≥2 options, cap at 20) and
+    `applyPollVote` (validates option ids, enforces single-choice, replaces the voter's prior pick,
+    empty ids = un-vote).
+  - **Frontend**: `EventPolls.vue` — each poll shows its options with radio (single) / checkbox
+    (multi) indicators, live counts, and a per-option voter roster; clicking votes (single-choice
+    switches, re-click clears). Guests vote by name (shared field, same as RSVP). The **owner** gets
+    an inline "Add poll" form (title, dynamic options, allow-multiple toggle) and a delete per poll.
+    Mounted in `Event.vue` under the RSVP block; `EventService.createPoll/deletePoll/votePoll` persist
+    then `refreshEvent`. The card hides entirely for non-owners when there are no polls.
+  - **Tests**: `routes/polls_test.go` — pure (`sanitizePollInput` incl. dedupe/cap; `applyPollVote`
+    single-replace / multi / invalid-option / single-choice-rejects-multiple / empty-clears) + DB-gated
+    (owner creates → guest votes → persisted; non-owner create → 403; owner delete → removed).
+  - **Swagger `docs/` regenerated** (pinned `swag@v1.16.1 --parseDependency --parseInternal`) — the 3
+    poll routes + `models.Poll`/`PollOption`.
+  - **Follow-ups (not v1):** no **edit** of an existing poll's title/options (delete + recreate before
+    votes land; a proper edit that preserves votes on kept options is deferred); no result-close /
+    winner-highlight; guest-name vote collisions share a key (accepted trust model, same as
+    RSVP/comments).
 
 - [x] **C7 · Per-gathering discussion thread / comments.** `M` — **DONE 2026-07-23 (CI-green;
   backend build/vet/tests + frontend build/lint/tests pass; post/edit/delete verified live).** A

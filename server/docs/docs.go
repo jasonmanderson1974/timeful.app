@@ -1058,6 +1058,154 @@ const docTemplate = `{
                 }
             }
         },
+        "/events/{eventId}/polls": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Creates a venue/activity poll on an event (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Poll title + options",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "allowMultiple": {
+                                    "type": "boolean"
+                                },
+                                "options": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "title": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Poll"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{eventId}/polls/{pollId}": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Deletes a poll from an event (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Poll ID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/events/{eventId}/polls/{pollId}/vote": {
+            "post": {
+                "description": "Records the caller's chosen option(s) in a poll, replacing any previous vote. Open to signed-in users and guests (by name), like RSVP. An empty optionIds clears the caller's vote.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Casts (or updates) the caller's vote in a poll",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Poll ID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Chosen option ids + voter identity",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "guest": {
+                                    "type": "boolean"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "optionIds": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/events/{eventId}/rename-user": {
             "post": {
                 "consumes": [
@@ -2741,6 +2889,13 @@ const docTemplate = `{
                 "ownerId": {
                     "type": "string"
                 },
+                "polls": {
+                    "description": "Venue / activity polls (C6). Owner-created multiple-choice polls; votes\nlive on each option.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Poll"
+                    }
+                },
                 "remindees": {
                     "description": "Remindees",
                     "type": "array",
@@ -2889,6 +3044,45 @@ const docTemplate = `{
         },
         "models.OAuth2CalendarAuth": {
             "type": "object"
+        },
+        "models.Poll": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "allowMultiple": {
+                    "description": "AllowMultiple lets a voter pick more than one option (else single-choice).",
+                    "type": "boolean"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PollOption"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PollOption": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "votes": {
+                    "description": "Votes maps a responder key (guest name / signed-in user-id hex) to that\nvoter's display name — so a count is len(Votes) and the roster is its values.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
         },
         "models.RecurrenceFrequency": {
             "type": "string",

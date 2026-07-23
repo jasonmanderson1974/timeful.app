@@ -139,6 +139,14 @@
               @set-rsvp="setRsvp"
               @clear-rsvp="clearRsvp"
             />
+
+            <!-- Venue / activity polls (C6) -->
+            <EventPolls
+              :event="event"
+              @create-poll="onCreatePoll"
+              @delete-poll="onDeletePoll"
+              @vote-poll="onVotePoll"
+            />
           </div>
 
           <!-- Calendar -->
@@ -250,12 +258,16 @@ import EventDescription from "@/components/event/EventDescription.vue"
 import EventLocation from "@/components/event/EventLocation.vue"
 import GatheringRsvp from "@/components/event/GatheringRsvp.vue"
 import EventComments from "@/components/event/EventComments.vue"
+import EventPolls from "@/components/event/EventPolls.vue"
 import {
   setRsvp,
   clearRsvp,
   addComment,
   editComment,
   deleteComment,
+  createPoll,
+  deletePoll,
+  votePoll,
 } from "@/utils/services/EventService"
 import pluginMessagesMixin from "@/components/event/pluginMessagesMixin"
 export default {
@@ -286,6 +298,7 @@ export default {
     EventLocation,
     GatheringRsvp,
     EventComments,
+    EventPolls,
   },
 
   data: () => ({
@@ -521,6 +534,35 @@ export default {
         await this.refreshEvent()
       } catch (err) {
         this.showError("Could not delete the message. Please try again.")
+      }
+    },
+
+    /** Venue / activity polls (C6): persist then refresh. */
+    async onCreatePoll(payload) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await createPoll(id, payload)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not create the poll. Please try again.")
+      }
+    },
+    async onDeletePoll(pollId) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await deletePoll(id, pollId)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not delete the poll. Please try again.")
+      }
+    },
+    async onVotePoll({ pollId, payload }) {
+      const id = this.event.shortId ?? this.event._id
+      try {
+        await votePoll(id, pollId, payload)
+        await this.refreshEvent()
+      } catch (err) {
+        this.showError("Could not save your vote. Please try again.")
       }
     },
 

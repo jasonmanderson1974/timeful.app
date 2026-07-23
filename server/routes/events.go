@@ -49,6 +49,9 @@ func InitEvents(router *gin.RouterGroup) {
 	eventRouter.POST("/:eventId/comments", addComment)
 	eventRouter.PUT("/:eventId/comments/:commentId", editComment)
 	eventRouter.DELETE("/:eventId/comments/:commentId", deleteComment)
+	eventRouter.POST("/:eventId/polls", createPoll)
+	eventRouter.DELETE("/:eventId/polls/:pollId", deletePoll)
+	eventRouter.POST("/:eventId/polls/:pollId/vote", votePoll)
 }
 
 // @Summary Creates a new event

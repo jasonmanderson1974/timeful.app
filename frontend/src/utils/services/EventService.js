@@ -48,3 +48,23 @@ export const editComment = (eventId, commentId, payload) => {
 export const deleteComment = (eventId, commentId, payload) => {
   return _delete(`/events/${eventId}/comments/${commentId}`, payload)
 }
+
+// --- Venue / activity polls (C6) ---
+
+/** Create a poll (owner only). payload: {title, allowMultiple?, options: string[]} */
+export const createPoll = (eventId, payload) => {
+  return post(`/events/${eventId}/polls`, payload)
+}
+
+/** Delete a poll (owner only). */
+export const deletePoll = (eventId, pollId) => {
+  return _delete(`/events/${eventId}/polls/${pollId}`)
+}
+
+/**
+ * Cast/update the caller's vote in a poll (members + guests). An empty
+ * optionIds clears the caller's vote. payload: {optionIds, guest, name?}
+ */
+export const votePoll = (eventId, pollId, payload) => {
+  return post(`/events/${eventId}/polls/${pollId}/vote`, payload)
+}
