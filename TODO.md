@@ -202,11 +202,19 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     those template/logic uses are truly inert, which can't be verified without running the app; folded
     into the [A11]/paywall-cleanup consideration rather than removed blind.
 
-- [ ] **A10 · Normalize `fetch_utils.js` error handling.** `S`
-  `frontend/src/utils/fetch_utils.js` has inconsistent style (mixed semicolons/indentation from
-  line 60) and no shared timeout/abort or centralized snackbar-on-error. Standardize the error
-  shape and consider a single interceptor so every call site doesn't re-implement
-  `try/catch → dispatch("showError")` (see the repetition in `store/index.js` actions).
+- [x] **A10 · Normalize `fetch_utils.js` error handling.** `S` — **CORE DONE 2026-07-22 (CI-green);
+  timeout/interceptor deferred.** Fixed the inconsistent style (the stray semicolons/indentation from
+  line 60) and **standardized the error shape** — which also fixed a live regression: the Aug-2025
+  "better debug logs" change had rewritten `throw returnValue` into a wrapped Error exposing only
+  `.parsed`, silently breaking the `err.error` contract 6 call sites still use (`switch (err.error)`,
+  `err.error?.code`, `err.error === …`), while 2 sites had migrated to `err.parsed?.error`. The
+  thrown error now exposes **both** `err.error` (server code, or raw body if not an object) and
+  `err.parsed` (full body), plus `err.status`/message; dropped the unused `.url`/`.responseBody`/
+  `.headers`. Locked with `fetch_utils.test.js` (6 tests mocking `fetch`; suite 32 → 38).
+  **Deferred (behavior change, needs app-run verification — not done blind):** the shared
+  timeout/abort (a default timeout could kill legitimately-slow calls like calendar fetches) and the
+  centralized snackbar-on-error interceptor (auto-dispatching `showError` in the client would
+  double-show or override the ~58 call sites that handle errors themselves).
 
 - [ ] **A11 · Trim remaining large components.** `M`
   After A5: `Event.vue` (1,815), `NewEvent.vue` (1,011), `RespondentsList.vue` (844),
