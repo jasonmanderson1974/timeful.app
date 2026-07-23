@@ -253,6 +253,15 @@ func noRouteHandler() gin.HandlerFunc {
 			// params["enableStickyFooter"] = true
 		}
 
+		// The app shell must never be served stale. A browser holding a cached
+		// index.html keeps referencing the previous build's hashed JS/CSS chunks,
+		// which a later deploy has since removed — leaving returning visitors on a
+		// broken/partial app (this is what silently broke the OTP-login flow after
+		// a run of deploys). Force revalidation of the shell on every load; the
+		// hashed assets themselves stay immutably cacheable (they're served by the
+		// StaticFile routes above, not here, so this doesn't touch them).
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+
 		c.HTML(http.StatusOK, "index.html", params)
 	}
 }
