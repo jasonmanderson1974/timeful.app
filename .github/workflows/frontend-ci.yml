@@ -33,11 +33,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Lint as WARNINGS first (continue-on-error) — surfaces issues in the log
-      # without blocking merges on the existing backlog (see TODO A8). Tighten to
-      # blocking once the backlog is cleared.
+      # Lint is BLOCKING on errors (backlog cleared 2026-07-22, TODO A8):
+      # eslint exits nonzero on any error; warnings (~67 remain) still pass.
       - name: Lint
-        continue-on-error: true
         run: npm run lint
 
       - name: Run unit tests

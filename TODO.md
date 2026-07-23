@@ -194,8 +194,19 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   `plugin:vue/essential` + `eslint:recommended`; `vue/multi-word-component-names` off since view
   components are intentionally single-word; noisiest rules set to `warn`), `.eslintignore`, a `lint`
   npm script, and a non-blocking `Lint` CI step. Baseline: **102 problems (41 errors, 61 warnings)** —
-  that's the backlog to work down before flipping the steps to blocking. **Next:** once the backlog is
-  cleared, drop `continue-on-error` to make lint a real gate.
+  that's the backlog to work down before flipping the steps to blocking.
+  - **Backlog pass 2026-07-22 (later same day):** frontend eslint **errors 34 → 0** (all 34 fixed,
+    incl. a real DatePicker `!= NaN` bug and an in-place Vuex sort in Dashboard.orderedFolders;
+    screens browser-verified) → **frontend `Lint` step now BLOCKING** (fails on errors; ~67 warnings
+    remain and still pass — mostly `no-unused-vars`, `vue/no-unused-components`, 6
+    `vue/no-mutating-props` that need real design fixes). **`go vet` now BLOCKING** (clean; also
+    fixed a broken `microsoftgraph_test.go` signature it caught). **golangci-lint was silently dead**
+    — the pinned v1.61.0 binary (go1.23) refused to load the Go 1.25 module and continue-on-error
+    hid it; upgraded to v2.12.2 with a migrated v2 config + package-list scripts exclusion, which
+    surfaced the real backend backlog: **112 issues (98 errcheck, 11 staticcheck, 2 ineffassign,
+    1 govet)** — stays warnings-first until worked down. Note: staticcheck SA1019 flags the CFB
+    encryption in `utils/utils.go` as deprecated — do NOT swap ciphers casually; stored data is
+    encrypted with it (needs a migration plan).
 
 ### P2 — Cleanup & smaller components
 
