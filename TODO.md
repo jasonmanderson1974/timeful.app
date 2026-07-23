@@ -176,12 +176,12 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   Go errors on unused imports). No route/comment content changed, so Swagger `docs/` need no regen.
   **Now testable in isolation → unblocks B1.**
 
-- [ ] **A7 · Consolidate date libraries (drop `moment`, ideally `spacetime`).** `S`
-  `package.json` ships **three** date libs. `moment` has **0** references in `src/` — it's pure dead
-  weight (deprecated upstream too); remove it. `spacetime` is used in exactly **1** file vs `dayjs`
-  in **9** — migrate that one usage and drop `spacetime` as well. Shrinks the bundle and removes a
-  "which lib do I reach for?" decision from every date change. (`date_utils.test.js` guards the
-  behavior.)
+- [x] **A7 · Consolidate date libraries (drop `moment`, ideally `spacetime`).** `S` — **DONE
+  2026-07-22.** Both removed from package.json + lockfile (`npm ci` verified). By removal time
+  **neither** had any import left in the frontend — moment was always dead, and spacetime's single
+  TimezoneSelector usage had already been rewritten to dayjs (only a stale comment remained; fixed).
+  dayjs is now the sole date lib. Browser-verified: timezone selector switches Pacific → Eastern,
+  grid re-renders clean.
 
 - [x] **A8 · Add linting to CI (nothing lints today).** `S` — **DONE 2026-07-22 (warnings-first).**
   All lint steps use `continue-on-error: true`, so findings surface in the CI log without blocking
