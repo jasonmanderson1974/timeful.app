@@ -358,64 +358,24 @@
                               </div>
                             </div>
 
-                            <!-- Sign up block being dragged -->
-                            <div v-if="state === states.EDIT_SIGN_UP_BLOCKS">
-                              <div
-                                v-if="dragStart && dragStart.col === d"
-                                class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                                :style="signUpBlockBeingDraggedStyle"
-                                style="pointer-events: none"
-                              >
-                                <SignUpCalendarBlock
-                                  :title="newSignUpBlockName"
-                                  titleOnly
-                                  unsaved
-                                />
-                              </div>
-                            </div>
-
-                            <div v-if="isSignUp">
-                              <!-- Sign up blocks -->
-                              <div
-                                v-for="block in signUpBlocksByDay[
-                                  d + page * maxDaysPerPage
-                                ]"
-                                :key="block._id"
-                              >
-                                <div
-                                  class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                                  :style="{
-                                    top: `calc(${block.hoursOffset} * 4 * 1rem)`,
-                                    height: `calc(${block.hoursLength} * 4 * 1rem)`,
-                                  }"
-                                  @click="handleSignUpBlockClick(block)"
-                                >
-                                  <SignUpCalendarBlock :signUpBlock="block" />
-                                </div>
-                              </div>
-
-                              <!-- Sign up blocks to be added after hitting 'save' -->
-                              <div
-                                v-for="block in signUpBlocksToAddByDay[
-                                  d + page * maxDaysPerPage
-                                ]"
-                                :key="block._id"
-                              >
-                                <div
-                                  class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                                  :style="{
-                                    top: `calc(${block.hoursOffset} * 4 * 1rem)`,
-                                    height: `calc(${block.hoursLength} * 4 * 1rem)`,
-                                  }"
-                                >
-                                  <SignUpCalendarBlock
-                                    :title="block.name"
-                                    titleOnly
-                                    unsaved
-                                  />
-                                </div>
-                              </div>
-                            </div>
+                            <!-- Sign up blocks (dragged / saved / to-add) -->
+                            <SignUpBlocksOverlay
+                              :dragging="
+                                state === states.EDIT_SIGN_UP_BLOCKS &&
+                                !!dragStart &&
+                                dragStart.col === d
+                              "
+                              :draggedBlockStyle="signUpBlockBeingDraggedStyle"
+                              :draggedBlockName="newSignUpBlockName"
+                              :isSignUp="isSignUp"
+                              :blocks="
+                                signUpBlocksByDay[d + page * maxDaysPerPage]
+                              "
+                              :blocksToAdd="
+                                signUpBlocksToAddByDay[d + page * maxDaysPerPage]
+                              "
+                              @block-click="handleSignUpBlockClick"
+                            />
 
                             <!-- Overlaid availabilities -->
                             <div v-if="overlayAvailability">
@@ -1048,7 +1008,7 @@ import { mapMutations, mapActions, mapState, mapGetters } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import SignUpBlock from "@/components/sign_up_form/SignUpBlock.vue"
-import SignUpCalendarBlock from "@/components/sign_up_form/SignUpCalendarBlock.vue"
+import SignUpBlocksOverlay from "./SignUpBlocksOverlay.vue"
 import SignUpBlocksList from "@/components/sign_up_form/SignUpBlocksList.vue"
 import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
@@ -3155,7 +3115,7 @@ export default {
     GCalWeekSelector,
     WorkingHoursToggle,
     SignUpBlock,
-    SignUpCalendarBlock,
+    SignUpBlocksOverlay,
     SignUpBlocksList,
     CalendarEventBlock, // Added component registration
     SpecificTimesInstructions, // Added component registration
