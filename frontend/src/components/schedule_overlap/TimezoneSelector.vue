@@ -131,7 +131,7 @@ export default {
     getLocalTimezone() {
       const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-      // Step 1: Exact match on spacetime-canonical name
+      // Step 1: Exact match on IANA timezone name
       let timezoneObject = this.timezones.find((t) => t.value === localTimezone)
 
       if (!timezoneObject) {
