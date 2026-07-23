@@ -372,6 +372,13 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     lookup) + a DB-gated integration test (RSVPs present → only going+maybe emailed, availability
     responders ignored). Live-verified the full endpoint flow (pre-schedule 400 → RSVP →
     change → un-RSVP).
+  - **Independently re-verified live on prod 2026-07-23 (this machine, via headless Chromium
+    against gathering.sirthomasfoolery.com):** BOTH UI paths end-to-end on a throwaway
+    scheduled event — **guest** (name field → Going, roster "Going: <name>") and **signed-in**
+    (no name field, identity backfilled → "Going: Jason Anderson"), plus the [C4] plus-one
+    stepper and the decliner-forces-0-guests rule, status changes, and clear-on-re-click. All
+    assertions green, no console errors; test events deleted afterward. (See PART E for two
+    incidental findings this surfaced.)
   - **Non-goal:** guest plus-ones/spouse headcount is **[C4]** — the `Rsvp` struct leaves room
     for a `GuestCount` without migration.
 
@@ -553,3 +560,46 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   reference outdated models — noted in `backend-ci.yml`) and are run-once history. Renaming identifiers
   there is pointless and risks implying they're live. Overlaps with A15 (document the dated folders);
   handle there, not as part of the rename.
+
+---
+
+## PART E — Security & Access-Control follow-ups
+
+> Companion doc: `ACCESS_CONTROL_PLAN.md`. These came out of the 2026-07-23 live RSVP
+> verification (see [C1]); none is a regression in the RSVP feature itself.
+
+- [ ] **E1 · Evaluate gating `createEvent` / `scheduleEvent` behind auth (invite-only).** `S–M`
+  · **P2 · OPEN — needs discussion before any change.**
+  **Finding:** the invite-only allowlist is enforced *inside* `middleware.AuthRequired()`, which is
+  applied **per-route**. `POST /events` (create), `POST /events/:id/schedule`, and the RSVP endpoints
+  are **not** behind it, so they're reachable by an **unauthenticated** caller who can hit the API. In
+  the 2026-07-23 verification this was used deliberately (the guest path is *supposed* to be open — it
+  mirrors guest availability responses), but it also means an anonymous party who reaches the API can
+  **create and schedule arbitrary events**. Not exploitable for data disclosure (no member data is
+  exposed), but it is an unauthenticated write surface.
+  - **Why it's not a simple flip:** guest, no-account interaction is a genuine product requirement
+    for this club (guests RSVP and respond to availability by name). Locking *all* of these behind
+    `AuthRequired` would break the guest flows. The real question is which **writes** should require a
+    member session vs. which must stay open, e.g.:
+    - `createEvent` — does an anonymous visitor ever legitimately create an event on this private
+      instance? If not, gate it (members create; guests only *respond* to existing events). Watch the
+      existing **guest-created event** path (`ownerId == 0`) — some flows rely on it; confirm none are
+      user-facing on this fork before gating.
+    - `scheduleEvent` — already **owner-gated when the event has an owner**; the gap is
+      **owner-less (guest-created) events**, where anyone can schedule. Likely fine to require auth
+      unconditionally (only an owner should lock in a time), but confirm against the guest-event UX.
+    - RSVP `POST/DELETE …/rsvp` — intentionally open (guest RSVP by name). Leave open; if abuse is a
+      concern, prefer rate-limiting / a per-event toggle over blanket auth.
+  - **Decide & discuss:** whether to (a) leave as-is (guest-open by design), (b) gate `createEvent`
+    +`scheduleEvent` for owner-less events behind `AuthRequired`, or (c) add a config flag
+    (`GUEST_EVENT_CREATION_ENABLED`) defaulting to off for invite-only instances. No code change until
+    this is settled.
+
+- [ ] **E2 · `deleteEvent` only accepts the Mongo `_id`, not the short id.** `S` · **P3.**
+  **Finding (pre-existing, not RSVP-related):** `DELETE /events/:eventId` calls
+  `primitive.ObjectIDFromHex(eventId)` directly, so passing a **short id** returns **400** (every other
+  event route uses `db.GetEventByEitherId`, which accepts either). The real UI always deletes by `_id`,
+  so there's no user-facing bug — but it's an inconsistency and a sharp edge for anything scripting the
+  API. Low priority: make `deleteEvent` resolve via `GetEventByEitherId` for consistency, or leave and
+  document. (Surfaced when API-cleaning up the RSVP test event by short id fell back to a direct Mongo
+  delete.)
