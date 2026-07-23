@@ -42,7 +42,7 @@
         >
           <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
             <v-icon class="tw-mr-1" small color="black">mdi-account-group</v-icon>
-            Members
+            The Roll
           </v-list-item-title>
         </v-list-item>
         <v-list-item id="settings-btn" @click="goToSettings">
