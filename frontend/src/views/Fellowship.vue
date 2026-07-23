@@ -26,14 +26,46 @@
           prepend-inner-icon="mdi-magnify"
           :dense="isPhone"
         />
-        <v-switch
-          v-model="showGuests"
-          color="brass"
-          hide-details
-          dense
-          class="tw-mt-0 tw-shrink-0 tw-pt-0"
-          label="Show guests"
-        />
+        <div class="tw-flex tw-shrink-0 tw-items-center tw-gap-3">
+          <v-switch
+            v-model="showGuests"
+            color="brass"
+            hide-details
+            dense
+            class="tw-mt-0 tw-shrink-0 tw-pt-0"
+            label="Show guests"
+          />
+          <v-menu offset-y>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                id="roster-export-btn"
+                outlined
+                small
+                class="tw-text-brass"
+                :disabled="filteredMembers.length === 0"
+                v-on="on"
+                v-bind="attrs"
+              >
+                <v-icon small left>mdi-download</v-icon>
+                Export
+              </v-btn>
+            </template>
+            <v-list dense>
+              <v-list-item id="roster-print-btn" @click="printRoster">
+                <v-list-item-title class="tw-flex tw-items-center tw-gap-2">
+                  <v-icon small>mdi-printer</v-icon>
+                  Print / PDF
+                </v-list-item-title>
+              </v-list-item>
+              <v-list-item id="roster-csv-btn" @click="exportCsv">
+                <v-list-item-title class="tw-flex tw-items-center tw-gap-2">
+                  <v-icon small>mdi-file-delimited-outline</v-icon>
+                  Download CSV
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
       </div>
 
       <div v-if="loading" class="tw-py-10 tw-text-center tw-text-parchment-dim">
@@ -191,6 +223,92 @@ export default {
         return `${f.charAt(0)}${l.charAt(0)}`.toUpperCase() || "?"
       }
       return (member.email || "?").charAt(0).toUpperCase()
+    },
+    // Display name for exports (matches the card: pending entries show a
+    // placeholder rather than a blank).
+    exportName(m) {
+      const name = `${m.firstName || ""} ${m.lastName || ""}`.trim()
+      return m.hasAccount && name ? name : "Awaiting first entry"
+    },
+    // Download the currently-filtered roll as a CSV (what you see is what you
+    // get — respects the search + Show-guests filter).
+    exportCsv() {
+      const esc = (v) => {
+        const s = String(v ?? "")
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+      }
+      const rows = [["Name", "Role", "Email", "Phone"]]
+      for (const m of this.filteredMembers) {
+        rows.push([
+          this.exportName(m),
+          this.roleLabel(m.role),
+          m.email || "",
+          m.phone ? formatPhone(m.phone) : "",
+        ])
+      }
+      const csv = rows.map((r) => r.map(esc).join(",")).join("\n")
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "The Fellowship Roster.csv"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    },
+    // Open a clean, light, print-friendly window with the filtered roll and
+    // trigger the browser print dialog (from which members can Save as PDF).
+    // A separate document avoids fighting the app's dark theme + chrome.
+    printRoster() {
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])
+        )
+      const today = new Date().toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+      const body = this.filteredMembers
+        .map(
+          (m) =>
+            `<tr><td>${esc(this.exportName(m))}</td><td>${esc(
+              this.roleLabel(m.role)
+            )}</td><td>${esc(m.email)}</td><td>${esc(
+              m.phone ? formatPhone(m.phone) : ""
+            )}</td></tr>`
+        )
+        .join("")
+      const html = `<!doctype html><html><head><meta charset="utf-8" />
+<title>The Fellowship — Directory</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #1a1a1a; margin: 2rem; }
+  h1 { font-size: 1.6rem; margin: 0 0 0.25rem; }
+  .sub { color: #666; font-size: 0.85rem; margin-bottom: 1.25rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid #ccc; }
+  th { border-bottom: 2px solid #333; font-variant: small-caps; letter-spacing: 0.03em; }
+  tr:nth-child(even) td { background: #f6f4ef; }
+  @media print { body { margin: 0.75rem; } }
+</style></head><body>
+<h1>The Fellowship</h1>
+<div class="sub">A directory of the membership · ${esc(
+        String(this.filteredMembers.length)
+      )} ${this.filteredMembers.length === 1 ? "gentleman" : "gentlemen"} · ${esc(
+        today
+      )}</div>
+<table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Telephone</th></tr></thead>
+<tbody>${body}</tbody></table>
+</body></html>`
+      const w = window.open("", "_blank")
+      if (!w) return
+      w.document.write(html)
+      w.document.close()
+      w.focus()
+      w.print()
     },
   },
 }
