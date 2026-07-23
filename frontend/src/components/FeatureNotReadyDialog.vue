@@ -68,9 +68,6 @@ export default {
         this.folderUsageFeedback = ""
         this.dialog = false
         this.showInfo("Thanks for your input!")
-      } else {
-        // Optionally, handle empty feedback (e.g., show a message)
-        console.log("Feedback is empty")
       }
     },
   },

@@ -286,7 +286,6 @@ export default {
     ...mapMutations([
       "setAuthUser",
       "setSignUpFormEnabled",
-      "setPricingPageConversion",
       "setFeatureFlagsLoaded",
     ]),
     ...mapActions([
@@ -364,10 +363,6 @@ export default {
       if (!this.$posthog) return
 
       // this.setSignUpFormEnabled(this.$posthog.isFeatureEnabled("sign-up-form"))
-      // this.setPricingPageConversion(
-      // this.$posthog.getFeatureFlag("pricing-page-conversion")
-      // )
-      // )
       // this.setEnablePaywall(this.$posthog.isFeatureEnabled("enable-paywall"))
       this.setFeatureFlagsLoaded(true)
     },

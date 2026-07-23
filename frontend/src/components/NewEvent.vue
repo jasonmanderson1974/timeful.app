@@ -808,11 +808,10 @@ export default {
               localStorage.setItem(`from-edit-event-${this.event._id}`, "true")
               window.location.reload()
             })
-            .catch((err) => {
+            .catch(() => {
               this.showError(
                 "There was a problem editing this event! Please try again later."
               )
-              console.log(err)
             })
             .finally(() => {
               this.loading = false

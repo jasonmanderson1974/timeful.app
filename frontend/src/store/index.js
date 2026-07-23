@@ -30,9 +30,6 @@ export default new Vuex.Store({
     daysOnlyEnabled: true,
     overlayAvailabilitiesEnabled: true,
 
-    // Experiments
-    pricingPageConversion: "control",
-
     // New dialog
     newDialogOptions: {
       show: false,
@@ -82,10 +79,6 @@ export default new Vuex.Store({
     setOverlayAvailabilitiesEnabled(state, enabled) {
       state.overlayAvailabilitiesEnabled = enabled
     },
-    setPricingPageConversion(state, conversion) {
-      state.pricingPageConversion = conversion
-    },
-
     addFolder(state, folder) {
       state.folders.push(folder)
     },

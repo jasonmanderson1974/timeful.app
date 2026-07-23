@@ -118,7 +118,6 @@ export default {
 
   methods: {
     submit() {
-      console.log(this.signUpBlock)
       // Set rules only on submit
       this.nameRules = [
         (name) => !!name || "Name is required",
