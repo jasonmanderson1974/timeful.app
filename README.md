@@ -1,26 +1,23 @@
 <div align="center">
-  
-<img src="./.github/assets/images/logo.svg" width="200px" alt="Timeful logo" />
+
+# The Fellowship · The Gathering
 
 </div>
-<br />
 <div align="center">
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-orange.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Donate](https://img.shields.io/badge/-Donate%20with%20Paypal-blue?logo=paypal)](https://www.paypal.com/donate/?hosted_button_id=KWCH6LGJCP6E6)
-[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/timeful_app?label=%40timeful_app&labelColor=white)](https://x.com/timeful_app)
-[![Discord](https://img.shields.io/badge/-Join%20Discord-7289DA?logo=discord&logoColor=white)](https://discord.gg/v6raNqYxx3)
-[![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/schej?label=join%20r%2Fschej)](https://www.reddit.com/r/schej/)
 
 </div>
 
-<img src="./.github/assets/images/hero.jpg" alt="Timeful hero" />
+A private, self-hosted group-scheduling app for **The Fellowship** — a small,
+invite-only club. Members call a _Gathering_, cast their availability, and settle
+upon the hour that suits the whole Order.
 
-Timeful is a scheduling platform helps you find the best time for a group to meet. It is a free availability poll that is easy to use and integrates with your calendar.
-
-Hosted version of the site: https://timeful.app
-
-Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/mongodb/mongo), [Go](https://github.com/golang/go), and [TailwindCSS](https://github.com/tailwindlabs/tailwindcss)
+It is a hardened, rebranded fork of [Timeful](https://github.com/schej-it/timeful.app)
+(formerly Schej.it), an open-source availability/scheduling app. Built with
+[Vue 2](https://github.com/vuejs/vue), [Go](https://github.com/golang/go),
+[MongoDB](https://github.com/mongodb/mongo), and
+[TailwindCSS](https://github.com/tailwindlabs/tailwindcss).
 
 > **Working on this fork? Read [`DEVELOPMENT.md`](./DEVELOPMENT.md) first.** It covers the multi-machine
 > workflow (always `git fetch` + sync to the latest `main` before making changes), deploys (`./deploy.sh`
@@ -28,30 +25,40 @@ Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/m
 > **AI assistants:** the authoritative project + workflow instructions live in [`CLAUDE.md`](./CLAUDE.md)
 > (auto-loaded by Claude Code); if your tool doesn't load it, read `CLAUDE.md` and `DEVELOPMENT.md` first.
 
-## Demo
-
-[![demo video](http://markdown-videos-api.jorgenkh.no/youtube/vFkBC8BrkOk)](https://www.youtube.com/watch?v=vFkBC8BrkOk)
-
 ## Features
 
+Inherited from Timeful:
+
 - See when everybody's availability overlaps
-- Easily specify date + time ranges to meet between
-- Google calendar, Outlook, Apple calendar integration
+- Specify date + time ranges to meet between
+- Google Calendar, Outlook, and Apple Calendar integration
 - "Available" vs. "If needed" times
 - Determine when a subset of people are available
-- Schedule across different time zones
-- Email notifications + reminders
-- Duplicating polls
-- Availability groups - stay up to date with people's real-time calendar availability
-- Export availability as CSV
-- Only show responses to event creator
+- Schedule across time zones
+- Duplicating polls, availability groups, CSV export
+- Only show responses to the event creator
+
+Added in this fork (for a ~40-person club):
+
+- **Invite-only access control** — email-OTP login, a member roll with roles (super-admin / admin / member / guest)
+- **Confirmed gatherings** — lock in a time, with automated pre-gathering reminder emails
+- **RSVP + plus-ones** — going / maybe / can't, live headcount + roster, spouse/guest counts
+- **Universal "add to calendar"** `.ics` export for confirmed gatherings
+- **Sign-up blocks** with capacity enforcement + waitlist
+- **Per-gathering discussion threads**, venue / location, and a printable directory roster
+- Whole-app rebrand to The Fellowship's archaic gentleman's-club voice
 
 ## Plugin API
 
-Read these docs to design your own browser plugins to get + set availability on Timeful events programmatically!
-
-[Plugin API Docs](./PLUGIN_API_README.md)
+The frontend exposes a `get-slots` / `set-slots` `postMessage` API for browser plugins.
+See the [Plugin API Docs](./PLUGIN_API_README.md).
 
 ## Self-hosting
 
-See the [Deployment Guide](./DEPLOYMENT.md) for Docker Compose and NixOS setup instructions.
+See the [Deployment Guide](./DEPLOYMENT.md) for Docker Compose setup.
+
+## Credits & license
+
+A fork of [Timeful / Schej.it](https://github.com/schej-it/timeful.app) by its original
+authors. Licensed under **AGPL-3.0** — see the license badge above; the fork retains the
+same license.

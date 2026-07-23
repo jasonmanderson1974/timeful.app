@@ -619,11 +619,13 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     (`sirthomasfoolery24@gmail.com`), removed the upstream cal.com link, dropped dead commented Timeful
     OG block in index.html, `package.json` name, maintenance page, stray code comments, and factual
     doc fixes (CLAUDE.md/DEVELOPMENT.md now say `sirtom/server`).
+  - **Follow-ups since done:** the unused upstream `deploy_scripts/` + `deploy.yml` were **deleted**
+    (see D2), and the root `README.md` was **rebranded** to The Fellowship (+ orphaned Timeful
+    `hero.jpg`/`logo.svg` assets removed), both 2026-07-23.
   - **Intentionally LEFT (see D0/D2):** Mongo DB name `schej-it`, `SCHEJ_EMAIL_ADDRESS` env var, GCP
-    project id in the dead Cloud Tasks code, Discord channel names, the unused upstream
-    `deploy_scripts/nginx` configs, dead Stripe/paywall log strings. Remaining `schej`/`timeful` hits in
-    the tree are exactly these leaves + historical plan docs (REDESIGN_PLAN/ACCESS_CONTROL_PLAN) + the
-    upstream root `README.md`.
+    project id in the dead Cloud Tasks code, Discord channel names, dead Stripe/paywall log strings.
+    The only remaining `schej`/`timeful` hits are exactly these leaves + historical plan docs
+    (REDESIGN_PLAN/ACCESS_CONTROL_PLAN, kept as history).
 
 - [ ] **D2 · Dangerous / infra-coupled references (NOT a code-only change).** `L` · **P3**
   These are tied to live infrastructure and data — changing the string in code without the matching
