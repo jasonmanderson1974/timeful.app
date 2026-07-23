@@ -1,17 +1,21 @@
 definitions:
+  bson.M:
+    additionalProperties: true
+    type: object
   calendar.CalendarEventsWithError:
     properties:
       calendarEvents:
         items:
           $ref: '#/definitions/models.CalendarEvent'
         type: array
-      error:
-        type: error
+      error: {}
     type: object
   commands.Response:
     properties:
       blocks:
-        type: string
+        items:
+          $ref: '#/definitions/bson.M'
+        type: array
       response_type:
         description: ephemeral or in_channel
         type: string
@@ -42,17 +46,17 @@ definitions:
     properties:
       appleCalendarAuth:
         $ref: '#/definitions/models.AppleCalendarAuth'
-        type: object
       calendarType:
-        type: string
+        $ref: '#/definitions/models.CalendarType'
       email:
         description: Email is required for all calendar accounts
         type: string
       enabled:
         type: boolean
+      icsCalendarAuth:
+        $ref: '#/definitions/models.ICSCalendarAuth'
       oAuth2CalendarAuth:
         $ref: '#/definitions/models.OAuth2CalendarAuth'
-        type: object
       picture:
         type: string
       subCalendars:
@@ -83,13 +87,46 @@ definitions:
     properties:
       bufferTime:
         $ref: '#/definitions/models.BufferTimeOptions'
-        type: object
       workingHours:
         $ref: '#/definitions/models.WorkingHoursOptions'
-        type: object
     type: object
   models.CalendarType:
+    enum:
+    - apple
+    - google
+    - outlook
+    - ics
     type: string
+    x-enum-varnames:
+    - AppleCalendarType
+    - GoogleCalendarType
+    - OutlookCalendarType
+    - ICSCalendarType
+  models.Comment:
+    properties:
+      _id:
+        type: string
+      authorName:
+        description: Denormalized author display name (guest name, or the account's
+          "First Last").
+        type: string
+      createdAt:
+        type: string
+      eventId:
+        type: string
+      isGuest:
+        type: boolean
+      text:
+        type: string
+      updatedAt:
+        description: set when edited
+        type: string
+      userId:
+        description: |-
+          UserId is the guest's name OR a signed-in user's id hex — it authorizes
+          edit / delete-own. IsGuest disambiguates the two.
+        type: string
+    type: object
   models.Event:
     properties:
       _id:
@@ -106,11 +143,16 @@ definitions:
         type: string
       collectEmails:
         type: boolean
-      creatorPosthogId:
-        description: PostHog ID for the event creator
-        type: string
+      comments:
+        description: Discussion thread (fetched from the comments collection; not
+          stored here)
+        items:
+          $ref: '#/definitions/models.Comment'
+        type: array
       dates:
-        type: string
+        items:
+          type: string
+        type: array
       daysOnly:
         description: Whether to only poll for days, not times
         type: boolean
@@ -118,6 +160,10 @@ definitions:
         type: string
       duration:
         type: number
+      gatheringReminder:
+        allOf:
+        - $ref: '#/definitions/models.GatheringReminder'
+        description: Pre-gathering reminder email config/state (paired with ScheduledEvent)
       hasResponded:
         description: Whether the user has responded to the availability group (fetched
           based on whether user is in Attendees)
@@ -125,11 +171,18 @@ definitions:
       hasSpecificTimes:
         description: Used for specific times for specific dates feature
         type: boolean
+      isArchived:
+        type: boolean
       isDeleted:
         type: boolean
       isSignUpForm:
         description: Sign up form details
         type: boolean
+      location:
+        description: |-
+          Free-text venue/address for the gathering (C12). Surfaced on the event
+          page, in the .ics LOCATION, and in the reminder email.
+        type: string
       name:
         type: string
       notificationsEnabled:
@@ -150,10 +203,17 @@ definitions:
         description: Availability responses - old format for backward compatibility
           (fetched from eventResponses collection)
         type: object
-      scheduledEvent:
-        $ref: '#/definitions/models.CalendarEvent'
-        description: Scheduled event
+      rsvps:
+        additionalProperties:
+          $ref: '#/definitions/models.Rsvp'
+        description: RSVPs to the confirmed gathering, keyed by guest name / signed-in
+          user id
         type: object
+      scheduledEvent:
+        allOf:
+        - $ref: '#/definitions/models.CalendarEvent'
+        description: Scheduled event (the confirmed gathering time, once the owner
+          locks it in)
       sendEmailAfterXResponses:
         type: integer
       shortId:
@@ -173,14 +233,24 @@ definitions:
       timeIncrement:
         type: integer
       times:
-        type: string
+        items:
+          type: string
+        type: array
       type:
-        type: string
+        $ref: '#/definitions/models.EventType'
       when2meetHref:
         type: string
     type: object
   models.EventType:
+    enum:
+    - specific_dates
+    - dow
+    - group
     type: string
+    x-enum-varnames:
+    - SPECIFIC_DATES
+    - DOW
+    - GROUP
   models.Folder:
     properties:
       _id:
@@ -198,21 +268,22 @@ definitions:
       userId:
         type: string
     type: object
-  models.Location:
+  models.GatheringReminder:
     properties:
-      city:
+      enabled:
+        type: boolean
+      leadTimeHours:
+        type: integer
+      sentAt:
+        description: nil = not yet sent
         type: string
-      country_code:
+      timezone:
+        description: IANA tz for formatting the email time (e.g. "America/Los_Angeles")
         type: string
-      country_name:
-        type: string
-      latitude:
-        type: number
-      longitude:
-        type: number
-      postal:
-        type: string
-      state:
+    type: object
+  models.ICSCalendarAuth:
+    properties:
+      label:
         type: string
     type: object
   models.OAuth2CalendarAuth:
@@ -228,10 +299,11 @@ definitions:
     properties:
       availability:
         description: Availability
-        type: string
+        items:
+          type: string
+        type: array
       calendarOptions:
         $ref: '#/definitions/models.CalendarOptions'
-        type: object
       email:
         type: string
       enabledCalendars:
@@ -242,11 +314,13 @@ definitions:
         description: Maps email to an array of sub calendar ids
         type: object
       ifNeeded:
-        type: string
+        items:
+          type: string
+        type: array
       manualAvailability:
         additionalProperties:
           items:
-            $ref: '#/definitions/primitive.DateTime'
+            type: string
           type: array
         description: Mapping from the start date of a day to the available times for
           that day
@@ -259,11 +333,51 @@ definitions:
         type: boolean
       user:
         $ref: '#/definitions/models.User'
-        type: object
       userId:
         description: User information
         type: string
     type: object
+  models.Role:
+    enum:
+    - superAdmin
+    - admin
+    - member
+    - guest
+    type: string
+    x-enum-varnames:
+    - RoleSuperAdmin
+    - RoleAdmin
+    - RoleMember
+    - RoleGuest
+  models.Rsvp:
+    properties:
+      email:
+        type: string
+      guestCount:
+        description: |-
+          GuestCount is the number of ADDITIONAL people this responder is bringing
+          (a spouse/plus-one), i.e. the headcount for this RSVP is 1 + GuestCount.
+          Only meaningful for going/maybe.
+        type: integer
+      name:
+        type: string
+      respondedAt:
+        type: string
+      status:
+        $ref: '#/definitions/models.RsvpStatus'
+      userId:
+        type: string
+    type: object
+  models.RsvpStatus:
+    enum:
+    - going
+    - maybe
+    - "no"
+    type: string
+    x-enum-varnames:
+    - RsvpGoing
+    - RsvpMaybe
+    - RsvpNo
   models.SignUpBlock:
     properties:
       _id:
@@ -285,16 +399,23 @@ definitions:
         description: Guest information
         type: string
       signUpBlockIds:
-        description: The IDs of the sign up blocks that the user has signed up for
+        description: The IDs of the sign up blocks the user is CONFIRMED for (within
+          capacity)
         items:
           type: string
         type: array
       user:
         $ref: '#/definitions/models.User'
-        type: object
       userId:
         description: User information
         type: string
+      waitlistBlockIds:
+        description: |-
+          The IDs of the sign up blocks the user is WAITLISTED for (block was full).
+          Assigned server-side by capacity; see assignSignUpBlocks (C9).
+        items:
+          type: string
+        type: array
     type: object
   models.SubCalendar:
     properties:
@@ -316,9 +437,9 @@ definitions:
           additional accounts the user wants to see google calendar events for
         type: object
       calendarOptions:
-        $ref: '#/definitions/models.CalendarOptions'
+        allOf:
+        - $ref: '#/definitions/models.CalendarOptions'
         description: Calendar options
-        type: object
       email:
         type: string
       firstName:
@@ -333,12 +454,20 @@ definitions:
         type: string
       numEventsCreated:
         type: integer
+      phone:
+        type: string
       picture:
         type: string
       primaryAccountKey:
         description: The calendarAccountKey of the account the user first signed in
           with
         type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/models.Role'
+        description: |-
+          Role is the user's access level in the invite-only Fellowship
+          (superAdmin/admin/member/guest). Empty ⇒ treated as member. See roles.go.
       stripeCustomerId:
         description: Stripe customer ID
         type: string
@@ -356,8 +485,7 @@ definitions:
     type: object
   responses.Error:
     properties:
-      error:
-        type: object
+      error: {}
     required:
     - error
     type: object
@@ -366,58 +494,57 @@ definitions:
       id:
         type: string
     type: object
+  routes.allowlistMember:
+    properties:
+      _id:
+        type: string
+      addedAt:
+        type: string
+      addedBy:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      hasAccount:
+        type: boolean
+      lastName:
+        type: string
+      phone:
+        type: string
+      role:
+        $ref: '#/definitions/models.Role'
+    type: object
 host: localhost:3002/api
 info:
   contact: {}
-  description: This is the API for Schej.it!
-  license: {}
-  title: Schej.it API
+  description: This is the API for The Fellowship!
+  title: The Fellowship API
   version: "1.0"
 paths:
-  /analytics/downgrade-user:
-    post:
+  /admin/allowlist:
+    delete:
       consumes:
       - application/json
       parameters:
-      - description: Object containing the user email
+      - description: Email to remove
         in: body
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              email:
-                type: string
-            type: object
+          properties:
+            email:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
-      summary: Downgrades the specified user to Schej Free
+        "200":
+          description: OK
+      summary: Removes an email from the allowlist
       tags:
-      - analytics
-  /analytics/monthly-active-event-creators:
+      - admin
     get:
-      consumes:
-      - application/json
-      parameters:
-      - description: Start date (YYYY-MM-DD) for the range
-        in: query
-        name: startDate
-        required: true
-        type: string
-      - description: End date (YYYY-MM-DD) for the range
-        in: query
-        name: endDate
-        required: true
-        type: string
-      - description: Client's timezone offset in minutes from UTC (e.g., -420 for
-          UTC-7)
-        in: query
-        name: timezoneOffset
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -425,187 +552,128 @@ paths:
           description: OK
           schema:
             items:
-              allOf:
-              - type: object
-              - properties:
-                  count:
-                    type: integer
-                  date:
-                    type: string
-                type: object
+              $ref: '#/definitions/routes.allowlistMember'
             type: array
-        "400":
-          description: Invalid date format, range, or timezone offset
-          schema:
-            allOf:
-            - type: object
-            - properties:
-                error:
-                  type: string
-              type: object
-        "500":
-          description: Internal server error
-          schema:
-            allOf:
-            - type: object
-            - properties:
-                error:
-                  type: string
-              type: object
-      summary: Gets the daily count of monthly active event creators over a date range
+      summary: Lists the invite-only allowlist (with member status + role)
       tags:
-      - analytics
-  /analytics/monthly-active-event-creators-with-more-than-x-events:
-    get:
+      - admin
+    post:
       consumes:
       - application/json
       parameters:
-      - description: Start date (YYYY-MM-DD) for the range
-        in: query
-        name: startDate
+      - description: Email to invite and the role to grant
+        in: body
+        name: payload
         required: true
-        type: string
-      - description: End date (YYYY-MM-DD) for the range
-        in: query
-        name: endDate
-        required: true
-        type: string
-      - description: Client's timezone offset in minutes from UTC (e.g., -420 for
-          UTC-7)
-        in: query
-        name: timezoneOffset
-        required: true
-        type: integer
+        schema:
+          properties:
+            email:
+              type: string
+            role:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
         "200":
           description: OK
-          schema:
-            items:
-              allOf:
-              - type: object
-              - properties:
-                  count:
-                    type: integer
-                  date:
-                    type: string
-                type: object
-            type: array
-        "400":
-          description: Invalid date format, range, or timezone offset
-          schema:
-            allOf:
-            - type: object
-            - properties:
-                error:
-                  type: string
-              type: object
-        "500":
-          description: Internal server error
-          schema:
-            allOf:
-            - type: object
-            - properties:
-                error:
-                  type: string
-              type: object
-      summary: Gets the daily count of monthly active event creators over a date range
-        with more than x events
+      summary: Adds an email to the allowlist (invite a member)
       tags:
-      - analytics
-  /analytics/scanned-poster:
+      - admin
+  /admin/member/role:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Object containing the location that poster was scanned from and
-          the url that was scanned
+      - description: Member email and new role
         in: body
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              location:
-                $ref: '#/definitions/models.Location'
-              url:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Notifies us when poster QR code has been scanned
-      tags:
-      - analytics
-  /analytics/upgrade-dialog-viewed:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Object containing the user id
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              userId:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Notifies us when user has viewed the upgrade dialog
-      tags:
-      - analytics
-  /analytics/upgrade-user:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Object containing the user email
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              email:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Upgrades the specified user to Schej Premium
-      tags:
-      - analytics
-  /analytics/user/{email}:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: User email
-        in: path
-        name: email
-        required: true
-        type: string
+          properties:
+            email:
+              type: string
+            role:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
         "200":
           description: OK
-          schema:
-            $ref: '#/definitions/models.User'
-      summary: Gets the user by email
+      summary: Sets a member's role (guest/member/admin)
       tags:
-      - analytics
+      - admin
+  /auth/otp/check-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email to check
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Checks whether a user with the given email exists
+      tags:
+      - auth
+  /auth/otp/send:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email to send OTP to
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Sends an OTP code to the given email
+      tags:
+      - auth
+  /auth/otp/verify:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email, OTP code, and timezone offset
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            code:
+              type: string
+            email:
+              type: string
+            timezoneOffset:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Verifies an OTP code and signs the user in
+      tags:
+      - auth
   /auth/sign-in:
     post:
       consumes:
@@ -618,22 +686,21 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              calendarType:
-                type: string
-              code:
-                type: string
-              scope:
-                type: string
-              timezoneOffset:
-                type: integer
-            type: object
+          properties:
+            calendarType:
+              type: string
+            code:
+              type: string
+            scope:
+              type: string
+            timezoneOffset:
+              type: integer
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Signs user in
       tags:
       - auth
@@ -649,30 +716,29 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              accessToken:
-                type: string
-              calendarType:
-                type: string
-              expiresIn:
-                type: integer
-              idToken:
-                type: string
-              refreshToken:
-                type: string
-              scope:
-                type: string
-              timezoneOffset:
-                type: integer
-              tokenOrigin:
-                type: string
-            type: object
+          properties:
+            accessToken:
+              type: string
+            calendarType:
+              type: string
+            expiresIn:
+              type: integer
+            idToken:
+              type: string
+            refreshToken:
+              type: string
+            scope:
+              type: string
+            timezoneOffset:
+              type: integer
+            tokenOrigin:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Signs user in from mobile
       tags:
       - auth
@@ -684,7 +750,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Signs user out
       tags:
       - auth
@@ -692,7 +759,8 @@ paths:
     get:
       description: Returns a 401 error if user is not signed in, 200 if they are
       responses:
-        "200": {}
+        "200":
+          description: OK
         "401":
           description: Error object
           schema:
@@ -710,58 +778,54 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              attendees:
-                items:
-                  type: string
-                type: array
-              blindAvailabilityEnabled:
-                type: boolean
-              dates:
-                items:
-                  type: string
-                type: array
-              daysOnly:
-                type: boolean
-              duration:
-                type: number
-              isSignUpForm:
-                type: boolean
-              name:
+          properties:
+            attendees:
+              items:
                 type: string
-              notificationsEnabled:
-                type: boolean
-              remindees:
-                items:
-                  type: string
-                type: array
-              sendEmailAfterXResponses:
-                type: integer
-              signUpBlocks:
-                items:
-                  $ref: '#/definitions/models.SignUpBlock'
-                type: array
-              timeIncrement:
-                type: integer
-              type:
-                $ref: '#/definitions/models.EventType'
-              when2meetHref:
+              type: array
+            blindAvailabilityEnabled:
+              type: boolean
+            dates:
+              items:
                 type: string
-            type: object
+              type: array
+            daysOnly:
+              type: boolean
+            duration:
+              type: number
+            isSignUpForm:
+              type: boolean
+            name:
+              type: string
+            notificationsEnabled:
+              type: boolean
+            remindees:
+              items:
+                type: string
+              type: array
+            sendEmailAfterXResponses:
+              type: integer
+            signUpBlocks:
+              items:
+                $ref: '#/definitions/models.SignUpBlock'
+              type: array
+            timeIncrement:
+              type: integer
+            type:
+              $ref: '#/definitions/models.EventType'
+            when2meetHref:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            allOf:
-            - type: object
-            - properties:
-                eventId:
-                  type: string
-              type: object
+            properties:
+              eventId:
+                type: string
+            type: object
       summary: Creates a new event
       tags:
       - events
@@ -776,7 +840,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Deletes an event based on its id
       tags:
       - events
@@ -809,47 +874,73 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              attendees:
-                items:
-                  type: string
-                type: array
-              blindAvailabilityEnabled:
-                type: boolean
-              dates:
-                items:
-                  type: string
-                type: array
-              daysOnly:
-                type: boolean
-              description:
+          properties:
+            attendees:
+              items:
                 type: string
-              duration:
-                type: number
-              name:
+              type: array
+            blindAvailabilityEnabled:
+              type: boolean
+            dates:
+              items:
                 type: string
-              notificationsEnabled:
-                type: boolean
-              remindees:
-                items:
-                  type: string
-                type: array
-              sendEmailAfterXResponses:
-                type: integer
-              signUpBlocks:
-                items:
-                  $ref: '#/definitions/models.SignUpBlock'
-                type: array
-              type:
-                $ref: '#/definitions/models.EventType'
-            type: object
+              type: array
+            daysOnly:
+              type: boolean
+            description:
+              type: string
+            duration:
+              type: number
+            name:
+              type: string
+            notificationsEnabled:
+              type: boolean
+            remindees:
+              items:
+                type: string
+              type: array
+            sendEmailAfterXResponses:
+              type: integer
+            signUpBlocks:
+              items:
+                $ref: '#/definitions/models.SignUpBlock'
+              type: array
+            type:
+              $ref: '#/definitions/models.EventType'
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Edits an event based on its id
+      tags:
+      - events
+  /events/{eventId}/archive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Archive status
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            archive:
+              type: boolean
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Archive an event
       tags:
       - events
   /events/{eventId}/calendar-availabilities:
@@ -887,6 +978,108 @@ paths:
         enabled for the given time range
       tags:
       - events
+  /events/{eventId}/comments:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Comment text + author identity
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            guest:
+              type: boolean
+            name:
+              type: string
+            text:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Comment'
+      summary: Posts a comment to an event's discussion thread
+      tags:
+      - events
+  /events/{eventId}/comments/{commentId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      - description: Author identity
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            guest:
+              type: boolean
+            name:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Deletes a comment (own, or any when the caller is the event owner)
+      tags:
+      - events
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      - description: New text + author identity
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            guest:
+              type: boolean
+            name:
+              type: string
+            text:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Edits the caller's own comment
+      tags:
+      - events
   /events/{eventId}/decline:
     post:
       consumes:
@@ -900,7 +1093,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Decline the current user's invite to the event
       tags:
       - events
@@ -917,19 +1111,65 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              copyAvailability:
-                type: boolean
-              eventName:
-                type: string
-            type: object
+          properties:
+            copyAvailability:
+              type: boolean
+            eventName:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Duplicate event
+      tags:
+      - events
+  /events/{eventId}/ics:
+    get:
+      description: Universal "add to calendar" — returns a text/calendar file for
+        the gathering's locked-in time. No auth required so any invitee (incl. members
+        without a Google account) can add it. 404 if the event has no confirmed gathering
+        yet.
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - text/calendar
+      responses:
+        "200":
+          description: OK
+      summary: Downloads an .ics calendar file for the event's confirmed gathering
+      tags:
+      - events
+  /events/{eventId}/ids:
+    get:
+      parameters:
+      - description: Event shortId or longId
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              longId:
+                type: string
+              shortId:
+                type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Resolves an event identifier to both short and long IDs
       tags:
       - events
   /events/{eventId}/rename-user:
@@ -947,18 +1187,21 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              newName:
-                type: string
-              oldName:
-                type: string
-            type: object
+          properties:
+            newName:
+              type: string
+            oldName:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
+        "400":
+          description: Guest name already exists
+          schema:
+            $ref: '#/definitions/responses.Error'
       summary: Rename a guest response
       tags:
       - events
@@ -977,16 +1220,15 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              email:
-                type: string
-            type: object
+          properties:
+            email:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Mark the user as having responded to this event
       tags:
       - events
@@ -1005,20 +1247,19 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              guest:
-                type: boolean
-              name:
-                type: string
-              userId:
-                type: string
-            type: object
+          properties:
+            guest:
+              type: boolean
+            name:
+              type: string
+            userId:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Delete the current user's availability
       tags:
       - events
@@ -1036,46 +1277,45 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              availability:
-                items:
-                  type: string
-                type: array
-              calendarOptions:
-                $ref: '#/definitions/models.CalendarOptions'
-              enabledCalendars:
-                additionalProperties:
-                  items:
-                    type: string
-                  type: array
-                type: object
-              guest:
-                type: boolean
-              ifNeeded:
-                items:
-                  type: string
-                type: array
-              manualAvailability:
-                additionalProperties:
-                  items:
-                    type: string
-                  type: array
-                type: object
-              name:
+          properties:
+            availability:
+              items:
                 type: string
-              signUpBlockIds:
+              type: array
+            calendarOptions:
+              $ref: '#/definitions/models.CalendarOptions'
+            enabledCalendars:
+              additionalProperties:
                 items:
                   type: string
                 type: array
-              useCalendarAvailability:
-                type: boolean
-            type: object
+              type: object
+            guest:
+              type: boolean
+            ifNeeded:
+              items:
+                type: string
+              type: array
+            manualAvailability:
+              additionalProperties:
+                items:
+                  type: string
+                type: array
+              type: object
+            name:
+              type: string
+            signUpBlockIds:
+              items:
+                type: string
+              type: array
+            useCalendarAvailability:
+              type: boolean
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Updates the current user's availability
       tags:
       - events
@@ -1110,6 +1350,139 @@ paths:
         date ranges
       tags:
       - events
+  /events/{eventId}/rsvp:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Responder identity
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            guest:
+              type: boolean
+            name:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Remove the caller's RSVP to a gathering
+      tags:
+      - events
+    post:
+      consumes:
+      - application/json
+      description: Records the caller's attendance for the event's confirmed gathering.
+        Requires the event to have a locked-in time (scheduledEvent). Open to signed-in
+        users and guests (by name), like availability responses.
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: RSVP status + responder identity
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            guest:
+              type: boolean
+            name:
+              type: string
+            status:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: RSVP to a confirmed gathering (going / maybe / no)
+      tags:
+      - events
+  /events/{eventId}/schedule:
+    post:
+      consumes:
+      - application/json
+      description: Persists the chosen gathering time on the event's scheduledEvent
+        and, when reminderEnabled, arms a one-time pre-gathering reminder email sent
+        reminderLeadTimeHours before the start. Pass scheduled=false to cancel.
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Gathering schedule + reminder options
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            endDate:
+              type: string
+            reminderEnabled:
+              type: boolean
+            reminderLeadTimeHours:
+              type: integer
+            scheduled:
+              type: boolean
+            startDate:
+              type: string
+            summary:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Confirms (or cancels) a gathering's locked-in time and reminder
+      tags:
+      - events
+  /events/import:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the URL of the remote event
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            url:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              eventId:
+                type: string
+              shortId:
+                type: string
+            type: object
+      summary: Import an event from a remote instance
+      tags:
+      - events
   /slackbot:
     post:
       consumes:
@@ -1129,7 +1502,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Deletes the currently signed in user
       tags:
       - user
@@ -1143,18 +1517,17 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              email:
-                type: string
-              password:
-                type: string
-            type: object
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Adds an apple calendar account
       tags:
       - user
@@ -1168,19 +1541,42 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              code:
-                type: string
-              scope:
-                type: string
-            type: object
+          properties:
+            code:
+              type: string
+            scope:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Adds a new calendar account
+      tags:
+      - user
+  /user/add-ics-calendar-account:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the feed URL and label of the ICS calendar
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            feedUrl:
+              type: string
+            label:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Adds an ICS calendar account
       tags:
       - user
   /user/add-outlook-calendar-account:
@@ -1193,18 +1589,17 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              code:
-                type: string
-              scope:
-                type: string
-            type: object
+          properties:
+            code:
+              type: string
+            scope:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Adds a new outlook calendar account
       tags:
       - user
@@ -1218,18 +1613,17 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              bufferTime:
-                $ref: '#/definitions/models.BufferTimeOptions'
-              workingHours:
-                $ref: '#/definitions/models.WorkingHoursOptions'
-            type: object
+          properties:
+            bufferTime:
+              $ref: '#/definitions/models.BufferTimeOptions'
+            workingHours:
+              $ref: '#/definitions/models.WorkingHoursOptions'
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Updates the user's calendar options
       tags:
       - user
@@ -1263,6 +1657,60 @@ paths:
       summary: Gets the user's calendar events
       tags:
       - user
+  /user/email/request-change:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Sends a 6-digit code to the new email. The change is only applied
+        after it is confirmed via /user/email/verify-change. Keeps the
+        invite-only allowlist in sync (the new address is confirmed before
+        it is allowlisted).
+      parameters:
+      - description: The new email address
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Requests an email change by sending a verification code to the new
+        address
+      tags:
+      - user
+  /user/email/verify-change:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: New email and the code sent to it
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            code:
+              type: string
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Confirms an email change with the code sent to the new address
+      tags:
+      - user
   /user/events:
     get:
       description: Returns an array containing all the user's events
@@ -1293,16 +1741,15 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              folderId:
-                type: string
-            type: object
+          properties:
+            folderId:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Sets the folder for the specified event
       tags:
       - user
@@ -1341,14 +1788,12 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              color:
-                type: string
-              name:
-                type: string
-            type: object
+          properties:
+            color:
+              type: string
+            name:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -1382,7 +1827,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
         "400":
           description: Invalid user ID or folder ID
           schema:
@@ -1447,18 +1893,17 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              color:
-                type: string
-              name:
-                type: string
-            type: object
+          properties:
+            color:
+              type: string
+            name:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
         "400":
           description: Invalid user ID or folder ID
           schema:
@@ -1484,19 +1929,40 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              firstName:
-                type: string
-              lastName:
-                type: string
-            type: object
+          properties:
+            firstName:
+              type: string
+            lastName:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Updates the user's name
+      tags:
+      - user
+  /user/phone:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the phone number
+        in: body
+        name: payload
+        required: true
+        schema:
+          properties:
+            phone:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Updates the user's phone number
       tags:
       - user
   /user/profile:
@@ -1522,18 +1988,17 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              calendarType:
-                $ref: '#/definitions/models.CalendarType'
-              email:
-                type: string
-            type: object
+          properties:
+            calendarType:
+              $ref: '#/definitions/models.CalendarType'
+            email:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Removes an existing calendar account
       tags:
       - user
@@ -1567,18 +2032,17 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              calendarAccountKey:
-                type: string
-              enabled:
-                type: boolean
-            type: object
+          properties:
+            calendarAccountKey:
+              type: string
+            enabled:
+              type: boolean
+          type: object
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
       summary: Toggles whether the specified calendar is enabled or disabled for the
         user
       tags:
@@ -1594,44 +2058,23 @@ paths:
         name: payload
         required: true
         schema:
-          allOf:
-          - type: object
-          - properties:
-              calendarAccountKey:
-                type: string
-              enabled:
-                type: boolean
-              subCalendarId:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Toggles whether the specified sub-calendar is enabled or disabled for
-        the user
-      tags:
-      - user
-  /users:
-    get:
-      parameters:
-      - description: Search query matching users' names/emails
-        in: query
-        name: query
-        required: true
-        type: string
+          properties:
+            calendarAccountKey:
+              type: string
+            enabled:
+              type: boolean
+            subCalendarId:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
         "200":
-          description: An array of user profile objects
-          schema:
-            items:
-              $ref: '#/definitions/models.User'
-            type: array
-      summary: Returns users that match the search query
+          description: OK
+      summary: Toggles whether the specified sub-calendar is enabled or disabled for
+        the user
       tags:
-      - users
+      - user
   /users/{userId}:
     get:
       parameters:
@@ -1644,10 +2087,31 @@ paths:
       - application/json
       responses:
         "200":
-          description: A user profile object
+          description: OK
           schema:
             $ref: '#/definitions/models.User'
-      summary: Returns the user by their user id
+      summary: Returns a minimal public user profile (safe for unauthenticated clients)
+      tags:
+      - users
+  /users/{userId}/is-premium:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              isPremium:
+                type: boolean
+            type: object
+      summary: Returns whether the given user is a premium user
       tags:
       - users
 swagger: "2.0"

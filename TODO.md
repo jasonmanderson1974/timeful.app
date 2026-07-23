@@ -281,11 +281,10 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   Bumped `server/go.mod` `go 1.20` → `go 1.25` to match the CI toolchain (`setup-go` with
   `go-version: "1.25"` in `backend-ci.yml`). Verified green by CI (no local Go toolchain).
 
-- [ ] **A14 · Prune legacy CORS origins.** `S` — **DEFERRED (needs the real deployed domain).**
-  `main.go` still defaults to `schej.it` / `www.schej.it` (+ `timeful.app`, localhost). This is only
-  the *fallback* default — prod sets `CORS_ORIGINS` — but pruning it means knowing the real Fellowship
-  domain, which is an open rebranding decision (**[D0]/[D2]**). Do it as part of the domain rebrand
-  rather than guessing a prod origin here.
+- [x] **A14 · Prune legacy CORS origins.** `S` — **DONE 2026-07-23 (folded into D1).** Once D0 settled
+  the domain, `main.go`'s fallback default became
+  `https://gathering.sirthomasfoolery.com,http://localhost:8080` (was `schej.it`/`www.schej.it`/
+  `timeful.app` set). Prod still sets `CORS_ORIGINS` explicitly; this is just the sane fallback now.
 
 - [x] **A15 · Clean up / document migration scripts.** `S` — **DONE 2026-07-22.**
   Added `server/scripts/README.md`: explains each dated folder is a run-once manual migration (kept
@@ -414,10 +413,11 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     test (`requireDB`/`TestMain`) driving the whole pipeline with a mock `SendFunc`.
   - **Notes / non-goals:** single-VM scheduler (no distributed lock — fine for this fork);
     recipients = respondents-with-email until **C1 (RSVP)** lands, then swap
-    `collectRecipientEmails` for the confirmed-attendee list. Swagger comment added to the new
-    route but `docs/` **not** regenerated — a full `swag init` sweeps in ~5k lines of
-    pre-existing drift (the committed docs are already badly stale); left for a dedicated
-    docs-regen pass.
+    `collectRecipientEmails` for the confirmed-attendee list. **Swagger `docs/` regenerated
+    2026-07-23** (the dedicated docs-regen pass): resynced with the D1 `@title` ("The Fellowship
+    API") + all the new routes (rsvp/ics/comments/schedule/…). Requires
+    `swag init --parseDependency --parseInternal` — a bare `swag init` aborts on the allowlist
+    models' `primitive.DateTime`; the flags resolve it (guidance in CLAUDE.md).
 
 - [x] **C3 · "Add to calendar" / `.ics` export for confirmed gatherings.** `S` — **DONE
   2026-07-23 (CI-green; backend build/vet/tests + frontend build/lint/tests pass; live .ics
