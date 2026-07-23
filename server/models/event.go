@@ -19,6 +19,16 @@ type Remindee struct {
 	Responded *bool    `json:"responded" bson:"responded,omitempty"`
 }
 
+// Configuration + bookkeeping for the pre-gathering reminder email that fires
+// once, LeadTimeHours before a confirmed gathering's start (see ScheduledEvent).
+// The in-process reminder scheduler (services/reminders) reads these fields.
+type GatheringReminder struct {
+	Enabled       bool                `json:"enabled" bson:"enabled"`
+	LeadTimeHours int                 `json:"leadTimeHours" bson:"leadTimeHours,omitempty"`
+	Timezone      string              `json:"timezone" bson:"timezone,omitempty"` // IANA tz for formatting the email time (e.g. "America/Los_Angeles")
+	SentAt        *primitive.DateTime `json:"sentAt" bson:"sentAt,omitempty"`     // nil = not yet sent
+}
+
 type SignUpBlock struct {
 	Id        primitive.ObjectID  `json:"_id" bson:"_id,omitempty"`
 	Name      string              `json:"name" bson:"name,omitempty"`
@@ -84,9 +94,12 @@ type Event struct {
 	// Used to store the number of responses for the event
 	NumResponses *int `json:"numResponses" bson:"numResponses,omitempty"`
 
-	// Scheduled event
+	// Scheduled event (the confirmed gathering time, once the owner locks it in)
 	ScheduledEvent  *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
 	CalendarEventId string         `json:"calendarEventId" bson:"calendarEventId,omitempty"`
+
+	// Pre-gathering reminder email config/state (paired with ScheduledEvent)
+	GatheringReminder *GatheringReminder `json:"gatheringReminder" bson:"gatheringReminder,omitempty"`
 
 	// Remindees
 	Remindees *[]Remindee `json:"remindees" bson:"remindees,omitempty"`

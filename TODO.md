@@ -351,10 +351,42 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   Saturday's gathering" is the natural next step after "when works." Reuses the `Attendee` model
   and the `Response`→scheduled-event flow.
 
-- [ ] **C2 · Automated pre-gathering reminder emails.** `S–M`
-  The Cloud Tasks + email plumbing already exists (`services/gcloud/CreateEmailTask`,
-  `Remindee` scheduling in `createEvent`). Extend it from "remind people to respond" to "remind
-  confirmed attendees N hours before the event." Very high utility, low new infrastructure.
+- [x] **C2 · Automated pre-gathering reminder emails.** `S–M` — **DONE 2026-07-23 (CI-green;
+  backend build/vet/tests + frontend build/lint/tests all pass; API round-trip + DB-backed
+  pipeline verified against a local Mongo).**
+  The TODO's premise turned out stale: (1) **no confirmed time was ever persisted** — the
+  "Schedule event" button only opened a Google/Outlook *template URL* and wrote nothing back;
+  (2) the **Cloud Tasks + listmonk path is dead on this fork** (all `# optional`, points at
+  the upstream's GCP project `schej-it`; OTP already moved to Gmail SMTP). So instead of
+  extending that path, the feature persists the locked-in time and sends via the fork's real
+  mail transport (Gmail SMTP), on a **self-contained in-process scheduler** — no GCP/listmonk.
+  - **Persist the gathering** (`POST /events/:eventId/schedule`, owner-gated like `editEvent`):
+    reuses the existing (previously-unwritten) `Event.ScheduledEvent *CalendarEvent` for the
+    time, plus a new `GatheringReminder{Enabled, LeadTimeHours, Timezone, SentAt}` struct
+    (`models/event.go`). `scheduled:false` cancels (unsets both). Lead time clamped 1..168h,
+    default 24; `SentAt` reset to nil on every (re)schedule so it re-arms.
+  - **Scheduler** (`services/reminders/`): a ticker goroutine started in `main.go`
+    (`REMINDER_SCHEDULER_INTERVAL`, default 5m) that no-ops with a log if the Gmail vars are
+    unset (mirrors `gcloud.InitTasks`). Each tick: `db.GetEventsWithPendingReminders()` →
+    Go-side lead-time window (`isReminderDue`) → recipients = all availability respondents with
+    an email (`collectRecipientEmails`: guest `Response.Email`, else signed-in via
+    `db.GetUserById`, deduped) → inline-HTML email (Fellowship style, time formatted in the
+    saved tz) → **mark `SentAt` regardless of per-send failures** so it never loops. Sender is
+    injected (`SendFunc`) for testability.
+  - **Frontend**: `EventService.setScheduledEvent`; `ScheduleOverlap.confirmScheduleEvent` now
+    persists (keeps opening the organizer's own calendar URL) + `cancelGathering`; `ToolRow`
+    gains a reminder toggle + lead-time select in the Schedule menu and a "Gathering set"
+    indicator (shows time + reminder summary) with Reschedule / Cancel actions. Mobile
+    (`EventBottomBar`) uses the defaults (reminder on, 24h).
+  - **Tests**: `services/reminders` pure unit tests (`isReminderDue`, `collectRecipientEmails`
+    guest/signed-in/dedupe, `buildReminderEmail` tz + UTC fallback) + a DB-gated integration
+    test (`requireDB`/`TestMain`) driving the whole pipeline with a mock `SendFunc`.
+  - **Notes / non-goals:** single-VM scheduler (no distributed lock — fine for this fork);
+    recipients = respondents-with-email until **C1 (RSVP)** lands, then swap
+    `collectRecipientEmails` for the confirmed-attendee list. Swagger comment added to the new
+    route but `docs/` **not** regenerated — a full `swag init` sweeps in ~5k lines of
+    pre-existing drift (the committed docs are already badly stale); left for a dedicated
+    docs-regen pass.
 
 - [ ] **C3 · "Add to calendar" / `.ics` export for confirmed gatherings.** `S`
   Many club members (esp. spouses) have no Google account (per `ACCESS_CONTROL_PLAN`), so the

@@ -40,6 +40,7 @@ func InitEvents(router *gin.RouterGroup) {
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 	eventRouter.POST("/:eventId/archive", middleware.AuthRequired(), archiveEvent)
+	eventRouter.POST("/:eventId/schedule", scheduleEvent)
 }
 
 // @Summary Creates a new event
@@ -919,6 +920,109 @@ func archiveEvent(c *gin.Context) {
 	var event models.Event
 	err = result.Decode(&event)
 	if err != nil {
+		logger.StdErr.Println(err)
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+// clampLeadTimeHours bounds the reminder lead time to a sane range, defaulting
+// to 24h when unset (<= 0).
+func clampLeadTimeHours(h int) int {
+	const def, min, max = 24, 1, 168 // 168h = 7 days
+	if h <= 0 {
+		return def
+	}
+	if h < min {
+		return min
+	}
+	if h > max {
+		return max
+	}
+	return h
+}
+
+// @Summary Confirms (or cancels) a gathering's locked-in time and reminder
+// @Description Persists the chosen gathering time on the event's scheduledEvent and, when reminderEnabled, arms a one-time pre-gathering reminder email sent reminderLeadTimeHours before the start. Pass scheduled=false to cancel.
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{scheduled=bool,startDate=string,endDate=string,summary=string,reminderEnabled=bool,reminderLeadTimeHours=int} true "Gathering schedule + reminder options"
+// @Success 200
+// @Router /events/{eventId}/schedule [post]
+func scheduleEvent(c *gin.Context) {
+	payload := struct {
+		Scheduled             *bool               `json:"scheduled" binding:"required"`
+		StartDate             *primitive.DateTime `json:"startDate"`
+		EndDate               *primitive.DateTime `json:"endDate"`
+		Summary               string              `json:"summary"`
+		Timezone              string              `json:"timezone"`
+		ReminderEnabled       bool                `json:"reminderEnabled"`
+		ReminderLeadTimeHours int                 `json:"reminderLeadTimeHours"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
+		return
+	}
+
+	eventId := c.Param("eventId")
+	event, eventErr := db.GetEventByEitherId(eventId)
+	if eventErr != nil {
+		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
+		return
+	}
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+
+	// If the event has an owner, only that owner may schedule it (mirrors editEvent)
+	if event.OwnerId != primitive.NilObjectID {
+		session := sessions.Default(c)
+		userId, signedIn := session.Get("userId").(string)
+		if !signedIn || utils.StringToObjectID(userId) != event.OwnerId {
+			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
+			return
+		}
+	}
+
+	var update bson.M
+	if *payload.Scheduled {
+		if payload.StartDate == nil || payload.EndDate == nil {
+			c.JSON(http.StatusBadRequest, responses.Error{Error: "startDate and endDate are required when scheduling"})
+			return
+		}
+		summary := payload.Summary
+		if summary == "" {
+			summary = event.Name
+		}
+		scheduledEvent := models.CalendarEvent{
+			Summary:   summary,
+			StartDate: *payload.StartDate,
+			EndDate:   *payload.EndDate,
+		}
+		reminder := models.GatheringReminder{
+			Enabled:       payload.ReminderEnabled,
+			LeadTimeHours: clampLeadTimeHours(payload.ReminderLeadTimeHours),
+			Timezone:      payload.Timezone,
+			// SentAt intentionally left nil so (re)scheduling re-arms the reminder
+		}
+		update = bson.M{"$set": bson.M{
+			"scheduledEvent":    scheduledEvent,
+			"gatheringReminder": reminder,
+		}}
+	} else {
+		// Cancel the gathering: drop the confirmed time + reminder state
+		update = bson.M{"$unset": bson.M{
+			"scheduledEvent":    "",
+			"gatheringReminder": "",
+		}}
+	}
+
+	if _, err := db.EventsCollection.UpdateOne(context.Background(), bson.M{"_id": event.Id}, update); err != nil {
 		logger.StdErr.Println(err)
 		c.JSON(http.StatusInternalServerError, responses.Error{Error: errs.Internal})
 		return

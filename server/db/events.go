@@ -138,6 +138,43 @@ func GetAttendees(eventId string) ([]models.Attendee, error) {
 	return attendees, nil
 }
 
+// Returns events that have a confirmed gathering time still in the future, a
+// reminder enabled, and no reminder yet sent. The reminder scheduler
+// (services/reminders) does the lead-time windowing in Go on the returned set.
+func GetEventsWithPendingReminders() ([]models.Event, error) {
+	now := primitive.NewDateTimeFromTime(time.Now())
+
+	result, err := EventsCollection.Find(context.Background(), bson.M{
+		"gatheringReminder.enabled": true,
+		"gatheringReminder.sentAt":  bson.M{"$exists": false},
+		"scheduledEvent.startDate":  bson.M{"$gt": now},
+	})
+	if err != nil {
+		logger.StdErr.Println(err)
+		return []models.Event{}, err
+	}
+
+	var events []models.Event
+	if err := result.All(context.Background(), &events); err != nil {
+		logger.StdErr.Println(err)
+		return []models.Event{}, err
+	}
+
+	return events, nil
+}
+
+// Marks a gathering's reminder as sent so it is never re-sent. Idempotent.
+func MarkGatheringReminderSent(eventId primitive.ObjectID, sentAt primitive.DateTime) error {
+	_, err := EventsCollection.UpdateOne(context.Background(),
+		bson.M{"_id": eventId},
+		bson.M{"$set": bson.M{"gatheringReminder.sentAt": sentAt}},
+	)
+	if err != nil {
+		logger.StdErr.Println(err)
+	}
+	return err
+}
+
 func GetEventsCreatedThisMonth(userId primitive.ObjectID) (int, error) {
 	// Get the start of this month
 	now := time.Now()
@@ -222,7 +259,7 @@ func GuestNameExists(eventId string, guestName string) bool {
 
 	// Check if the name is a valid ObjectID that corresponds to an existing user
 	// If so, block it to prevent conflicts
-	//NOTE: we're checking against ALL logged in users because in case we allowed this, and a user with an account tried to 
+	//NOTE: we're checking against ALL logged in users because in case we allowed this, and a user with an account tried to
 	// submit their availability, overwriting would happen and we'd lose data.
 	objectId, err := primitive.ObjectIDFromHex(guestName)
 	if err == nil {
@@ -233,7 +270,6 @@ func GuestNameExists(eventId string, guestName string) bool {
 			return true
 		}
 	}
-
 
 	// For events, check EventResponsesCollection
 	eventObjectId, err := primitive.ObjectIDFromHex(event.Id.Hex())

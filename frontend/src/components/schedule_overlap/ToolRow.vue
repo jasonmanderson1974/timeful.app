@@ -89,7 +89,44 @@
         class="tw-hidden sm:tw-flex"
       >
         <template v-if="state !== states.SCHEDULE_EVENT">
+          <!-- A gathering time is already confirmed: show it + a menu to change/cancel -->
+          <v-menu v-if="event.scheduledEvent" offset-y class="tw-z-20">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                outlined
+                class="tw-w-full tw-text-brass"
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon small>mdi-calendar-check</v-icon>
+                <span class="tw-ml-2 tw-truncate">Gathering set</span>
+                <v-icon small right>mdi-chevron-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list dense>
+              <v-list-item two-line class="tw-pointer-events-none">
+                <v-list-item-content>
+                  <v-list-item-title>{{
+                    scheduledGatheringText
+                  }}</v-list-item-title>
+                  <v-list-item-subtitle v-if="reminderSummaryText">
+                    {{ reminderSummaryText }}
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider />
+              <v-list-item @click="(e) => $emit('scheduleEvent', e)">
+                <v-list-item-title>Reschedule</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="() => $emit('cancelGathering')">
+                <v-list-item-title class="tw-text-red">
+                  Cancel gathering
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
           <v-btn
+            v-else
             outlined
             class="tw-w-full tw-text-brass"
             @click="(e) => $emit('scheduleEvent', e)"
@@ -118,6 +155,27 @@
               </v-btn>
             </template>
             <v-list dense>
+              <!-- Pre-gathering reminder options (persisted on confirm) -->
+              <v-list-item @click.stop>
+                <v-checkbox
+                  v-model="reminderEnabledLocal"
+                  label="Email reminder to respondents"
+                  dense
+                  hide-details
+                  class="tw-mt-0 tw-pt-0"
+                />
+              </v-list-item>
+              <v-list-item v-if="reminderEnabledLocal" @click.stop>
+                <v-select
+                  :value="reminderLeadTimeHours"
+                  :items="reminderLeadTimeOptions"
+                  dense
+                  hide-details
+                  label="Send reminder"
+                  @change="(v) => $emit('update:reminderLeadTimeHours', v)"
+                />
+              </v-list-item>
+              <v-divider />
               <v-list-item @click="(e) => $emit('confirmScheduleEvent', true)">
                 <v-img
                   src="@/assets/gcal_logo.png"
@@ -188,6 +246,8 @@ export default {
     allowScheduleEvent: { type: Boolean, required: true },
     showEventOptions: { type: Boolean, required: true },
     timeType: { type: String, required: true },
+    reminderEnabled: { type: Boolean, default: true },
+    reminderLeadTimeHours: { type: Number, default: 24 },
   },
 
   components: {
@@ -246,6 +306,46 @@ export default {
         this.state !== this.states.EDIT_AVAILABILITY &&
         (this.guestEvent || this.isOwner)
       )
+    },
+    // Two-way proxy so the menu checkbox writes back to ScheduleOverlap state
+    reminderEnabledLocal: {
+      get() {
+        return this.reminderEnabled
+      },
+      set(v) {
+        this.$emit("update:reminderEnabled", v)
+      },
+    },
+    reminderLeadTimeOptions() {
+      return [
+        { text: "12 hours before", value: 12 },
+        { text: "24 hours before", value: 24 },
+        { text: "48 hours before", value: 48 },
+      ]
+    },
+    scheduledGatheringText() {
+      const s = this.event.scheduledEvent
+      if (!s || !s.startDate) return ""
+      const opts = {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }
+      try {
+        return new Date(s.startDate).toLocaleString([], {
+          ...opts,
+          timeZone: this.curTimezone?.value,
+        })
+      } catch (e) {
+        return new Date(s.startDate).toLocaleString([], opts)
+      }
+    },
+    reminderSummaryText() {
+      const r = this.event.gatheringReminder
+      if (!r || !r.enabled) return "No reminder email"
+      return `Reminder ${r.leadTimeHours ?? 24}h before`
     },
   },
 }

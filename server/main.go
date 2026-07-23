@@ -24,6 +24,7 @@ import (
 	"schej.it/server/logger"
 	"schej.it/server/routes"
 	"schej.it/server/services/gcloud"
+	"schej.it/server/services/reminders"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 
@@ -120,6 +121,10 @@ func main() {
 	// Init google cloud stuff
 	closeTasks := gcloud.InitTasks()
 	defer closeTasks()
+
+	// Start the in-process pre-gathering reminder scheduler (Gmail SMTP)
+	stopReminders := reminders.StartReminderScheduler()
+	defer stopReminders()
 
 	// Session
 	store := cookie.NewStore([]byte(os.Getenv("SESSION_SECRET")))

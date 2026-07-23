@@ -112,6 +112,9 @@
                   @scheduleEvent="scheduleEvent"
                   @cancelScheduleEvent="cancelScheduleEvent"
                   @confirmScheduleEvent="confirmScheduleEvent"
+                  @cancelGathering="cancelGathering"
+                  :reminder-enabled.sync="reminderEnabled"
+                  :reminder-lead-time-hours.sync="reminderLeadTimeHours"
                 />
               </div>
             </template>
@@ -477,6 +480,9 @@
                   @scheduleEvent="scheduleEvent"
                   @cancelScheduleEvent="cancelScheduleEvent"
                   @confirmScheduleEvent="confirmScheduleEvent"
+                  @cancelGathering="cancelGathering"
+                  :reminder-enabled.sync="reminderEnabled"
+                  :reminder-lead-time-hours.sync="reminderLeadTimeHours"
                 />
               </div>
 
@@ -833,6 +839,9 @@
           @scheduleEvent="scheduleEvent"
           @cancelScheduleEvent="cancelScheduleEvent"
           @confirmScheduleEvent="confirmScheduleEvent"
+          @cancelGathering="cancelGathering"
+          :reminder-enabled.sync="reminderEnabled"
+          :reminder-lead-time-hours.sync="reminderLeadTimeHours"
         />
 
         <!-- Fixed bottom section for mobile -->
@@ -1008,6 +1017,7 @@ import {
   timeslotDurations,
   upgradeDialogTypes,
 } from "@/constants"
+import { setScheduledEvent } from "@/utils/services/EventService"
 import { mapMutations, mapActions, mapState, mapGetters } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
@@ -1157,6 +1167,9 @@ export default {
       /* Variables for options */
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
+      // Pre-gathering reminder options (persisted on confirm; see confirmScheduleEvent)
+      reminderEnabled: true,
+      reminderLeadTimeHours: 24,
       timeType:
         localStorage["timeType"] ??
         (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
@@ -2480,9 +2493,31 @@ export default {
         )}&path=/calendar/action/compose&timezone=${this.curTimezone.value}`
       }
 
+      // Persist the confirmed gathering + arm the reminder email. Best-effort:
+      // the calendar link still opens even if this fails (e.g. not the owner).
+      setScheduledEvent(eventId, {
+        scheduled: true,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        summary: this.event.name,
+        timezone: this.curTimezone.value,
+        reminderEnabled: this.reminderEnabled,
+        reminderLeadTimeHours: this.reminderLeadTimeHours,
+      })
+        .then(() => this.refreshEvent())
+        .catch(() => {})
+
       // Navigate to url and reset state
       window.open(url, "_blank")
       this.state = this.defaultState
+    },
+
+    /** Cancel a previously-confirmed gathering (also drops its reminder) */
+    cancelGathering() {
+      const eventId = this.event.shortId ?? this.event._id
+      setScheduledEvent(eventId, { scheduled: false })
+        .then(() => this.refreshEvent())
+        .catch(() => {})
     },
     //#endregion
 
