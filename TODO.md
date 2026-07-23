@@ -191,13 +191,16 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P2 — Cleanup & smaller components
 
-- [ ] **A9 · Delete dead code.** `S`
-  - `server/main.go:254` `splitPath()` — defined, never called.
-  - `createEvent` (`events.go:170-238`) carries large commented-out blocks (group-owner response
-    seeding, slackbot messaging). Either restore intentionally or delete.
-  - `isPremiumUser` getter/util is kept "inert" after the paywall removal (per `REDESIGN_PLAN`) —
-    confirm nothing depends on it and remove.
-  - `pricingPageConversion` experiment state in the store — leftover A/B infra with no paywall.
+- [x] **A9 · Delete dead code.** `S` — **DONE 2026-07-22 (CI-green).**
+  - ✅ `server/main.go` `splitPath()` — removed (recursive helper, no external callers).
+  - ✅ `createEvent` commented-out "add owner to group by default" block — removed (referenced the
+    long-gone `event.Responses` field).
+  - ✅ `pricingPageConversion` A/B state — removed (write-only Vuex state; its only mutation caller was
+    already commented out and the value is never read; also dropped the mutation + mapMutations reg).
+  - **Left intentionally:** `isPremiumUser` is NOT dead — the store getter is still wired via
+    `mapGetters` in `ScheduleOverlap.vue`, `Event.vue`, `ToolRow.vue`. Removing it needs confirming
+    those template/logic uses are truly inert, which can't be verified without running the app; folded
+    into the [A11]/paywall-cleanup consideration rather than removed blind.
 
 - [ ] **A10 · Normalize `fetch_utils.js` error handling.** `S`
   `frontend/src/utils/fetch_utils.js` has inconsistent style (mixed semicolons/indentation from
@@ -210,8 +213,14 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   `NewSignUp.vue` (827). Each is a candidate for extracting presentational children and moving
   pure helpers into `utils/`. Lower urgency than A5 but same class of problem.
 
-- [ ] **A12 · Remove stray `console.log` (6) and backend `fmt.Println` debug prints (2).** `S`
-  Route through the existing `logger` on the backend; drop or gate the frontend logs.
+- [x] **A12 · Remove stray `console.log` and backend `fmt.Println` debug prints.** `S` — **DONE
+  2026-07-22 (CI-green).** Dropped the stray frontend logs: `SignUpForSlotDialog` (logged the block
+  on submit), `FeatureNotReadyDialog` (empty-feedback else that only logged — removed the branch),
+  `NewEvent` edit-error catch (kept user-facing `showError`, dropped unused `err`). **Left
+  intentionally:** the structured `[PLUGIN RESPONSE]` logging in `Event.vue` (deliberate plugin-API
+  dev tooling). Backend: the only remaining `fmt.Println` is `utils.PrintJson`, a named debug utility
+  whose print IS its purpose (only called from a non-compiling script) — not a stray print; the stray
+  handler prints were already removed back in A1/A3.
 
 ### P3 — Housekeeping
 
@@ -219,14 +228,17 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   Bumped `server/go.mod` `go 1.20` → `go 1.25` to match the CI toolchain (`setup-go` with
   `go-version: "1.25"` in `backend-ci.yml`). Verified green by CI (no local Go toolchain).
 
-- [ ] **A14 · Prune legacy CORS origins.** `S`
-  `main.go:105` still defaults to `schej.it` / `www.schej.it` origins. Harmless, but for an
-  invite-only Fellowship instance the default allowlist should reflect the real deployed domain(s).
+- [ ] **A14 · Prune legacy CORS origins.** `S` — **DEFERRED (needs the real deployed domain).**
+  `main.go` still defaults to `schej.it` / `www.schej.it` (+ `timeful.app`, localhost). This is only
+  the *fallback* default — prod sets `CORS_ORIGINS` — but pruning it means knowing the real Fellowship
+  domain, which is an open rebranding decision (**[D0]/[D2]**). Do it as part of the domain rebrand
+  rather than guessing a prod origin here.
 
-- [ ] **A15 · Clean up / document migration scripts.** `S`
-  `server/scripts/*` reference outdated models and intentionally don't compile (noted in
-  `backend-ci.yml`). Fine to keep as history, but a one-line README per dated folder stating
-  "run once on <date>, superseded" would prevent someone re-running a destructive migration.
+- [x] **A15 · Clean up / document migration scripts.** `S` — **DONE 2026-07-22.**
+  Added `server/scripts/README.md`: explains each dated folder is a run-once manual migration (kept
+  for history), warns against re-running destructive ones, and documents that they intentionally
+  don't compile / are excluded from CI. Used a single README listing the folders in date order rather
+  than fabricating per-folder run-date/status (each `main.go` is its own record).
 
 ---
 
