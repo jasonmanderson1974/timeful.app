@@ -169,24 +169,6 @@ func createEvent(c *gin.Context) {
 	if payload.Type == models.GROUP {
 
 		if signedIn {
-			// 	// Add event owner to group by default
-			// 	enabledCalendars := make(map[string][]string)
-			// 	for email, calendarAccount := range user.CalendarAccounts {
-			// 		if utils.Coalesce(calendarAccount.Enabled) {
-			// 			enabledCalendars[email] = make([]string, 0)
-			// 			for calendarId, subCalendar := range utils.Coalesce(calendarAccount.SubCalendars) {
-			// 				if utils.Coalesce(subCalendar.Enabled) {
-			// 					enabledCalendars[email] = append(enabledCalendars[email], calendarId)
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// 	event.Responses[user.Id.Hex()] = &models.Response{
-			// 		UserId:                  user.Id,
-			// 		UseCalendarAvailability: utils.TruePtr(),
-			// 		EnabledCalendars:        &enabledCalendars,
-			// 	}
-
 			// Add owner as attendee
 			attendees = append(attendees, models.Attendee{Email: user.Email, Declined: utils.FalsePtr(), EventId: event.Id})
 		}

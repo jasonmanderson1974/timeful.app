@@ -250,11 +250,3 @@ func noRouteHandler() gin.HandlerFunc {
 		c.HTML(http.StatusOK, "index.html", params)
 	}
 }
-
-func splitPath(path string) []string {
-	dir, last := filepath.Split(path)
-	if dir == "" {
-		return []string{last}
-	}
-	return append(splitPath(filepath.Clean(dir)), last)
-}
