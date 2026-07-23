@@ -224,8 +224,8 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   centralized snackbar-on-error interceptor (auto-dispatching `showError` in the client would
   double-show or override the ~58 call sites that handle errors themselves).
 
-- [ ] **A11 · Trim remaining large components.** `M` — **STARTED 2026-07-22 (dead-code slice done;
-  larger extractions need app-run verification — see caveat).**
+- [x] **A11 · Trim remaining large components.** `M` — **DONE 2026-07-22 (all slices browser-verified
+  via the headless-Chromium loop; see per-item notes).**
   After A5: `Event.vue` (now 1,776), `NewEvent.vue` (1,010), `RespondentsList.vue` (844),
   `NewSignUp.vue` (827). Candidates for extracting presentational children and moving pure helpers
   into `utils/`.
@@ -238,8 +238,13 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   - **Done 2026-07-22 (Tier 2 child splits, both browser-verified):** `EventHeader.vue` (title/chips/
     date + 8-event action-button block; helpDialog moves in) and `EventBottomBar.vue` (phone action
     bar + mobile button-text computeds; 7 events) → Event.vue **1,006** (was 1,815 pre-A11).
-  - **Remaining candidates:** `NewEvent.vue` (1,010) and `RespondentsList.vue` (844) child splits —
-    same verify-with-app-running discipline (headless-Chromium loop per DEVELOPMENT.md/memory).
+  - **Done 2026-07-22 (final Tier 2 splits, both browser-verified):** `NewEventAdvancedOptions.vue`
+    (Advanced-options panel content, 6 `.sync`-bound fields; verified by setting every field through
+    the UI and confirming the created event's API payload) → NewEvent.vue **887** (was 1,010); and
+    `ExportCsvMenu.vue` (kebab menu + dialog + whole CSV build/download feature; both export formats
+    verified by downloading and checking content) → RespondentsList.vue **677** (was 844).
+    **A11 complete** — remaining component sizes are inherent feature complexity; further splits
+    would be churn, not payoff.
   - **⚠️ Verification caveat (learned the hard way here):** `Event.vue` is mostly `this`-coupled
     action handlers, not the pure/geometry code A5 had. The only large "method" appeared to be ~595
     lines but was actually THREE methods — `interceptPluginResponses` (dead) **plus the active
