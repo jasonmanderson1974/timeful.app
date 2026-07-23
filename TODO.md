@@ -532,9 +532,13 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   (date, attendees, a photo or two) fits the "gentleman's club" theme and gives the Fellowship a
   sense of continuity. Reuses the existing role-gated Fellowship directory work.
 
-- [ ] **C11 · Printable / exportable roster of the Fellowship directory.** `S`
-  `Fellowship.vue` / `MemberAdmin.vue` already render the roll; a print-friendly or PDF/CSV export
-  is a small addition members would use.
+- [x] **C11 · Printable / exportable roster of the Fellowship directory.** `S` — **DONE 2026-07-23
+  (browser-verified; frontend-only).** Added an **Export** menu to `Fellowship.vue` with **Print /
+  PDF** (opens a clean light serif print document — name/role/email/telephone + count + date — in a
+  separate window so it doesn't fight the dark app theme; Save-as-PDF from the print dialog) and
+  **Download CSV** (`The Fellowship Roster.csv`, quoted/escaped). Both operate on the
+  currently-filtered roll (search + Show-guests) — export what you see. No backend change (reuses
+  `GET /admin/allowlist`). `MemberAdmin.vue` left as-is (the same roll, admin-managed).
 
 - [x] **C12 · Venue / location on an event.** `S–M` — **DONE 2026-07-23 (CI-green; backend
   build/vet/tests + frontend build/lint/tests pass; venue create/edit + .ics LOCATION verified
@@ -672,11 +676,17 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   *(Resolved with option (b), scoped to enforced instances via the existing flag — see above.)*
   </details>
 
-- [ ] **E2 · `deleteEvent` only accepts the Mongo `_id`, not the short id.** `S` · **P3.**
-  **Finding (pre-existing, not RSVP-related):** `DELETE /events/:eventId` calls
-  `primitive.ObjectIDFromHex(eventId)` directly, so passing a **short id** returns **400** (every other
-  event route uses `db.GetEventByEitherId`, which accepts either). The real UI always deletes by `_id`,
-  so there's no user-facing bug — but it's an inconsistency and a sharp edge for anything scripting the
-  API. Low priority: make `deleteEvent` resolve via `GetEventByEitherId` for consistency, or leave and
-  document. (Surfaced when API-cleaning up the RSVP test event by short id fell back to a direct Mongo
-  delete.)
+- [x] **E2 · `deleteEvent` only accepts the Mongo `_id`, not the short id.** `S` · **P3 — DONE
+  2026-07-23 (backend build/vet + full suite green).** `deleteEvent` now resolves via
+  `db.GetEventByEitherId` up front and drives every DB op (responses lookup + the ownerId-scoped
+  delete/soft-delete + folder cleanup) off the resolved `_id`; unknown id now **404**s instead of
+  400/500. DB-gated tests added (`events_delete_db_test.go`): delete-by-short-id → 200 + gone;
+  unknown id → 404.
+  <details><summary>original finding</summary>
+
+  Pre-existing, not RSVP-related: `DELETE /events/:eventId` called `primitive.ObjectIDFromHex(eventId)`
+  directly, so a **short id** returned **400** (every other event route uses `db.GetEventByEitherId`).
+  The real UI always deletes by `_id`, so no user-facing bug — but an inconsistency / sharp edge for
+  API scripting. (Surfaced when API-cleaning up an RSVP test event by short id fell back to a direct
+  Mongo delete.)
+  </details>
