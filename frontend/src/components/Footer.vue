@@ -28,7 +28,7 @@
 import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
 
 export default {
-  name: "Footer",
+  name: "AppFooter",
   components: { SirThomasFoolery },
 }
 </script>

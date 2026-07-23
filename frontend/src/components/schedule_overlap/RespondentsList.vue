@@ -86,7 +86,7 @@
             class="tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
           >
             <div
-              v-for="(user, i) in orderedRespondents"
+              v-for="user in orderedRespondents"
               :key="user._id"
               class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-py-1"
               @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
@@ -230,7 +230,7 @@
           <div class="tw-font-normal">({{ pendingUsers.length }})</div>
         </div>
         <div>
-          <div v-for="(user, i) in pendingUsers" :key="user.email">
+          <div v-for="user in pendingUsers" :key="user.email">
             <div class="tw-relative tw-flex tw-items-center">
               <v-icon class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
               <div class="tw-mr-1 tw-text-sm tw-transition-all">

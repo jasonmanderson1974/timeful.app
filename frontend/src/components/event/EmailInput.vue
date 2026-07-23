@@ -15,7 +15,7 @@
       solo
       :rules="[validEmails]"
     >
-      <template v-slot:selection="data, parent">
+      <template v-slot:selection="data">
         <UserChip
           :user="
             isContact(data.item) ? data.item : { email: data.item, picture: '' }
@@ -34,10 +34,10 @@
           <v-icon v-else>mdi-account</v-icon>
         </v-list-item-avatar>
         <v-list-item-content>
-          <v-list-item-title
-            v-text="`${item.firstName} ${item.lastName}`"
-          ></v-list-item-title>
-          <v-list-item-subtitle v-text="item.email"></v-list-item-subtitle>
+          <v-list-item-title>
+            {{ `${item.firstName} ${item.lastName}` }}
+          </v-list-item-title>
+          <v-list-item-subtitle>{{ item.email }}</v-list-item-subtitle>
         </v-list-item-content>
       </template>
     </v-combobox>

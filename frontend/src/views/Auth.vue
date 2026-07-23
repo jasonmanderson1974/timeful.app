@@ -1,4 +1,6 @@
-<template></template>
+<template>
+  <div></div>
+</template>
 
 <script>
 import { get, post, getEventsCreated, deleteEventsCreated } from "@/utils"

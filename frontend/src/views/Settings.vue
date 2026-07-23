@@ -173,6 +173,7 @@
           >
             <div
               v-for="(h, i) in heading"
+              :key="h"
               :class="`tw-border-r-[${i == heading.length - 1 ? '0' : '1'}px]`"
               class="tw-w-1/3 tw-border-brass-dim tw-p-4 tw-font-bold"
             >
@@ -182,11 +183,13 @@
 
           <div
             v-for="(c, j) in content"
+            :key="j"
             :class="`tw-border-b-[${j == content.length - 1 ? '0' : '1'}px]`"
             class="tw-flex tw-w-full tw-flex-row tw-border-brass-dim"
           >
             <div
               v-for="(text, k) in c"
+              :key="k"
               :class="`tw-border-r-[${k == c.length - 1 ? '0' : '1'}px]`"
               class="tw-w-1/3 tw-border-brass-dim tw-p-4"
             >

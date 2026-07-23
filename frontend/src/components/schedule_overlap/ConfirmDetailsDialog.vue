@@ -46,7 +46,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(respondent, r) in respondents">
+                    <tr v-for="respondent in respondents" :key="respondent._id">
                       <td class="tw-pb-4 tw-pr-4">
                         <div class="tw-flex tw-items-center">
                           <UserAvatarContent
@@ -91,12 +91,12 @@
                               <v-icon v-else>mdi-account</v-icon>
                             </v-list-item-avatar>
                             <v-list-item-content>
-                              <v-list-item-title
-                                v-text="`${item.firstName} ${item.lastName}`"
-                              ></v-list-item-title>
-                              <v-list-item-subtitle
-                                v-text="item.email"
-                              ></v-list-item-subtitle>
+                              <v-list-item-title>
+                                {{ `${item.firstName} ${item.lastName}` }}
+                              </v-list-item-title>
+                              <v-list-item-subtitle>
+                                {{ item.email }}
+                              </v-list-item-subtitle>
                             </v-list-item-content>
                           </template>
                         </v-combobox>

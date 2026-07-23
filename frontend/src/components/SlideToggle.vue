@@ -13,6 +13,7 @@
     ></div>
     <template v-for="(tab, i) in options">
       <div
+        :key="i"
         class="tw-flex tw-flex-1 tw-cursor-pointer tw-items-center tw-justify-center tw-gap-1.5 tw-overflow-hidden tw-px-4 tw-py-2.5 tw-text-center tw-text-sm tw-font-medium tw-transition-all"
         :class="
           i === index ? tab.activeClass ?? defaultActiveClass : inactiveClass

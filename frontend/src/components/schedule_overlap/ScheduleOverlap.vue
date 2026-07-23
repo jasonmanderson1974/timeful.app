@@ -36,6 +36,7 @@
                 <div class="tw-flex tw-w-full">
                   <div
                     v-for="day in daysOfWeek"
+                    :key="day"
                     class="tw-flex-1 tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-parchment-dim"
                   >
                     {{ day }}
@@ -316,23 +317,26 @@
                                   alwaysShowCalendarEvents ||
                                   showCalendarEvents)
                               "
-                              v-for="calendarEvent in calendarEventsByDay[
-                                d + page * maxDaysPerPage
-                              ]"
                             >
-                              <CalendarEventBlock
-                                :blockStyle="getTimeBlockStyle(calendarEvent)"
-                                :key="calendarEvent.id"
-                                :calendarEvent="calendarEvent"
-                                :isGroup="isGroup"
-                                :isEditingAvailability="
-                                  state === states.EDIT_AVAILABILITY
-                                "
-                                :noEventNames="noEventNames"
-                                :transitionName="
-                                  isGroup ? '' : 'fade-transition'
-                                "
-                              />
+                              <template
+                                v-for="calendarEvent in calendarEventsByDay[
+                                  d + page * maxDaysPerPage
+                                ]"
+                              >
+                                <CalendarEventBlock
+                                  :blockStyle="getTimeBlockStyle(calendarEvent)"
+                                  :key="calendarEvent.id"
+                                  :calendarEvent="calendarEvent"
+                                  :isGroup="isGroup"
+                                  :isEditingAvailability="
+                                    state === states.EDIT_AVAILABILITY
+                                  "
+                                  :noEventNames="noEventNames"
+                                  :transitionName="
+                                    isGroup ? '' : 'fade-transition'
+                                  "
+                                />
+                              </template>
                             </template>
 
                             <!-- Scheduled event -->
@@ -1261,7 +1265,7 @@ export default {
       for (const id in calendarAccounts) {
         if (!calendarAccounts[id].enabled) continue
 
-        if (this.calendarEventsMap.hasOwnProperty(id)) {
+        if (Object.prototype.hasOwnProperty.call(this.calendarEventsMap, id)) {
           for (const index in this.calendarEventsMap[id].calendarEvents) {
             event = this.calendarEventsMap[id].calendarEvents[index]
 
@@ -2021,12 +2025,13 @@ export default {
         switch (this.state) {
           case this.isGroup && this.states.EDIT_AVAILABILITY:
             return "Toggle which calendars are used. Tap and drag to edit your availability."
-          case this.states.EDIT_AVAILABILITY:
+          case this.states.EDIT_AVAILABILITY: {
             const daysOrTimes = this.event.daysOnly ? "days" : "times"
             if (this.availabilityType === availabilityTypes.IF_NEEDED) {
               return `Tap and drag to add your "if needed" ${daysOrTimes} in yellow.`
             }
             return `Tap and drag to add your "available" ${daysOrTimes} in green.`
+          }
           case this.states.SCHEDULE_EVENT:
             return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
           default:
@@ -2037,12 +2042,13 @@ export default {
       switch (this.state) {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
           return "Toggle which calendars are used. Click and drag to edit your availability."
-        case this.states.EDIT_AVAILABILITY:
+        case this.states.EDIT_AVAILABILITY: {
           const daysOrTimes = this.event.daysOnly ? "days" : "times"
           if (this.availabilityType === availabilityTypes.IF_NEEDED) {
             return `Click and drag to add your "if needed" ${daysOrTimes} in yellow.`
           }
           return `Click and drag to add your "available" ${daysOrTimes} in green.`
+        }
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times."
         default:
@@ -3045,7 +3051,7 @@ export default {
         if (this.event.responses[this.authUser._id]?.calendarOptions) {
           // Update calendar options if user has changed them for this specific group
           const { bufferTime, workingHours } =
-            this.event.responses[this.authUser._id]?.calendarOptions
+            this.event.responses[this.authUser._id].calendarOptions
           if (bufferTime) this.bufferTime = bufferTime
           if (workingHours) this.workingHours = workingHours
         } else {

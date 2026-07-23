@@ -119,7 +119,7 @@
       </div>
     </div>
 
-    <Footer />
+    <AppFooter />
 
     <!-- Sign in dialog -->
     <SignInDialog
@@ -155,7 +155,7 @@ import NewDialog from "@/components/NewDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
 import SignInDialog from "@/components/SignInDialog.vue"
 import { calendarTypes } from "@/constants"
-import Footer from "@/components/Footer.vue"
+import AppFooter from "@/components/Footer.vue"
 import { mapState, mapMutations } from "vuex"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import SirThomasFoolery from "@/components/general/SirThomasFoolery.vue"
@@ -174,7 +174,7 @@ export default {
     NewDialog,
     LandingPageHeader,
     SignInDialog,
-    Footer,
+    AppFooter,
     AuthUserMenu,
   },
 

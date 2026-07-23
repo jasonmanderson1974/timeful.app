@@ -236,7 +236,7 @@
                     Hide attendees from each other
                   </span>
                 </template>
-                <template v-slot:message="{ key, message }">
+                <template v-slot:message="{ message }">
                   <div
                     class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-parchment-dim"
                   >
@@ -255,7 +255,7 @@
                     >Hide responses from respondents</span
                   >
                 </template>
-                <template v-slot:message="{ key, message }">
+                <template v-slot:message="{ message }">
                   <div
                     class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-parchment-dim"
                   >

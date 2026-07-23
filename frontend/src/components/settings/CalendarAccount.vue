@@ -159,6 +159,7 @@ export default {
       } else if (this.account.calendarType == calendarTypes.OUTLOOK) {
         return "Error with Outlook Calendar account, click to remove"
       }
+      return ""
     },
   },
 

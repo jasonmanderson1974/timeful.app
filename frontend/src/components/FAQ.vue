@@ -29,6 +29,7 @@
           <div class="tw-flex tw-flex-col tw-gap-2">
             <div
               v-for="(point, index) in points"
+              :key="index"
               class="tw-flex tw-items-center"
             >
               <div

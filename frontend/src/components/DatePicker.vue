@@ -82,7 +82,7 @@ export default {
       ) {
         // Get date num from target
         const dateNum = parseInt(target.innerHTML)
-        if (dateNum != NaN) {
+        if (!isNaN(dateNum)) {
           const dateNumString = `${dateNum}`
           const date = `${this.pickerDate}-${dateNumString.padStart(2, "0")}`
           this.addRemoveDate(date)

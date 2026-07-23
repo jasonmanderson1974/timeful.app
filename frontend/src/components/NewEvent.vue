@@ -116,7 +116,7 @@
                       Set specific times per day
                     </span>
                   </template>
-                  <template v-slot:message="{ key, message }">
+                  <template v-slot:message="{ message }">
                     <v-expand-transition>
                       <div
                         v-if="specificTimesEnabled"
@@ -222,7 +222,7 @@
               >Email me each time someone joins my event</span
             >
           </template>
-          <template v-slot:message="{ key, message }">
+          <template v-slot:message>
             <div
               class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-parchment-dim"
             >

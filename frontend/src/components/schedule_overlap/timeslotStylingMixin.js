@@ -19,8 +19,9 @@ export default {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
       const timeslotEl = document.querySelector(".timeslot")
       if (timeslotEl) {
-        ;({ width: this.timeslot.width, height: this.timeslot.height } =
-          timeslotEl.getBoundingClientRect())
+        const { width, height } = timeslotEl.getBoundingClientRect()
+        this.timeslot.width = width
+        this.timeslot.height = height
       }
     },
     /** Returns a class string and style object for the given time timeslot div */

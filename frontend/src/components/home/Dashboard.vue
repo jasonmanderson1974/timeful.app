@@ -221,7 +221,7 @@ export default {
   computed: {
     ...mapState(["authUser", "events", "groupsEnabled", "folders"]),
     orderedFolders() {
-      return this.folders.sort((a, b) => {
+      return [...this.folders].sort((a, b) => {
         return a.name.localeCompare(b.name)
       })
     },
