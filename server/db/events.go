@@ -175,6 +175,55 @@ func MarkGatheringReminderSent(eventId primitive.ObjectID, sentAt primitive.Date
 	return err
 }
 
+// GetRecurringGatheringsToAdvance returns recurring gatherings whose current
+// occurrence has already ENDED (so it's safe to roll forward without disturbing
+// an in-progress gathering). The reminder scheduler computes the next occurrence
+// in Go on the returned set (see advanceRecurringGatherings). (C5)
+func GetRecurringGatheringsToAdvance(now primitive.DateTime) ([]models.Event, error) {
+	result, err := EventsCollection.Find(context.Background(), bson.M{
+		"gatheringRecurrence.frequency": bson.M{"$exists": true, "$ne": ""},
+		"scheduledEvent.endDate":        bson.M{"$lte": now},
+	})
+	if err != nil {
+		logger.StdErr.Println(err)
+		return []models.Event{}, err
+	}
+
+	var events []models.Event
+	if err := result.All(context.Background(), &events); err != nil {
+		logger.StdErr.Println(err)
+		return []models.Event{}, err
+	}
+
+	return events, nil
+}
+
+// AdvanceGathering rolls a recurring gathering forward to its next occurrence:
+// sets the new start/end, clears the previous cycle's RSVPs (fresh headcount),
+// and re-arms the reminder (unset sentAt). The update is guarded on the expected
+// current start so concurrent scheduler ticks can't double-advance — only the
+// first wins. Returns whether it actually advanced. (C5)
+func AdvanceGathering(eventId primitive.ObjectID, expectedStart, newStart, newEnd primitive.DateTime) (bool, error) {
+	res, err := EventsCollection.UpdateOne(context.Background(),
+		bson.M{"_id": eventId, "scheduledEvent.startDate": expectedStart},
+		bson.M{
+			"$set": bson.M{
+				"scheduledEvent.startDate": newStart,
+				"scheduledEvent.endDate":   newEnd,
+			},
+			"$unset": bson.M{
+				"rsvps":                    "",
+				"gatheringReminder.sentAt": "",
+			},
+		},
+	)
+	if err != nil {
+		logger.StdErr.Println(err)
+		return false, err
+	}
+	return res.ModifiedCount > 0, nil
+}
+
 func GetEventsCreatedThisMonth(userId primitive.ObjectID) (int, error) {
 	// Get the start of this month
 	now := time.Now()

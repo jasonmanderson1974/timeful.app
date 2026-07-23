@@ -1418,7 +1418,7 @@
         },
         "/events/{eventId}/schedule": {
             "post": {
-                "description": "Persists the chosen gathering time on the event's scheduledEvent and, when reminderEnabled, arms a one-time pre-gathering reminder email sent reminderLeadTimeHours before the start. Pass scheduled=false to cancel.",
+                "description": "Persists the chosen gathering time on the event's scheduledEvent and, when reminderEnabled, arms a one-time pre-gathering reminder email sent reminderLeadTimeHours before the start. Set recurrenceFrequency (weekly|biweekly|monthly) to make it a repeating gathering. Pass scheduled=false to cancel.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1438,7 +1438,7 @@
                         "required": true
                     },
                     {
-                        "description": "Gathering schedule + reminder options",
+                        "description": "Gathering schedule + reminder + recurrence options",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -1446,6 +1446,12 @@
                             "type": "object",
                             "properties": {
                                 "endDate": {
+                                    "type": "string"
+                                },
+                                "recurrenceFrequency": {
+                                    "type": "string"
+                                },
+                                "recurrenceUntil": {
                                     "type": "string"
                                 },
                                 "reminderEnabled": {
@@ -2555,7 +2561,7 @@
                     "type": "string"
                 },
                 "endDate": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "free": {
                     "description": "Whether the user is free during this event",
@@ -2565,7 +2571,7 @@
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "summary": {
                     "type": "string"
@@ -2609,7 +2615,7 @@
                     "type": "string"
                 },
                 "createdAt": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "eventId": {
                     "type": "string"
@@ -2622,7 +2628,7 @@
                 },
                 "updatedAt": {
                     "description": "set when edited",
-                    "type": "string"
+                    "type": "integer"
                 },
                 "userId": {
                     "description": "UserId is the guest's name OR a signed-in user's id hex — it authorizes\nedit / delete-own. IsGuest disambiguates the two.",
@@ -2663,7 +2669,7 @@
                 "dates": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "daysOnly": {
@@ -2675,6 +2681,14 @@
                 },
                 "duration": {
                     "type": "number"
+                },
+                "gatheringRecurrence": {
+                    "description": "Recurrence config for a repeating gathering (C5, paired with ScheduledEvent).\nnil = a one-off gathering.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.GatheringRecurrence"
+                        }
+                    ]
                 },
                 "gatheringReminder": {
                     "description": "Pre-gathering reminder email config/state (paired with ScheduledEvent)",
@@ -2776,7 +2790,7 @@
                 "times": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "type": {
@@ -2826,6 +2840,18 @@
                 }
             }
         },
+        "models.GatheringRecurrence": {
+            "type": "object",
+            "properties": {
+                "frequency": {
+                    "$ref": "#/definitions/models.RecurrenceFrequency"
+                },
+                "until": {
+                    "description": "Until, when set, is the latest date an occurrence may START on; the series\nstops advancing once the next occurrence would fall after it. nil = no end.",
+                    "type": "integer"
+                }
+            }
+        },
         "models.GatheringReminder": {
             "type": "object",
             "properties": {
@@ -2837,7 +2863,7 @@
                 },
                 "sentAt": {
                     "description": "nil = not yet sent",
-                    "type": "string"
+                    "type": "integer"
                 },
                 "timezone": {
                     "description": "IANA tz for formatting the email time (e.g. \"America/Los_Angeles\")",
@@ -2855,6 +2881,21 @@
         },
         "models.OAuth2CalendarAuth": {
             "type": "object"
+        },
+        "models.RecurrenceFrequency": {
+            "type": "string",
+            "enum": [
+                "",
+                "weekly",
+                "biweekly",
+                "monthly"
+            ],
+            "x-enum-varnames": [
+                "RecurrenceNone",
+                "RecurrenceWeekly",
+                "RecurrenceBiweekly",
+                "RecurrenceMonthly"
+            ]
         },
         "models.Remindee": {
             "type": "object",
@@ -2874,7 +2915,7 @@
                     "description": "Availability",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "calendarOptions": {
@@ -2896,7 +2937,7 @@
                 "ifNeeded": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "manualAvailability": {
@@ -2905,7 +2946,7 @@
                     "additionalProperties": {
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 },
@@ -2955,7 +2996,7 @@
                     "type": "string"
                 },
                 "respondedAt": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "status": {
                     "$ref": "#/definitions/models.RsvpStatus"
@@ -2988,13 +3029,13 @@
                     "type": "integer"
                 },
                 "endDate": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -3148,7 +3189,7 @@
                     "type": "string"
                 },
                 "addedAt": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "addedBy": {
                     "type": "string"

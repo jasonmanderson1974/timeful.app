@@ -51,6 +51,33 @@ func TestGenerateEventICS(t *testing.T) {
 			t.Errorf("ICS missing %q:\n%s", want, s)
 		}
 	}
+
+	// A one-off gathering must NOT carry an RRULE.
+	if strings.Contains(s, "RRULE") {
+		t.Errorf("non-recurring ICS should have no RRULE:\n%s", s)
+	}
+}
+
+func TestGenerateEventICS_Recurring(t *testing.T) {
+	start := time.Date(2026, 8, 1, 2, 0, 0, 0, time.UTC)
+	event := &models.Event{
+		Id:   primitive.NewObjectID(),
+		Name: "Monthly Gathering",
+		ScheduledEvent: &models.CalendarEvent{
+			Summary:   "Monthly Gathering",
+			StartDate: primitive.NewDateTimeFromTime(start),
+			EndDate:   primitive.NewDateTimeFromTime(start.Add(2 * time.Hour)),
+		},
+		GatheringRecurrence: &models.GatheringRecurrence{Frequency: models.RecurrenceMonthly},
+	}
+
+	out, err := GenerateEventICS(event)
+	if err != nil {
+		t.Fatalf("GenerateEventICS: %v", err)
+	}
+	if s := string(out); !strings.Contains(s, "RRULE:FREQ=MONTHLY") {
+		t.Errorf("recurring ICS missing RRULE:FREQ=MONTHLY:\n%s", s)
+	}
 }
 
 func TestGenerateEventICS_NoScheduledEvent(t *testing.T) {

@@ -463,9 +463,49 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 
 ### P2 — Strong quality-of-life
 
-- [ ] **C5 · Recurring gatherings.** `M`
-  A club that meets regularly benefits from "repeat monthly" rather than recreating an event each
-  time. Builds on existing event duplication (`duplicateEvent`, `events.go:1553`).
+- [x] **C5 · Recurring gatherings.** `M` — **DONE 2026-07-23 (CI-green; backend build/vet/tests +
+  frontend build/lint/tests pass; schedule-with-recurrence + .ics RRULE verified live against a
+  local server + Mongo; auto-advance covered by DB-gated integration tests).** Rather than a
+  spawn-a-copy model (the TODO's `duplicateEvent` hint), this makes a *single* confirmed gathering
+  repeat — one permanent event link + calendar series — which fits "First-Friday poker night"
+  better than minting a new event/URL each cycle. Builds on **[C2]**'s `scheduledEvent` +
+  reminder pipeline and **[C3]**'s `.ics`.
+  - **Model** (`models/event.go`): `GatheringRecurrence{Frequency, Until}` on the Event (paired with
+    `ScheduledEvent`; nil = one-off). Frequencies weekly / biweekly / monthly. No migration. Pure
+    methods live with the type (unit-tested): `IsRecurring`, `Step` (monthly uses `addMonthsClamped`
+    so Jan 31 → Feb 28/29, not Mar 3), `NextOccurrenceAfter` (skips a long outage — jumps to the next
+    occurrence after `now`, doesn't replay missed ones), and `RRULE` (RFC 5545 string).
+  - **Schedule endpoint** (`routes/events.go`): `scheduleEvent` accepts `recurrenceFrequency`
+    (+ optional `recurrenceUntil`), validates the enum (bad value → 400), stores/clears
+    `gatheringRecurrence`; `none` and cancel both unset it.
+  - **.ics** (`services/calendar/ics_generate.go`): emits an `RRULE` (`FREQ=WEEKLY` /
+    `FREQ=WEEKLY;INTERVAL=2` / `FREQ=MONTHLY`, + `UNTIL`) via `Props.Set` (not `SetText`, which would
+    tag it `VALUE=TEXT` — wrong for a RECUR value), so a single "Add to calendar" covers the whole
+    series in members' calendars.
+  - **Auto-advance** (`services/reminders`): the scheduler now rolls a recurring gathering forward to
+    its next future occurrence once the current one has *ended* — clearing that cycle's RSVPs (fresh
+    headcount) and re-arming the reminder (`sentAt` unset). Guarded by a conditional `AdvanceGathering`
+    update (keyed on the expected current start) so concurrent ticks can't double-advance; stops once
+    the next occurrence would fall after `Until`. **Decoupled from email**: `StartReminderScheduler`
+    now always runs the advance pass (only the *send* is gated on Gmail creds), so the event page shows
+    the next occurrence even on an email-less instance.
+  - **Frontend**: recurrence selector ("Does not repeat / Weekly / Every 2 weeks / Monthly") in the
+    `ToolRow` Schedule menu (`.sync` through `ScheduleOverlap.confirmScheduleEvent`), a "Repeats …"
+    line in the owner's "Gathering set" summary, and a **"Repeats …" chip on `EventHeader`** so
+    *everyone* (not just the owner) sees the cadence next to "Add to calendar".
+  - **Tests**: `models/event_recurrence_test.go` (Step, monthly clamp incl. leap-year + year boundary,
+    skip-outage, RRULE incl. UNTIL), `ics_generate_test.go` (RRULE present for recurring / absent for
+    one-off), and DB-gated `recurrence_integration_test.go` (rolls forward + clears RSVPs + re-arms +
+    idempotent; respects `Until`; skips a still-ongoing occurrence).
+  - **Swagger `docs/` regenerated** (pinned `swag@v1.16.1 --parseDependency --parseInternal`):
+    documents the new schedule params + `GatheringRecurrence` model. The regen also normalized some
+    pre-existing `primitive.DateTime` string/integer drift in the committed baseline (it was already
+    internally inconsistent) — expected, not from this change.
+  - **Known limitations (v1, documented in code):** monthly recurrence on day 29–31 clamps to the
+    month's last day and can compound across short months (fine for a club — meetings fall on normal
+    days), which may diverge slightly from a strict RRULE reader; no "nth-weekday" (e.g. "2nd
+    Saturday") rule; comments accumulate across occurrences (single rolling event). Non-goal: per-
+    occurrence history — that's **[C10]** (The Chronicle).
 
 - [ ] **C6 · Venue / activity poll (not just time).** `M`
   Extend the availability-poll concept to "where / what" — a lightweight multiple-choice poll so the

@@ -30,6 +30,14 @@
           <v-icon small left class="tw-text-wood-deep">mdi-calendar-plus</v-icon>
           Add to calendar
         </v-chip>
+        <v-chip
+          v-if="event.scheduledEvent && recurrenceLabel"
+          :small="isPhone"
+          class="tw-select-none tw-rounded tw-bg-leather tw-px-2 tw-font-medium sm:tw-px-3"
+        >
+          <v-icon small left>mdi-repeat</v-icon>
+          {{ recurrenceLabel }}
+        </v-chip>
         <template v-if="isGroup">
           <div class="">
             <v-chip
@@ -221,6 +229,19 @@ export default {
     icsUrl() {
       const id = this.event.shortId ?? this.event._id
       return `${serverURL}/events/${id}/ics`
+    },
+    // Human label for a repeating gathering (C5); "" for a one-off.
+    recurrenceLabel() {
+      switch (this.event.gatheringRecurrence?.frequency) {
+        case "weekly":
+          return "Repeats weekly"
+        case "biweekly":
+          return "Repeats every 2 weeks"
+        case "monthly":
+          return "Repeats monthly"
+        default:
+          return ""
+      }
     },
   },
 }

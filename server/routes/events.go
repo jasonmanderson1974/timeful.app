@@ -969,12 +969,12 @@ func clampLeadTimeHours(h int) int {
 }
 
 // @Summary Confirms (or cancels) a gathering's locked-in time and reminder
-// @Description Persists the chosen gathering time on the event's scheduledEvent and, when reminderEnabled, arms a one-time pre-gathering reminder email sent reminderLeadTimeHours before the start. Pass scheduled=false to cancel.
+// @Description Persists the chosen gathering time on the event's scheduledEvent and, when reminderEnabled, arms a one-time pre-gathering reminder email sent reminderLeadTimeHours before the start. Set recurrenceFrequency (weekly|biweekly|monthly) to make it a repeating gathering. Pass scheduled=false to cancel.
 // @Tags events
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{scheduled=bool,startDate=string,endDate=string,summary=string,reminderEnabled=bool,reminderLeadTimeHours=int} true "Gathering schedule + reminder options"
+// @Param payload body object{scheduled=bool,startDate=string,endDate=string,summary=string,reminderEnabled=bool,reminderLeadTimeHours=int,recurrenceFrequency=string,recurrenceUntil=string} true "Gathering schedule + reminder + recurrence options"
 // @Success 200
 // @Router /events/{eventId}/schedule [post]
 func scheduleEvent(c *gin.Context) {
@@ -986,9 +986,25 @@ func scheduleEvent(c *gin.Context) {
 		Timezone              string              `json:"timezone"`
 		ReminderEnabled       bool                `json:"reminderEnabled"`
 		ReminderLeadTimeHours int                 `json:"reminderLeadTimeHours"`
+		// Recurrence (C5): empty/"none" = a one-off gathering.
+		RecurrenceFrequency string              `json:"recurrenceFrequency"`
+		RecurrenceUntil     *primitive.DateTime `json:"recurrenceUntil"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, responses.Error{Error: err.Error()})
+		return
+	}
+
+	// Validate the recurrence frequency (treat "none" as unset for convenience).
+	if payload.RecurrenceFrequency == "none" {
+		payload.RecurrenceFrequency = ""
+	}
+	recurrenceFreq := models.RecurrenceFrequency(payload.RecurrenceFrequency)
+	switch recurrenceFreq {
+	case models.RecurrenceNone, models.RecurrenceWeekly, models.RecurrenceBiweekly, models.RecurrenceMonthly:
+		// ok
+	default:
+		c.JSON(http.StatusBadRequest, responses.Error{Error: "invalid recurrenceFrequency"})
 		return
 	}
 
@@ -1044,15 +1060,26 @@ func scheduleEvent(c *gin.Context) {
 			Timezone:      payload.Timezone,
 			// SentAt intentionally left nil so (re)scheduling re-arms the reminder
 		}
-		update = bson.M{"$set": bson.M{
+		set := bson.M{
 			"scheduledEvent":    scheduledEvent,
 			"gatheringReminder": reminder,
-		}}
+		}
+		if recurrenceFreq != models.RecurrenceNone {
+			set["gatheringRecurrence"] = models.GatheringRecurrence{
+				Frequency: recurrenceFreq,
+				Until:     payload.RecurrenceUntil,
+			}
+			update = bson.M{"$set": set}
+		} else {
+			// Non-recurring: make sure any prior recurrence is cleared.
+			update = bson.M{"$set": set, "$unset": bson.M{"gatheringRecurrence": ""}}
+		}
 	} else {
-		// Cancel the gathering: drop the confirmed time + reminder state
+		// Cancel the gathering: drop the confirmed time + reminder + recurrence
 		update = bson.M{"$unset": bson.M{
-			"scheduledEvent":    "",
-			"gatheringReminder": "",
+			"scheduledEvent":      "",
+			"gatheringReminder":   "",
+			"gatheringRecurrence": "",
 		}}
 	}
 

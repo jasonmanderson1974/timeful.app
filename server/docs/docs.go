@@ -1426,7 +1426,7 @@ const docTemplate = `{
         },
         "/events/{eventId}/schedule": {
             "post": {
-                "description": "Persists the chosen gathering time on the event's scheduledEvent and, when reminderEnabled, arms a one-time pre-gathering reminder email sent reminderLeadTimeHours before the start. Pass scheduled=false to cancel.",
+                "description": "Persists the chosen gathering time on the event's scheduledEvent and, when reminderEnabled, arms a one-time pre-gathering reminder email sent reminderLeadTimeHours before the start. Set recurrenceFrequency (weekly|biweekly|monthly) to make it a repeating gathering. Pass scheduled=false to cancel.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1446,7 +1446,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Gathering schedule + reminder options",
+                        "description": "Gathering schedule + reminder + recurrence options",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -1454,6 +1454,12 @@ const docTemplate = `{
                             "type": "object",
                             "properties": {
                                 "endDate": {
+                                    "type": "string"
+                                },
+                                "recurrenceFrequency": {
+                                    "type": "string"
+                                },
+                                "recurrenceUntil": {
                                     "type": "string"
                                 },
                                 "reminderEnabled": {
@@ -2563,7 +2569,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "endDate": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "free": {
                     "description": "Whether the user is free during this event",
@@ -2573,7 +2579,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "summary": {
                     "type": "string"
@@ -2617,7 +2623,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "createdAt": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "eventId": {
                     "type": "string"
@@ -2630,7 +2636,7 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "description": "set when edited",
-                    "type": "string"
+                    "type": "integer"
                 },
                 "userId": {
                     "description": "UserId is the guest's name OR a signed-in user's id hex — it authorizes\nedit / delete-own. IsGuest disambiguates the two.",
@@ -2671,7 +2677,7 @@ const docTemplate = `{
                 "dates": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "daysOnly": {
@@ -2683,6 +2689,14 @@ const docTemplate = `{
                 },
                 "duration": {
                     "type": "number"
+                },
+                "gatheringRecurrence": {
+                    "description": "Recurrence config for a repeating gathering (C5, paired with ScheduledEvent).\nnil = a one-off gathering.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.GatheringRecurrence"
+                        }
+                    ]
                 },
                 "gatheringReminder": {
                     "description": "Pre-gathering reminder email config/state (paired with ScheduledEvent)",
@@ -2784,7 +2798,7 @@ const docTemplate = `{
                 "times": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "type": {
@@ -2834,6 +2848,18 @@ const docTemplate = `{
                 }
             }
         },
+        "models.GatheringRecurrence": {
+            "type": "object",
+            "properties": {
+                "frequency": {
+                    "$ref": "#/definitions/models.RecurrenceFrequency"
+                },
+                "until": {
+                    "description": "Until, when set, is the latest date an occurrence may START on; the series\nstops advancing once the next occurrence would fall after it. nil = no end.",
+                    "type": "integer"
+                }
+            }
+        },
         "models.GatheringReminder": {
             "type": "object",
             "properties": {
@@ -2845,7 +2871,7 @@ const docTemplate = `{
                 },
                 "sentAt": {
                     "description": "nil = not yet sent",
-                    "type": "string"
+                    "type": "integer"
                 },
                 "timezone": {
                     "description": "IANA tz for formatting the email time (e.g. \"America/Los_Angeles\")",
@@ -2863,6 +2889,21 @@ const docTemplate = `{
         },
         "models.OAuth2CalendarAuth": {
             "type": "object"
+        },
+        "models.RecurrenceFrequency": {
+            "type": "string",
+            "enum": [
+                "",
+                "weekly",
+                "biweekly",
+                "monthly"
+            ],
+            "x-enum-varnames": [
+                "RecurrenceNone",
+                "RecurrenceWeekly",
+                "RecurrenceBiweekly",
+                "RecurrenceMonthly"
+            ]
         },
         "models.Remindee": {
             "type": "object",
@@ -2882,7 +2923,7 @@ const docTemplate = `{
                     "description": "Availability",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "calendarOptions": {
@@ -2904,7 +2945,7 @@ const docTemplate = `{
                 "ifNeeded": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "manualAvailability": {
@@ -2913,7 +2954,7 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 },
@@ -2963,7 +3004,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "respondedAt": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "status": {
                     "$ref": "#/definitions/models.RsvpStatus"
@@ -2996,13 +3037,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "endDate": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -3156,7 +3197,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "addedAt": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "addedBy": {
                     "type": "string"

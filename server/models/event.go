@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -27,6 +29,131 @@ type GatheringReminder struct {
 	LeadTimeHours int                 `json:"leadTimeHours" bson:"leadTimeHours,omitempty"`
 	Timezone      string              `json:"timezone" bson:"timezone,omitempty"` // IANA tz for formatting the email time (e.g. "America/Los_Angeles")
 	SentAt        *primitive.DateTime `json:"sentAt" bson:"sentAt,omitempty"`     // nil = not yet sent
+}
+
+// RecurrenceFrequency is how often a confirmed gathering repeats (C5).
+type RecurrenceFrequency string
+
+const (
+	RecurrenceNone     RecurrenceFrequency = ""
+	RecurrenceWeekly   RecurrenceFrequency = "weekly"
+	RecurrenceBiweekly RecurrenceFrequency = "biweekly"
+	RecurrenceMonthly  RecurrenceFrequency = "monthly"
+)
+
+// GatheringRecurrence makes a confirmed gathering repeat (C5). It drives two
+// things: the .ics RRULE (so a single "add to calendar" covers the whole
+// series in members' calendars) and the in-process scheduler that rolls
+// ScheduledEvent forward to the next occurrence once the current one ends
+// (services/reminders.advanceRecurringGatherings). Paired with ScheduledEvent.
+type GatheringRecurrence struct {
+	Frequency RecurrenceFrequency `json:"frequency" bson:"frequency"`
+	// Until, when set, is the latest date an occurrence may START on; the series
+	// stops advancing once the next occurrence would fall after it. nil = no end.
+	Until *primitive.DateTime `json:"until" bson:"until,omitempty"`
+}
+
+// IsRecurring reports whether this is a real, advanceable recurrence.
+func (r *GatheringRecurrence) IsRecurring() bool {
+	if r == nil {
+		return false
+	}
+	switch r.Frequency {
+	case RecurrenceWeekly, RecurrenceBiweekly, RecurrenceMonthly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Step advances t by one interval of the recurrence, preserving time-of-day.
+// Monthly keeps the same day-of-month, clamping to the last valid day for
+// short months (see addMonthsClamped). Returns t unchanged for a non-recurring
+// frequency — callers must gate on IsRecurring.
+func (r *GatheringRecurrence) Step(t time.Time) time.Time {
+	switch r.Frequency {
+	case RecurrenceWeekly:
+		return t.AddDate(0, 0, 7)
+	case RecurrenceBiweekly:
+		return t.AddDate(0, 0, 14)
+	case RecurrenceMonthly:
+		return addMonthsClamped(t, 1)
+	default:
+		return t
+	}
+}
+
+// NextOccurrenceAfter returns the first occurrence start strictly after `after`,
+// stepping from `start` by the frequency. Returns the zero time if this is not
+// a recurring gathering. Bounded so pathological input can't loop forever.
+func (r *GatheringRecurrence) NextOccurrenceAfter(start, after time.Time) time.Time {
+	if !r.IsRecurring() {
+		return time.Time{}
+	}
+	next := start
+	for i := 0; i < 10000 && !next.After(after); i++ {
+		next = r.Step(next)
+	}
+	if !next.After(after) {
+		return time.Time{}
+	}
+	return next
+}
+
+// RRULE renders the iCalendar RRULE string for this recurrence (RFC 5545),
+// e.g. "FREQ=WEEKLY", "FREQ=WEEKLY;INTERVAL=2", "FREQ=MONTHLY", optionally with
+// ";UNTIL=<UTC>". Returns "" when not recurring. Note: for monthly gatherings on
+// day 29–31 the server's advance clamps to the month's last day, which can
+// diverge from a strict RRULE reader — fine for this club (meetings fall on
+// normal days); see addMonthsClamped.
+func (r *GatheringRecurrence) RRULE() string {
+	if r == nil {
+		return ""
+	}
+	var base string
+	switch r.Frequency {
+	case RecurrenceWeekly:
+		base = "FREQ=WEEKLY"
+	case RecurrenceBiweekly:
+		base = "FREQ=WEEKLY;INTERVAL=2"
+	case RecurrenceMonthly:
+		base = "FREQ=MONTHLY"
+	default:
+		return ""
+	}
+	if r.Until != nil {
+		base += ";UNTIL=" + r.Until.Time().UTC().Format("20060102T150405Z")
+	}
+	return base
+}
+
+// addMonthsClamped adds n calendar months to t, preserving time-of-day and
+// clamping the day to the target month's last day (so Jan 31 + 1 month lands on
+// Feb 28/29, not Mar 3 as time.AddDate would normalize it).
+func addMonthsClamped(t time.Time, n int) time.Time {
+	y, m, d := t.Date()
+	// time.Date normalizes an out-of-range month (e.g. 13 -> next Jan), so this
+	// is safe across year boundaries.
+	first := time.Date(y, m+time.Month(n), 1, t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), t.Location())
+	daysInMonth := first.AddDate(0, 1, -1).Day()
+	if d > daysInMonth {
+		d = daysInMonth
+	}
+	return time.Date(first.Year(), first.Month(), d, t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), t.Location())
+}
+
+// RecurrenceLabel is a short human label for a frequency (used in emails / logs).
+func RecurrenceLabel(f RecurrenceFrequency) string {
+	switch f {
+	case RecurrenceWeekly:
+		return "weekly"
+	case RecurrenceBiweekly:
+		return "every 2 weeks"
+	case RecurrenceMonthly:
+		return "monthly"
+	default:
+		return ""
+	}
 }
 
 // RSVP to a confirmed gathering (paired with ScheduledEvent). Stored on the
@@ -130,6 +257,10 @@ type Event struct {
 
 	// Pre-gathering reminder email config/state (paired with ScheduledEvent)
 	GatheringReminder *GatheringReminder `json:"gatheringReminder" bson:"gatheringReminder,omitempty"`
+
+	// Recurrence config for a repeating gathering (C5, paired with ScheduledEvent).
+	// nil = a one-off gathering.
+	GatheringRecurrence *GatheringRecurrence `json:"gatheringRecurrence" bson:"gatheringRecurrence,omitempty"`
 
 	// RSVPs to the confirmed gathering, keyed by guest name / signed-in user id
 	Rsvps map[string]*Rsvp `json:"rsvps" bson:"rsvps,omitempty"`

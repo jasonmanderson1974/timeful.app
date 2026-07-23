@@ -27,12 +27,15 @@ type SendFunc func(toEmail, subject, body, contentType string) error
 const defaultInterval = 5 * time.Minute
 
 // StartReminderScheduler launches the background ticker and returns a stop
-// function. If Gmail SMTP creds are absent it logs and no-ops (mirrors
-// gcloud.InitTasks), so the server still boots fine without email configured.
+// function. Each tick rolls recurring gatherings forward (C5) and, when Gmail
+// SMTP creds are present, sends any due pre-gathering reminders. Reminder emails
+// no-op without creds (mirrors gcloud.InitTasks), but recurrence advancement
+// runs regardless — it only touches the DB, so the event page always shows the
+// next occurrence even on an email-less instance.
 func StartReminderScheduler() func() {
-	if os.Getenv("GMAIL_APP_PASSWORD") == "" || os.Getenv("SCHEJ_EMAIL_ADDRESS") == "" {
-		logger.StdOut.Println("GMAIL creds not set, pre-gathering reminder scheduler disabled")
-		return func() {}
+	emailConfigured := os.Getenv("GMAIL_APP_PASSWORD") != "" && os.Getenv("SCHEJ_EMAIL_ADDRESS") != ""
+	if !emailConfigured {
+		logger.StdOut.Println("GMAIL creds not set — reminder emails disabled (recurring-gathering advance still runs)")
 	}
 
 	interval := defaultInterval
@@ -44,27 +47,76 @@ func StartReminderScheduler() func() {
 		}
 	}
 
+	tick := func() {
+		now := time.Now()
+		// Advance first so reminders act on the current (freshly-rolled) occurrence.
+		advanceRecurringGatherings(now)
+		if emailConfigured {
+			processDueReminders(now, utils.SendEmail)
+		}
+	}
+
 	ticker := time.NewTicker(interval)
 	done := make(chan struct{})
 
 	go func() {
-		// Run once at startup so a reminder that came due while the server was
-		// down doesn't wait a full interval.
-		processDueReminders(time.Now(), utils.SendEmail)
+		// Run once at startup so a reminder/advance that came due while the server
+		// was down doesn't wait a full interval.
+		tick()
 		for {
 			select {
 			case <-done:
 				return
 			case <-ticker.C:
-				processDueReminders(time.Now(), utils.SendEmail)
+				tick()
 			}
 		}
 	}()
 
-	logger.StdOut.Println("Pre-gathering reminder scheduler started, interval:", interval)
+	logger.StdOut.Println("Gathering scheduler started, interval:", interval)
 	return func() {
 		ticker.Stop()
 		close(done)
+	}
+}
+
+// advanceRecurringGatherings rolls every recurring gathering whose current
+// occurrence has ended forward to its next future occurrence, clearing that
+// cycle's RSVPs and re-arming the reminder. It skips past a long outage (jumps
+// straight to the next occurrence after `now`, not replaying missed ones) and
+// stops a series once its next occurrence would fall after RecurrenceUntil.
+func advanceRecurringGatherings(now time.Time) {
+	events, err := db.GetRecurringGatheringsToAdvance(primitive.NewDateTimeFromTime(now))
+	if err != nil {
+		return // already logged
+	}
+
+	for i := range events {
+		event := events[i]
+		rec := event.GatheringRecurrence
+		if event.ScheduledEvent == nil || !rec.IsRecurring() {
+			continue
+		}
+
+		start := event.ScheduledEvent.StartDate.Time()
+		duration := event.ScheduledEvent.EndDate.Time().Sub(start)
+
+		next := rec.NextOccurrenceAfter(start, now)
+		if next.IsZero() {
+			continue
+		}
+		// Series exhausted: the next occurrence is past its end date. Leave the
+		// gathering on its last occurrence rather than rolling into the void.
+		if rec.Until != nil && next.After(rec.Until.Time()) {
+			continue
+		}
+
+		newStart := primitive.NewDateTimeFromTime(next)
+		newEnd := primitive.NewDateTimeFromTime(next.Add(duration))
+		if _, err := db.AdvanceGathering(event.Id, event.ScheduledEvent.StartDate, newStart, newEnd); err != nil {
+			// already logged; try again next tick
+			continue
+		}
 	}
 }
 

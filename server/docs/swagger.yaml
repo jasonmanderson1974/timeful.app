@@ -72,14 +72,14 @@ definitions:
       calendarId:
         type: string
       endDate:
-        type: string
+        type: integer
       free:
         description: Whether the user is free during this event
         type: boolean
       id:
         type: string
       startDate:
-        type: string
+        type: integer
       summary:
         type: string
     type: object
@@ -111,7 +111,7 @@ definitions:
           "First Last").
         type: string
       createdAt:
-        type: string
+        type: integer
       eventId:
         type: string
       isGuest:
@@ -120,7 +120,7 @@ definitions:
         type: string
       updatedAt:
         description: set when edited
-        type: string
+        type: integer
       userId:
         description: |-
           UserId is the guest's name OR a signed-in user's id hex — it authorizes
@@ -151,7 +151,7 @@ definitions:
         type: array
       dates:
         items:
-          type: string
+          type: integer
         type: array
       daysOnly:
         description: Whether to only poll for days, not times
@@ -160,6 +160,12 @@ definitions:
         type: string
       duration:
         type: number
+      gatheringRecurrence:
+        allOf:
+        - $ref: '#/definitions/models.GatheringRecurrence'
+        description: |-
+          Recurrence config for a repeating gathering (C5, paired with ScheduledEvent).
+          nil = a one-off gathering.
       gatheringReminder:
         allOf:
         - $ref: '#/definitions/models.GatheringReminder'
@@ -234,7 +240,7 @@ definitions:
         type: integer
       times:
         items:
-          type: string
+          type: integer
         type: array
       type:
         $ref: '#/definitions/models.EventType'
@@ -268,6 +274,16 @@ definitions:
       userId:
         type: string
     type: object
+  models.GatheringRecurrence:
+    properties:
+      frequency:
+        $ref: '#/definitions/models.RecurrenceFrequency'
+      until:
+        description: |-
+          Until, when set, is the latest date an occurrence may START on; the series
+          stops advancing once the next occurrence would fall after it. nil = no end.
+        type: integer
+    type: object
   models.GatheringReminder:
     properties:
       enabled:
@@ -276,7 +292,7 @@ definitions:
         type: integer
       sentAt:
         description: nil = not yet sent
-        type: string
+        type: integer
       timezone:
         description: IANA tz for formatting the email time (e.g. "America/Los_Angeles")
         type: string
@@ -288,6 +304,18 @@ definitions:
     type: object
   models.OAuth2CalendarAuth:
     type: object
+  models.RecurrenceFrequency:
+    enum:
+    - ""
+    - weekly
+    - biweekly
+    - monthly
+    type: string
+    x-enum-varnames:
+    - RecurrenceNone
+    - RecurrenceWeekly
+    - RecurrenceBiweekly
+    - RecurrenceMonthly
   models.Remindee:
     properties:
       email:
@@ -300,7 +328,7 @@ definitions:
       availability:
         description: Availability
         items:
-          type: string
+          type: integer
         type: array
       calendarOptions:
         $ref: '#/definitions/models.CalendarOptions'
@@ -315,12 +343,12 @@ definitions:
         type: object
       ifNeeded:
         items:
-          type: string
+          type: integer
         type: array
       manualAvailability:
         additionalProperties:
           items:
-            type: string
+            type: integer
           type: array
         description: Mapping from the start date of a day to the available times for
           that day
@@ -362,7 +390,7 @@ definitions:
       name:
         type: string
       respondedAt:
-        type: string
+        type: integer
       status:
         $ref: '#/definitions/models.RsvpStatus'
       userId:
@@ -385,11 +413,11 @@ definitions:
       capacity:
         type: integer
       endDate:
-        type: string
+        type: integer
       name:
         type: string
       startDate:
-        type: string
+        type: integer
     type: object
   models.SignUpResponse:
     properties:
@@ -499,7 +527,7 @@ definitions:
       _id:
         type: string
       addedAt:
-        type: string
+        type: integer
       addedBy:
         type: string
       email:
@@ -1420,20 +1448,25 @@ paths:
       - application/json
       description: Persists the chosen gathering time on the event's scheduledEvent
         and, when reminderEnabled, arms a one-time pre-gathering reminder email sent
-        reminderLeadTimeHours before the start. Pass scheduled=false to cancel.
+        reminderLeadTimeHours before the start. Set recurrenceFrequency (weekly|biweekly|monthly)
+        to make it a repeating gathering. Pass scheduled=false to cancel.
       parameters:
       - description: Event ID
         in: path
         name: eventId
         required: true
         type: string
-      - description: Gathering schedule + reminder options
+      - description: Gathering schedule + reminder + recurrence options
         in: body
         name: payload
         required: true
         schema:
           properties:
             endDate:
+              type: string
+            recurrenceFrequency:
+              type: string
+            recurrenceUntil:
               type: string
             reminderEnabled:
               type: boolean

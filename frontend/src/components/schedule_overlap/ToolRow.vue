@@ -179,6 +179,17 @@
                   @change="(v) => $emit('update:reminderLeadTimeHours', v)"
                 />
               </v-list-item>
+              <!-- Recurrence (C5): repeat this gathering on a cadence -->
+              <v-list-item @click.stop>
+                <v-select
+                  :value="recurrenceFrequency"
+                  :items="recurrenceOptions"
+                  dense
+                  hide-details
+                  label="Repeat"
+                  @change="(v) => $emit('update:recurrenceFrequency', v)"
+                />
+              </v-list-item>
               <v-divider />
               <v-list-item @click="(e) => $emit('confirmScheduleEvent', true)">
                 <v-img
@@ -252,6 +263,7 @@ export default {
     timeType: { type: String, required: true },
     reminderEnabled: { type: Boolean, default: true },
     reminderLeadTimeHours: { type: Number, default: 24 },
+    recurrenceFrequency: { type: String, default: "none" },
   },
 
   components: {
@@ -327,6 +339,27 @@ export default {
         { text: "48 hours before", value: 48 },
       ]
     },
+    recurrenceOptions() {
+      return [
+        { text: "Does not repeat", value: "none" },
+        { text: "Weekly", value: "weekly" },
+        { text: "Every 2 weeks", value: "biweekly" },
+        { text: "Monthly", value: "monthly" },
+      ]
+    },
+    // Human label for the event's stored recurrence (shown in the summary).
+    recurrenceLabel() {
+      switch (this.event.gatheringRecurrence?.frequency) {
+        case "weekly":
+          return "Repeats weekly"
+        case "biweekly":
+          return "Repeats every 2 weeks"
+        case "monthly":
+          return "Repeats monthly"
+        default:
+          return ""
+      }
+    },
     scheduledGatheringText() {
       const s = this.event.scheduledEvent
       if (!s || !s.startDate) return ""
@@ -347,9 +380,12 @@ export default {
       }
     },
     reminderSummaryText() {
+      const parts = []
+      if (this.recurrenceLabel) parts.push(this.recurrenceLabel)
       const r = this.event.gatheringReminder
-      if (!r || !r.enabled) return "No reminder email"
-      return `Reminder ${r.leadTimeHours ?? 24}h before`
+      if (r && r.enabled) parts.push(`Reminder ${r.leadTimeHours ?? 24}h before`)
+      else parts.push("No reminder email")
+      return parts.join(" · ")
     },
     // Universal .ics download for the confirmed gathering (served by getEventIcs)
     icsUrl() {

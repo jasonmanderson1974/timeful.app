@@ -43,6 +43,12 @@ func GenerateEventICS(event *models.Event) ([]byte, error) {
 	vevent.Props.SetDateTime(ical.PropDateTimeStamp, time.Now().UTC())
 	vevent.Props.SetDateTime(ical.PropDateTimeStart, start)
 	vevent.Props.SetDateTime(ical.PropDateTimeEnd, end)
+	// Recurring gathering (C5): an RRULE makes a single "add to calendar" cover
+	// the whole series in the member's calendar. Set the prop directly (not
+	// SetText) so it isn't tagged VALUE=TEXT — RRULE is a RECUR-typed value.
+	if rrule := event.GatheringRecurrence.RRULE(); rrule != "" {
+		vevent.Props.Set(&ical.Prop{Name: ical.PropRecurrenceRule, Value: rrule})
+	}
 	vevent.Props.SetText(ical.PropSummary, summary)
 	vevent.Props.SetText(ical.PropDescription, description)
 	if event.Location != nil && *event.Location != "" {

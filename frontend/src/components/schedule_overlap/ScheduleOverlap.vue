@@ -115,6 +115,7 @@
                   @cancelGathering="cancelGathering"
                   :reminder-enabled.sync="reminderEnabled"
                   :reminder-lead-time-hours.sync="reminderLeadTimeHours"
+                  :recurrence-frequency.sync="recurrenceFrequency"
                 />
               </div>
             </template>
@@ -483,6 +484,7 @@
                   @cancelGathering="cancelGathering"
                   :reminder-enabled.sync="reminderEnabled"
                   :reminder-lead-time-hours.sync="reminderLeadTimeHours"
+                  :recurrence-frequency.sync="recurrenceFrequency"
                 />
               </div>
 
@@ -842,6 +844,7 @@
           @cancelGathering="cancelGathering"
           :reminder-enabled.sync="reminderEnabled"
           :reminder-lead-time-hours.sync="reminderLeadTimeHours"
+          :recurrence-frequency.sync="recurrenceFrequency"
         />
 
         <!-- Fixed bottom section for mobile -->
@@ -1170,6 +1173,8 @@ export default {
       // Pre-gathering reminder options (persisted on confirm; see confirmScheduleEvent)
       reminderEnabled: true,
       reminderLeadTimeHours: 24,
+      // Recurrence (C5): "none" | "weekly" | "biweekly" | "monthly"
+      recurrenceFrequency: "none",
       timeType:
         localStorage["timeType"] ??
         (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
@@ -2505,6 +2510,7 @@ export default {
         timezone: this.curTimezone.value,
         reminderEnabled: this.reminderEnabled,
         reminderLeadTimeHours: this.reminderLeadTimeHours,
+        recurrenceFrequency: this.recurrenceFrequency,
       })
         .then(() => this.refreshEvent())
         .catch(() => {})
