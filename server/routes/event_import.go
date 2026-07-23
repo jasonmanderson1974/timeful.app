@@ -14,11 +14,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/errs"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/responses"
+	"sirtom/server/db"
+	"sirtom/server/errs"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/responses"
 )
 
 // @Summary Import a Timeful event from a remote instance

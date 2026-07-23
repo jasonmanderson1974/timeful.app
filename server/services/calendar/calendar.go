@@ -3,8 +3,8 @@ package calendar
 import (
 	"time"
 
-	"schej.it/server/models"
-	"schej.it/server/services/auth"
+	"sirtom/server/models"
+	"sirtom/server/services/auth"
 )
 
 type GetCalendarListData struct {

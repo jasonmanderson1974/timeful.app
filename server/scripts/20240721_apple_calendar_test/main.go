@@ -7,7 +7,7 @@ import (
 
 	"github.com/jonyTF/go-webdav"
 	"github.com/jonyTF/go-webdav/caldav"
-	"schej.it/server/utils"
+	"sirtom/server/utils"
 )
 
 func main() {

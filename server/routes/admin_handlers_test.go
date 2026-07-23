@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"schej.it/server/db"
-	"schej.it/server/models"
+	"sirtom/server/db"
+	"sirtom/server/models"
 )
 
 func TestMain(m *testing.M) {

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/logger"
+	"sirtom/server/logger"
 )
 
 // Blocks documentation: https://api.slack.com/reference/block-kit/blocks

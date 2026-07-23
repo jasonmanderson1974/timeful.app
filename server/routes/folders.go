@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/middleware"
-	"schej.it/server/models"
+	"sirtom/server/db"
+	"sirtom/server/middleware"
+	"sirtom/server/models"
 )
 
 func InitFolders(router *gin.RouterGroup) {

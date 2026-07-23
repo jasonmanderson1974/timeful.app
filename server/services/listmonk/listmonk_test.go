@@ -7,7 +7,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/logger"
+	"sirtom/server/logger"
 )
 
 func TestSendEmail(t *testing.T) {

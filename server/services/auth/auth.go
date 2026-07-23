@@ -13,10 +13,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/utils"
 )
 
 // GoogleIdTokenInfo holds the claims returned by Google's tokeninfo endpoint

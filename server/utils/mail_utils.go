@@ -9,7 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gomail.v2"
-	"schej.it/server/logger"
+	"sirtom/server/logger"
 )
 
 // Send email to the given email. Returns an error if the email could not be

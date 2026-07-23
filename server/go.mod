@@ -1,4 +1,4 @@
-module schej.it/server
+module sirtom/server
 
 go 1.25
 

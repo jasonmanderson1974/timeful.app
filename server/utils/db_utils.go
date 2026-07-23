@@ -2,7 +2,7 @@ package utils
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/models"
+	"sirtom/server/models"
 )
 
 func UpdateEventResponseAggregation(userIdString string, response models.Response) bson.M {

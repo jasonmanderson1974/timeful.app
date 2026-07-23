@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"schej.it/server/logger"
+	"sirtom/server/logger"
 )
 
 func ParseArrayQueryParam(s string) []string {

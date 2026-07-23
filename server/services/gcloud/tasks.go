@@ -14,9 +14,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"google.golang.org/api/option"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"schej.it/server/logger"
-	"schej.it/server/services/listmonk"
-	"schej.it/server/utils"
+	"sirtom/server/logger"
+	"sirtom/server/services/listmonk"
+	"sirtom/server/utils"
 )
 
 var TasksClient *cloudtasks.Client

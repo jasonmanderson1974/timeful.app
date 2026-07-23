@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/utils"
 )
 
 // SendFunc sends a single email. Matches utils.SendEmail's signature so it can

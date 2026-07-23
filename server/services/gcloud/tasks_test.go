@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"schej.it/server/logger"
+	"sirtom/server/logger"
 )
 
 func TestCreateEmailTask(t *testing.T) {

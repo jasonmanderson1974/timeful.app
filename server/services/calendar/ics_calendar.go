@@ -8,8 +8,8 @@ import (
 
 	"github.com/emersion/go-ical"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/models"
-	"schej.it/server/utils"
+	"sirtom/server/models"
+	"sirtom/server/utils"
 )
 
 type ICSCalendar struct {

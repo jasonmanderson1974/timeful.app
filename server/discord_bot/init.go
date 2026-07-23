@@ -5,9 +5,9 @@ import (
 	"regexp"
 
 	"github.com/bwmarrin/discordgo"
-	"schej.it/server/discord_bot/commands"
-	"schej.it/server/logger"
-	"schej.it/server/utils"
+	"sirtom/server/discord_bot/commands"
+	"sirtom/server/logger"
+	"sirtom/server/utils"
 )
 
 var BotId string

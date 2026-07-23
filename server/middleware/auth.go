@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"schej.it/server/db"
-	"schej.it/server/errs"
-	"schej.it/server/models"
-	"schej.it/server/responses"
+	"sirtom/server/db"
+	"sirtom/server/errs"
+	"sirtom/server/models"
+	"sirtom/server/responses"
 )
 
 func AuthRequired() gin.HandlerFunc {

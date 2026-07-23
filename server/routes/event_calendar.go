@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"schej.it/server/db"
-	"schej.it/server/errs"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/responses"
-	"schej.it/server/services/calendar"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/errs"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/responses"
+	"sirtom/server/services/calendar"
+	"sirtom/server/utils"
 )
 
 // @Summary Return a map mapping user id to their calendar events that they have enabled for the given time range

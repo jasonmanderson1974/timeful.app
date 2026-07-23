@@ -20,18 +20,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v82"
-	"schej.it/server/db"
-	"schej.it/server/logger"
-	"schej.it/server/routes"
-	"schej.it/server/services/gcloud"
-	"schej.it/server/services/reminders"
-	"schej.it/server/slackbot"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/logger"
+	"sirtom/server/routes"
+	"sirtom/server/services/gcloud"
+	"sirtom/server/services/reminders"
+	"sirtom/server/slackbot"
+	"sirtom/server/utils"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "schej.it/server/docs"
+	_ "sirtom/server/docs"
 )
 
 // @title Schej.it API

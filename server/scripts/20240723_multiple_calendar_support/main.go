@@ -6,9 +6,9 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/models"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/models"
+	"sirtom/server/utils"
 )
 
 type OldUser struct {

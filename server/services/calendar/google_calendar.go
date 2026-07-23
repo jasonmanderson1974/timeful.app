@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/errs"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/utils"
+	"sirtom/server/errs"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/utils"
 )
 
 type GoogleCalendar struct {

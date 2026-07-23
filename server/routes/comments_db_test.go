@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/models"
+	"sirtom/server/db"
+	"sirtom/server/models"
 )
 
 // commentsTestRouter wires the comment routes (+ a test-login) onto a gin engine

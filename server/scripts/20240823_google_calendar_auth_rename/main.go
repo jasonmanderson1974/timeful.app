@@ -7,8 +7,8 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/models"
+	"sirtom/server/db"
+	"sirtom/server/models"
 )
 
 type GoogleCalendarAuth struct {

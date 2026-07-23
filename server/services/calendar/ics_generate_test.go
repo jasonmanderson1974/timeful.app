@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/models"
+	"sirtom/server/models"
 )
 
 func TestGenerateEventICS(t *testing.T) {

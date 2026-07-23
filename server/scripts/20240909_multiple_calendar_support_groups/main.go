@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/db"
-	"schej.it/server/models"
+	"sirtom/server/db"
+	"sirtom/server/models"
 )
 
 func main() {

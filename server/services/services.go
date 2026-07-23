@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/services/auth"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/services/auth"
 )
 
 // Calls the given url with the given method using the user's OAuth 2 access token.

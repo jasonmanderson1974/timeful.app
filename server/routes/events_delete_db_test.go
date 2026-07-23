@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/models"
+	"sirtom/server/db"
+	"sirtom/server/models"
 )
 
 // TestDeleteEvent_ByShortId verifies deleteEvent resolves the event by its

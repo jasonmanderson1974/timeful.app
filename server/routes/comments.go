@@ -11,10 +11,10 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/errs"
-	"schej.it/server/models"
-	"schej.it/server/responses"
+	"sirtom/server/db"
+	"sirtom/server/errs"
+	"sirtom/server/models"
+	"sirtom/server/responses"
 )
 
 const maxCommentLength = 2000

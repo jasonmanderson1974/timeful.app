@@ -8,8 +8,8 @@ import (
 	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"schej.it/server/slackbot/commands"
-	"schej.it/server/utils"
+	"sirtom/server/slackbot/commands"
+	"sirtom/server/utils"
 )
 
 type SlackbotMessageType string

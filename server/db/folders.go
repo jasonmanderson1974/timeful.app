@@ -6,8 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"schej.it/server/logger"
-	"schej.it/server/models"
+	"sirtom/server/logger"
+	"sirtom/server/models"
 )
 
 func CreateFolder(folder *models.Folder) (primitive.ObjectID, error) {

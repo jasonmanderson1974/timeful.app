@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/models"
+	"sirtom/server/models"
 )
 
 func strPtrTest(s string) *string { return &s }

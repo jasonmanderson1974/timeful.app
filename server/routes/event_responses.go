@@ -11,14 +11,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/errs"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/responses"
-	"schej.it/server/services/gcloud"
-	"schej.it/server/services/listmonk"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/errs"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/responses"
+	"sirtom/server/services/gcloud"
+	"sirtom/server/services/listmonk"
+	"sirtom/server/utils"
 )
 
 // @Summary Gets responses for an event, filtering availability to be within the date ranges

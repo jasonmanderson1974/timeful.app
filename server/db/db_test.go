@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"schej.it/server/db"
+	"sirtom/server/db"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

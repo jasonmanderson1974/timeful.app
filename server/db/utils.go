@@ -8,9 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"schej.it/server/logger"
-	"schej.it/server/models"
-	"schej.it/server/utils"
+	"sirtom/server/logger"
+	"sirtom/server/models"
+	"sirtom/server/utils"
 )
 
 func GetFriendRequestById(friendRequestId string) *models.FriendRequest {

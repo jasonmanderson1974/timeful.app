@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/models"
-	"schej.it/server/slackbot/commands"
-	"schej.it/server/utils"
+	"sirtom/server/models"
+	"sirtom/server/slackbot/commands"
+	"sirtom/server/utils"
 )
 
 func SendEventCreatedMessage(insertedId string, creator string, event models.Event, numAttendees int) {

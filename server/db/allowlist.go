@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"schej.it/server/models"
+	"sirtom/server/models"
 )
 
 // AccessControlEnforced reports whether the invite-only gate is strictly

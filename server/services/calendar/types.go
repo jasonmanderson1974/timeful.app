@@ -3,7 +3,7 @@ package calendar
 import (
 	"time"
 
-	"schej.it/server/models"
+	"sirtom/server/models"
 )
 
 type CalendarProvider interface {

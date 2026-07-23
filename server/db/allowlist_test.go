@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/db"
-	"schej.it/server/models"
+	"sirtom/server/db"
+	"sirtom/server/models"
 )
 
 // TestMain initializes the DB connection for the whole package (MONGODB_URI, or

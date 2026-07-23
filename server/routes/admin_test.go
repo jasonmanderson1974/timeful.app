@@ -3,7 +3,7 @@ package routes
 import (
 	"testing"
 
-	"schej.it/server/models"
+	"sirtom/server/models"
 )
 
 func TestIsValidEmail(t *testing.T) {

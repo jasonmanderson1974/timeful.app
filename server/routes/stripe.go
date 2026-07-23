@@ -18,12 +18,12 @@ import (
 	"github.com/stripe/stripe-go/v82/webhook"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
-	"schej.it/server/logger"
-	"schej.it/server/middleware"
-	"schej.it/server/models"
-	"schej.it/server/slackbot"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/logger"
+	"sirtom/server/middleware"
+	"sirtom/server/models"
+	"sirtom/server/slackbot"
+	"sirtom/server/utils"
 )
 
 func InitStripe(router *gin.RouterGroup) {

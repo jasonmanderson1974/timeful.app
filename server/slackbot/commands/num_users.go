@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/db"
-	"schej.it/server/logger"
+	"sirtom/server/db"
+	"sirtom/server/logger"
 )
 
 var numUsers Command = Command{

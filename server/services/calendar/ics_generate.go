@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/emersion/go-ical"
-	"schej.it/server/models"
-	"schej.it/server/utils"
+	"sirtom/server/models"
+	"sirtom/server/utils"
 )
 
 // GenerateEventICS builds a downloadable .ics (a VCALENDAR with one VEVENT) for

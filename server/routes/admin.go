@@ -10,13 +10,13 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"schej.it/server/db"
-	"schej.it/server/errs"
-	"schej.it/server/logger"
-	"schej.it/server/middleware"
-	"schej.it/server/models"
-	"schej.it/server/responses"
-	"schej.it/server/utils"
+	"sirtom/server/db"
+	"sirtom/server/errs"
+	"sirtom/server/logger"
+	"sirtom/server/middleware"
+	"sirtom/server/models"
+	"sirtom/server/responses"
+	"sirtom/server/utils"
 )
 
 // isValidEmail does a basic RFC 5322 address check and rejects '+' aliases
