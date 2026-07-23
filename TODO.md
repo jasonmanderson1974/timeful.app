@@ -496,10 +496,23 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
   - **Non-goal (v1):** no new-comment notifications (email/web-push) — follow-up tying into
     **[C2]**/**[C8]**. Optional later polish: enrich member comments with account avatars at read time.
 
-- [ ] **C8 · Web push notifications for "new gathering" / "you were invited."** `M`
-  A service worker is **already registered** (`register-service-worker`, `kill-sw.js` kill switch),
-  so the client half is partly there. Push for invitations and "the time is set" closes the loop
-  without relying only on email.
+- [ ] **C8 · Web push notifications for "new gathering" / "you were invited."** `M` —
+  **DEFERRED 2026-07-23 (premise was wrong — reassess value before picking up).**
+  **Correction:** the original note ("a service worker is already registered … client half partly
+  there") is **false**. `git log` shows `f857320 "remove pwa"` (the SW/PWA was *deliberately
+  removed*) then `e8deeee "Create kill-sw.js"` (a kill switch that *unregisters* the SW from clients).
+  `main.js` registers nothing; `register-service-worker` is an unused dependency. So there is **no
+  active service worker** — C8 would **reintroduce** one, reversing a deliberate decision (a bad SW
+  can brick the app for all members — the likely reason it was pulled).
+  - **If revived, do it safely:** a **push-only SW** (`push` + `notificationclick` handlers **only**,
+    NO fetch interception / caching) to avoid the caching footgun that got the PWA removed.
+  - **Needs infra:** a VAPID key pair — private key on the VM (`server/.env`, like
+    `GMAIL_APP_PASSWORD`), public key baked into the frontend build. A Go webpush lib
+    (e.g. `SherClockHolmes/webpush-go`) + a `pushSubscriptions` store + subscribe/unsubscribe routes.
+  - **iOS gap:** Safari delivers web push only to home-screen-installed PWAs (iOS 16.4+) — most of the
+    club's iPhone users won't get pushes unless they install the site. **[C2]'s email reminders already
+    cover the "gathering is set" need for everyone incl. iOS**, which is why value here is now
+    questionable. Reassess whether it's worth the SW risk before building.
 
 - [x] **C9 · Sign-up-block capacity + waitlist.** `S` — **DONE 2026-07-23 (CI-green; backend
   build/vet/tests + frontend build/lint/tests pass; capacity+waitlist verified live).** The
