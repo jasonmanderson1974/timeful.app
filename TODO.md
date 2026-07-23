@@ -568,7 +568,25 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
 > Companion doc: `ACCESS_CONTROL_PLAN.md`. These came out of the 2026-07-23 live RSVP
 > verification (see [C1]); none is a regression in the RSVP feature itself.
 
-- [ ] **E1 · Evaluate gating `createEvent` / `scheduleEvent` behind auth (invite-only).** `S–M`
+- [x] **E1 · Gate `createEvent` / `scheduleEvent` behind auth on enforced invite-only instances.**
+  `S–M` · **P2 · DONE 2026-07-23 (decision: gate via the existing `INVITE_ONLY_ENFORCED` flag).**
+  Closes the anonymous-write surface without a new config knob or breaking guest flows:
+  - `db.AccessControlEnforced()` exported (was private `accessControlEnforced`).
+  - New `middleware.AuthRequiredIfInviteOnly()` — delegates to `AuthRequired` when
+    `INVITE_ONLY_ENFORCED` is on, else passes through. Applied to `POST /events` (createEvent).
+  - `scheduleEvent`: the owner-less-event branch now requires a signed-in caller when enforced
+    (the existing owner-check already covers owned events).
+  - **Verified live (enforced=true):** anonymous `POST /events` → 401; anonymous schedule of an
+    owner-less event → 401; guest availability/RSVP endpoints still reachable (404, not 401).
+    Not-enforced (dev/open) preserves the guest create/schedule path. Tests:
+    `TestAuthRequiredIfInviteOnly_{NotEnforcedPassesAnonymous,EnforcedBlocksAnonymous}` (DB-free)
+    + existing `TestCreateEvent_GuestForbidden` (signed-in guest → 403, unchanged). `.env.template`
+    documents the expanded flag semantics.
+  - **Left open (intentional, per decision):** RSVP `POST/DELETE …/rsvp` stay guest-open by design;
+    if abuse becomes a concern, prefer rate-limiting / a per-event toggle over blanket auth.
+
+  <details><summary>Original finding (for history)</summary>
+
   · **P2 · OPEN — needs discussion before any change.**
   **Finding:** the invite-only allowlist is enforced *inside* `middleware.AuthRequired()`, which is
   applied **per-route**. `POST /events` (create), `POST /events/:id/schedule`, and the RSVP endpoints
@@ -594,6 +612,9 @@ Effort: **S** ≈ <½ day · **M** ≈ 1–2 days · **L** ≈ 3+ days.
     +`scheduleEvent` for owner-less events behind `AuthRequired`, or (c) add a config flag
     (`GUEST_EVENT_CREATION_ENABLED`) defaulting to off for invite-only instances. No code change until
     this is settled.
+
+  *(Resolved with option (b), scoped to enforced instances via the existing flag — see above.)*
+  </details>
 
 - [ ] **E2 · `deleteEvent` only accepts the Mongo `_id`, not the short id.** `S` · **P3.**
   **Finding (pre-existing, not RSVP-related):** `DELETE /events/:eventId` calls

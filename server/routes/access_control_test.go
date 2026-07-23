@@ -125,6 +125,41 @@ func TestAuthRequired_AllowlistedMemberPasses(t *testing.T) {
 	}
 }
 
+// --- AuthRequiredIfInviteOnly: anonymous-write gate (E1) ---------------------
+
+// On an open/dev instance (INVITE_ONLY_ENFORCED unset) the gate passes an
+// anonymous caller through, preserving guest flows.
+func TestAuthRequiredIfInviteOnly_NotEnforcedPassesAnonymous(t *testing.T) {
+	t.Setenv("INVITE_ONLY_ENFORCED", "")
+	r := newTestRouter()
+	r.GET("/maybe-protected", middleware.AuthRequiredIfInviteOnly(), okHandler)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/maybe-protected", nil)
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("not enforced, anonymous: got %d, want 200 (body: %s)", w.Code, w.Body.String())
+	}
+}
+
+// On a strictly-enforced invite-only instance an anonymous caller is rejected
+// before the handler runs (the fix for the E1 unauthenticated-write surface).
+// DB-free: AuthRequired rejects the missing session before any DB call.
+func TestAuthRequiredIfInviteOnly_EnforcedBlocksAnonymous(t *testing.T) {
+	t.Setenv("INVITE_ONLY_ENFORCED", "true")
+	r := newTestRouter()
+	r.GET("/maybe-protected", middleware.AuthRequiredIfInviteOnly(), okHandler)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/maybe-protected", nil)
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("enforced, anonymous: got %d, want 401 (body: %s)", w.Code, w.Body.String())
+	}
+}
+
 // --- CanInviteRequired: guest gate (no DB needed) ---------------------------
 
 func TestCanInviteRequired_GuestForbidden(t *testing.T) {

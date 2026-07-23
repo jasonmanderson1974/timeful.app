@@ -27,7 +27,7 @@ import (
 func InitEvents(router *gin.RouterGroup) {
 	eventRouter := router.Group("/events")
 
-	eventRouter.POST("", createEvent)
+	eventRouter.POST("", middleware.AuthRequiredIfInviteOnly(), createEvent)
 	eventRouter.POST("/import", middleware.AuthRequired(), importEvent)
 	eventRouter.PUT("/:eventId", editEvent)
 	eventRouter.GET("/:eventId/ids", getEventIds)
@@ -984,12 +984,22 @@ func scheduleEvent(c *gin.Context) {
 		return
 	}
 
-	// If the event has an owner, only that owner may schedule it (mirrors editEvent)
+	// Scheduling is an owner action. If the event has an owner, only that owner
+	// may schedule it (mirrors editEvent). Owner-less (guest-created) events have
+	// no owner to check against — on an enforced invite-only instance, require a
+	// signed-in member so scheduling isn't an anonymous write (E1); on open/dev
+	// instances the guest-event flow stays open.
 	if event.OwnerId != primitive.NilObjectID {
 		session := sessions.Default(c)
 		userId, signedIn := session.Get("userId").(string)
 		if !signedIn || utils.StringToObjectID(userId) != event.OwnerId {
 			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
+			return
+		}
+	} else if db.AccessControlEnforced() {
+		session := sessions.Default(c)
+		if _, signedIn := session.Get("userId").(string); !signedIn {
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
 			return
 		}
 	}

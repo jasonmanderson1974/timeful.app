@@ -12,12 +12,16 @@ import (
 	"schej.it/server/models"
 )
 
-// accessControlEnforced reports whether the invite-only gate is strictly
-// enforced. When false (default), the gate fails OPEN while the allowlist is
-// empty (bootstrap convenience). Set INVITE_ONLY_ENFORCED=true in production so
-// that an accidentally-emptied allowlist fails CLOSED (deny) rather than opening
-// the site to everyone.
-func accessControlEnforced() bool {
+// AccessControlEnforced reports whether the invite-only gate is strictly
+// enforced (INVITE_ONLY_ENFORCED). When false (default), the gate fails OPEN
+// while the allowlist is empty (bootstrap convenience). Set
+// INVITE_ONLY_ENFORCED=true in production so that an accidentally-emptied
+// allowlist fails CLOSED (deny) rather than opening the site to everyone.
+//
+// It also gates the unauthenticated-write posture: on an enforced instance,
+// anonymous callers cannot create or (for owner-less events) schedule events —
+// only members can (see middleware.AuthRequiredIfInviteOnly, routes.scheduleEvent).
+func AccessControlEnforced() bool {
 	switch strings.ToLower(strings.TrimSpace(os.Getenv("INVITE_ONLY_ENFORCED"))) {
 	case "true", "1", "yes":
 		return true
@@ -45,7 +49,7 @@ func IsAllowlisted(email string) bool {
 // isn't locked out). With INVITE_ONLY_ENFORCED=true the empty-list fail-open is
 // disabled, so an accidentally-emptied allowlist denies everyone (fail closed).
 func IsAccessAllowed(email string) bool {
-	if !accessControlEnforced() {
+	if !AccessControlEnforced() {
 		total, err := AllowlistCollection.CountDocuments(context.Background(), bson.M{})
 		if err == nil && total == 0 {
 			return true
