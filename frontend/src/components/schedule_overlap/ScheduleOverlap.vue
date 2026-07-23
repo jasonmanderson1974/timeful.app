@@ -1074,6 +1074,7 @@ import availabilityMixin from "./availabilityMixin"
 import currentAvailabilityMixin from "./currentAvailabilityMixin"
 import respondentSelectionMixin from "./respondentSelectionMixin"
 import timeslotStylingMixin from "./timeslotStylingMixin"
+import optionsMixin from "./optionsMixin"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -1085,6 +1086,7 @@ export default {
     currentAvailabilityMixin,
     respondentSelectionMixin,
     timeslotStylingMixin,
+    optionsMixin,
   ],
   props: {
     event: { type: Object, required: true },
@@ -2515,41 +2517,6 @@ export default {
       // Navigate to url and reset state
       window.open(url, "_blank")
       this.state = this.defaultState
-    },
-    //#endregion
-
-    // -----------------------------------
-    //#region Options
-    // -----------------------------------
-    getLocalTimezone() {
-      const split = new Date(this.event.dates[0])
-        .toLocaleTimeString("en-us", { timeZoneName: "short" })
-        .split(" ")
-      const localTimezone = split[split.length - 1]
-
-      return localTimezone
-    },
-    onShowBestTimesChange() {
-      localStorage["showBestTimes"] = this.showBestTimes
-      if (
-        this.state == this.states.BEST_TIMES ||
-        this.state == this.states.HEATMAP
-      )
-        this.state = this.defaultState
-    },
-    toggleShowEditOptions() {
-      this.showEditOptions = !this.showEditOptions
-      localStorage["showEditOptions"] = this.showEditOptions
-    },
-    toggleShowEventOptions() {
-      this.showEventOptions = !this.showEventOptions
-      localStorage["showEventOptions"] = this.showEventOptions
-    },
-    updateOverlayAvailability(val) {
-      this.overlayAvailability = !!val
-      this.$posthog.capture("overlay_availability_toggled", {
-        enabled: !!val,
-      })
     },
     //#endregion
 
