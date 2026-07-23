@@ -188,70 +188,27 @@
         class="tw-h-8"
       ></div>
       <!-- Bottom bar for phones -->
-      <div
+      <EventBottomBar
         v-if="!isSettingSpecificTimes && isPhone && (!isSignUp || canEdit)"
-        class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-w-full tw-flex-col"
-      >
-        <div
-          class="tw-flex tw-h-[4rem] tw-w-full tw-items-center tw-px-4"
-          :class="`${isIOS ? 'tw-pb-2' : ''} ${
-            isScheduling ? 'tw-bg-blue' : 'tw-bg-brass'
-          }`"
-        >
-          <template v-if="!isEditing && !isScheduling">
-            <v-btn
-              v-if="!event.daysOnly && numResponses > 0"
-              text
-              class="tw-text-white"
-              @click="scheduleEvent"
-              >Schedule</v-btn
-            >
-            <v-spacer />
-            <v-btn
-              v-if="!isGroup && !authUser && selectedGuestRespondent"
-              class="tw-bg-leather tw-text-brass tw-transition-opacity"
-              :style="{ opacity: availabilityBtnOpacity }"
-              @click="editGuestAvailability"
-            >
-              {{ mobileGuestActionButtonText }}
-            </v-btn>
-            <v-btn
-              v-else
-              class="tw-bg-leather tw-text-brass tw-transition-opacity"
-              :disabled="loading && !userHasResponded"
-              :style="{ opacity: availabilityBtnOpacity }"
-              @click="() => addAvailability()"
-            >
-              {{ mobileActionButtonText }}
-            </v-btn>
-          </template>
-          <template v-else-if="isEditing">
-            <v-btn text class="tw-text-white" @click="cancelEditing">
-              Cancel
-            </v-btn>
-            <v-spacer />
-            <v-btn
-              class="tw-bg-leather tw-text-brass"
-              @click="() => saveChanges()"
-            >
-              Save
-            </v-btn>
-          </template>
-          <template v-else-if="isScheduling">
-            <v-btn text class="tw-text-white" @click="cancelScheduleEvent">
-              Cancel
-            </v-btn>
-            <v-spacer />
-            <v-btn
-              :disabled="!allowScheduleEvent"
-              class="tw-bg-leather tw-text-brass"
-              @click="confirmScheduleEvent"
-            >
-              Schedule
-            </v-btn>
-          </template>
-        </div>
-      </div>
+        :event="event"
+        :isGroup="isGroup"
+        :isSignUp="isSignUp"
+        :isEditing="isEditing"
+        :isScheduling="isScheduling"
+        :numResponses="numResponses"
+        :selectedGuestRespondent="selectedGuestRespondent"
+        :availabilityBtnOpacity="availabilityBtnOpacity"
+        :loading="loading"
+        :userHasResponded="userHasResponded"
+        :allowScheduleEvent="allowScheduleEvent"
+        @schedule-event="scheduleEvent"
+        @edit-guest-availability="editGuestAvailability"
+        @add-availability="addAvailability"
+        @cancel-editing="cancelEditing"
+        @save-changes="saveChanges"
+        @cancel-schedule-event="cancelScheduleEvent"
+        @confirm-schedule-event="confirmScheduleEvent"
+      />
     </div>
   </span>
 </template>
@@ -266,7 +223,6 @@ import {
   processEvent,
   getCalendarEventsMap,
   getDateRangeStringForEvent,
-  isIOS,
   isDstObserved,
   doesDstExist,
 } from "@/utils"
@@ -293,6 +249,7 @@ import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/calendar_permission_dialogs/MarkAvailabilityDialog.vue"
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import EventHeader from "@/components/event/EventHeader.vue"
+import EventBottomBar from "@/components/event/EventBottomBar.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
 import pluginMessagesMixin from "@/components/event/pluginMessagesMixin"
 export default {
@@ -318,6 +275,7 @@ export default {
     MarkAvailabilityDialog,
     InvitationDialog,
     EventHeader,
+    EventBottomBar,
     EventDescription,
   },
 
@@ -429,18 +387,6 @@ export default {
       if (this.isSignUp) return "Edit slots"
       else if (this.userHasResponded || this.isGroup) return "Edit availability"
       return "Mark availability"
-    },
-    mobileGuestActionButtonText() {
-      return this.event.blindAvailabilityEnabled
-        ? "Edit availability"
-        : `Edit ${this.selectedGuestRespondent}'s availability`
-    },
-    mobileActionButtonText() {
-      if (this.isSignUp) return "Edit slots"
-      return this.userHasResponded ? "Edit availability" : "Mark availability"
-    },
-    isIOS() {
-      return isIOS()
     },
     isSettingSpecificTimes() {
       return (
