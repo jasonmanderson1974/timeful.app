@@ -136,6 +136,8 @@
         </div>
       </div>
     </div>
+
+    <DashboardFaq />
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
         <v-card-title>Delete "{{ folderToDelete.name }}"?</v-card-title>
@@ -196,12 +198,14 @@ import { mapState, mapActions } from "vuex"
 import draggable from "vuedraggable"
 import { eventTypes, folderColors } from "@/constants"
 import EventItem from "@/components/EventItem.vue"
+import DashboardFaq from "@/components/home/DashboardFaq.vue"
 import ObjectID from "bson-objectid"
 
 export default {
   name: "Dashboard",
   components: {
     EventItem,
+    DashboardFaq,
     draggable,
   },
   data() {

@@ -1,0 +1,357 @@
+<template>
+  <div class="tw-mt-8">
+    <div
+      class="tw-flex tw-cursor-pointer tw-items-center tw-justify-between tw-select-none"
+      @click="open = !open"
+    >
+      <div class="tw-flex tw-items-center tw-gap-2">
+        <v-icon class="tw-text-brass">mdi-help-circle-outline</v-icon>
+        <span class="tw-font-head tw-text-lg tw-text-parchment sm:tw-text-xl">
+          How gatherings work
+        </span>
+      </div>
+      <v-btn icon small class="tw-text-parchment-dim">
+        <v-icon :class="`tw-transition-transform ${open ? 'tw-rotate-180' : ''}`"
+          >mdi-chevron-down</v-icon
+        >
+      </v-btn>
+    </div>
+
+    <v-expand-transition>
+      <div v-show="open" class="tw-mt-2">
+        <p class="tw-mb-3 tw-text-sm tw-italic tw-text-parchment-dim">
+          A short primer on calling a Gathering, gathering everyone's
+          availability, and settling on the hour — including how repeating
+          gatherings keep themselves going.
+        </p>
+
+        <v-expansion-panels
+          v-model="openPanels"
+          multiple
+          flat
+          class="faq-panels"
+        >
+          <!-- 1. Overview -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              The scheduling process, start to finish
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <ol class="tw-list-decimal tw-space-y-1 tw-pl-5">
+                <li>
+                  <strong>Call a Gathering.</strong> Give it a name and lay out
+                  the candidate days (and, if you like, times).
+                </li>
+                <li>
+                  <strong>Members cast availability.</strong> Everyone opens the
+                  event and paints the hours they're free.
+                </li>
+                <li>
+                  <strong>Settle on a time.</strong> Once responses are in, the
+                  organiser picks the slot that suits the most people and
+                  schedules it.
+                </li>
+                <li>
+                  <strong>RSVP &amp; remind.</strong> The confirmed gathering
+                  collects RSVPs, and reminder emails go out before it begins.
+                </li>
+                <li>
+                  <strong>Into the Chronicle.</strong> After it passes, the
+                  gathering is archived to the club's history automatically.
+                </li>
+              </ol>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <!-- 2. Calling a gathering -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              Calling a Gathering — the date &amp; time settings
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <p class="tw-mb-2">
+                Press <strong>Call a Gathering</strong> (or the
+                <v-icon small class="tw-text-brass">mdi-plus</v-icon> beside a
+                folder) and choose how you'd like people to weigh in:
+              </p>
+              <ul class="tw-list-disc tw-space-y-2 tw-pl-5">
+                <li>
+                  <strong>Dates and times</strong> vs
+                  <strong>Dates only</strong> — collect exact hours, or just
+                  poll which whole days work when the time of day doesn't
+                  matter.
+                </li>
+                <li>
+                  <strong>What times might work?</strong> — set one start-to-end
+                  window for every day, or tick
+                  <em>Set specific times per day</em> to paint a different
+                  window per day in the next step.
+                </li>
+                <li>
+                  <strong>Specific dates</strong> — drag across the calendar to
+                  select particular calendar dates.
+                </li>
+                <li>
+                  <strong>Days of the week</strong> — poll a generic “which
+                  weekdays suit you” (Mon, Wed, Fri…) rather than fixed dates —
+                  handy for standing meet-ups. <em>Start on Monday</em> just
+                  reorders the week.
+                </li>
+              </ul>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <!-- 3. Casting availability -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              Casting your availability
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <p class="tw-mb-2">
+                Open the event and drag across the grid to mark the times you're
+                free. As people respond, the grid darkens where more members
+                overlap, and <strong>best times</strong> highlights the slots
+                that suit the most people. If your calendar is connected, your
+                busy times can be overlaid so you don't double-book.
+              </p>
+              <p>
+                You can respond signed-in or as a guest; signing in lets the
+                organiser recognise you and lets you edit your response later.
+              </p>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <!-- 4. Settling on a time -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              Settling on the final time (scheduling)
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <p class="tw-mb-2">
+                When enough availability is in, the organiser presses
+                <strong>Schedule event</strong>, drags to select the winning
+                slot on the grid, and confirms. Before confirming you can set:
+              </p>
+              <ul class="tw-list-disc tw-space-y-2 tw-pl-5">
+                <li>
+                  <strong>Email reminder to respondents</strong> and how far
+                  ahead it goes out (12, 24, or 48 hours before).
+                </li>
+                <li>
+                  <strong>Repeat</strong> — whether this becomes a recurring
+                  gathering (see below).
+                </li>
+                <li>
+                  <strong>Google Calendar</strong> or <strong>Outlook</strong> —
+                  which calendar to drop the confirmed event onto. Anyone can
+                  also download a universal <code>.ics</code> file.
+                </li>
+              </ul>
+              <p class="tw-mt-2">
+                Once scheduled, an <strong>RSVP</strong> panel appears so members
+                can mark themselves going / maybe / can't (with optional
+                plus-ones). The organiser can <em>Reschedule</em> or
+                <em>Cancel</em> the gathering later from the same menu.
+              </p>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <!-- 5. Recurring — the headline -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              How recurring gatherings work
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <p class="tw-mb-2">
+                When you schedule a gathering, the <strong>Repeat</strong>
+                setting turns it into a standing fixture. The choices are:
+              </p>
+              <ul class="tw-list-disc tw-space-y-1 tw-pl-5">
+                <li><strong>Does not repeat</strong> — a one-off (the default).</li>
+                <li><strong>Weekly</strong> — same day &amp; time every week.</li>
+                <li>
+                  <strong>Every 2 weeks</strong> — the same slot on a fortnightly
+                  cadence.
+                </li>
+                <li><strong>Monthly</strong> — the same date each month.</li>
+              </ul>
+              <p class="tw-mt-3 tw-mb-2">
+                <strong>It advances itself.</strong> Once an occurrence's start
+                time passes, the gathering automatically rolls forward to the
+                next date — keeping the same time of day — so the event page
+                always shows the <em>next</em> meeting without anyone re-booking
+                it. This happens even on quiet weeks; you don't have to touch it.
+              </p>
+              <ul class="tw-list-disc tw-space-y-2 tw-pl-5">
+                <li>
+                  <strong>RSVPs reset each occurrence.</strong> When it rolls
+                  forward, the previous week's going/maybe/can't answers clear so
+                  everyone can RSVP fresh for the new date.
+                </li>
+                <li>
+                  <strong>Reminders repeat too.</strong> If you enabled a
+                  pre-gathering reminder, it's sent ahead of every occurrence,
+                  not just the first.
+                </li>
+                <li>
+                  <strong>Your calendar keeps up.</strong> The exported event
+                  carries a proper repeat rule, so Google Calendar / Outlook /
+                  the <code>.ics</code> file show the whole series natively.
+                </li>
+                <li>
+                  <strong>Monthly is date-safe.</strong> A gathering on the 31st
+                  simply lands on the last day of shorter months.
+                </li>
+                <li>
+                  <strong>Each occurrence is chronicled.</strong> Every meeting
+                  is captured into the Chronicle in turn, just before it rolls
+                  forward — so the history records each time you actually met.
+                </li>
+              </ul>
+              <p class="tw-mt-3">
+                To stop or change the cadence, use <em>Reschedule</em> on the
+                confirmed gathering and set <strong>Repeat</strong> back to
+                <em>Does not repeat</em> (or a different frequency).
+              </p>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <!-- 6. Advanced options -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              What the Advanced options do
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <ul class="tw-list-disc tw-space-y-2 tw-pl-5">
+                <li>
+                  <strong>Time increment</strong> — the grid's resolution (15 or
+                  30 minutes per cell).
+                </li>
+                <li>
+                  <strong>Collect respondents' email addresses</strong> — ask
+                  each responder for an email so you can reach them.
+                </li>
+                <li>
+                  <strong>Hide responses from respondents</strong> (blind
+                  availability) — people can't see others' answers until they've
+                  submitted their own, so nobody just copies the crowd.
+                </li>
+                <li>
+                  <strong>Email me after N responses</strong> — get a nudge once
+                  a chosen number of people have replied.
+                </li>
+                <li>
+                  <strong>Timezone</strong> — the timezone the event's times are
+                  anchored to; each viewer still sees the grid in their own zone.
+                </li>
+              </ul>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <!-- 7. Reminders & notifications -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              Reminders &amp; notifications
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <ul class="tw-list-disc tw-space-y-2 tw-pl-5">
+                <li>
+                  <strong>Email me when someone joins</strong> — a note to the
+                  organiser each time a new availability comes in.
+                </li>
+                <li>
+                  <strong>Remind people to fill out the event</strong> — invite
+                  emails nudging respondents; sent the day the event is created,
+                  one day later, and three days later, plus a note to you when
+                  everyone has responded.
+                </li>
+                <li>
+                  <strong>Pre-gathering reminder</strong> — set at scheduling
+                  time, this emails respondents 12 / 24 / 48 hours before the
+                  confirmed gathering (and before every occurrence, if it
+                  repeats).
+                </li>
+              </ul>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <!-- 8. RSVPs, Polls, Chronicle -->
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              RSVPs, Polls &amp; The Chronicle
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <ul class="tw-list-disc tw-space-y-2 tw-pl-5">
+                <li>
+                  <strong>RSVPs</strong> — once a gathering has a confirmed time,
+                  members mark <em>going</em>, <em>maybe</em>, or <em>can't</em>,
+                  and can add plus-ones.
+                </li>
+                <li>
+                  <strong>Polls</strong> — the organiser can attach venue or
+                  activity polls to an event so the party can also decide the
+                  <em>where</em> and the <em>what</em>, not just the when.
+                </li>
+                <li>
+                  <strong>The Chronicle</strong> — every gathering that comes to
+                  pass is archived automatically (with who attended), forming the
+                  club's running history. It's kept separately, so the record
+                  survives even if the original event is later removed.
+                </li>
+              </ul>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </div>
+    </v-expand-transition>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "DashboardFaq",
+
+  data() {
+    return {
+      open: false,
+      openPanels: [],
+    }
+  },
+}
+</script>
+
+<style scoped>
+/* Match the Fellowship dark theme — Vuetify panels default to a light card. */
+.faq-panels >>> .v-expansion-panel {
+  background-color: transparent !important;
+  border-bottom: 1px solid #8a7333; /* brass-dim */
+}
+.faq-panels >>> .v-expansion-panel::before {
+  box-shadow: none !important;
+}
+.faq-panels >>> .v-expansion-panel-header {
+  color: #ede4d3; /* parchment */
+  font-weight: 500;
+  padding: 14px 4px;
+  min-height: 48px;
+}
+.faq-panels >>> .v-expansion-panel-header .v-icon {
+  color: #b8ad97; /* parchment-dim */
+}
+.faq-panels >>> .v-expansion-panel-content {
+  color: #b8ad97; /* parchment-dim */
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.faq-panels >>> .v-expansion-panel-content strong {
+  color: #ede4d3; /* parchment */
+  font-weight: 600;
+}
+.faq-panels >>> .v-expansion-panel-content code {
+  background-color: rgba(138, 115, 51, 0.2);
+  color: #e3c578; /* brass-bright */
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
+</style>
