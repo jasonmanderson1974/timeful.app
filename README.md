@@ -13,13 +13,13 @@ A private, self-hosted group-scheduling app for **The Fellowship** — a small,
 invite-only club. Members call a _Gathering_, cast their availability, and settle
 upon the hour that suits the whole Order.
 
-It is a hardened, rebranded fork of [Timeful](https://github.com/schej-it/timeful.app)
+It is a hardened, rebranded derivative of [Timeful](https://github.com/schej-it/timeful.app)
 (formerly Schej.it), an open-source availability/scheduling app. Built with
 [Vue 2](https://github.com/vuejs/vue), [Go](https://github.com/golang/go),
 [MongoDB](https://github.com/mongodb/mongo), and
 [TailwindCSS](https://github.com/tailwindlabs/tailwindcss).
 
-> **Working on this fork? Read [`DEVELOPMENT.md`](./DEVELOPMENT.md) first.** It covers the multi-machine
+> **Working on this repo? Read [`DEVELOPMENT.md`](./DEVELOPMENT.md) first.** It covers the multi-machine
 > workflow (always `git fetch` + sync to the latest `main` before making changes), deploys (`./deploy.sh`
 > on the VM — manual and gate-kept), local dev (`compose.dev.yaml`), and testing/CI.
 > **AI assistants:** the authoritative project + workflow instructions live in [`CLAUDE.md`](./CLAUDE.md)
@@ -59,6 +59,6 @@ See the [Deployment Guide](./DEPLOYMENT.md) for Docker Compose setup.
 
 ## Credits & license
 
-A fork of [Timeful / Schej.it](https://github.com/schej-it/timeful.app) by its original
-authors. Licensed under **AGPL-3.0** — see the license badge above; the fork retains the
+Derived from [Timeful / Schej.it](https://github.com/schej-it/timeful.app) by its original
+authors. Licensed under **AGPL-3.0** — see the license badge above; this project retains the
 same license.
