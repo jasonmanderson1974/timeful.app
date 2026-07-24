@@ -1,6 +1,6 @@
 # Development & Workflow
 
-How this fork is developed and shipped. Read this first when setting up a new
+How this repo is developed and shipped. Read this first when setting up a new
 machine. (Deployment mechanics for the server itself are in `DEPLOYMENT.md`.)
 
 ## The setup
