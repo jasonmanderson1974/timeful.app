@@ -38,7 +38,7 @@ Inherited from Timeful:
 - Duplicating polls, availability groups, CSV export
 - Only show responses to the event creator
 
-Added in this fork (for a ~40-person club):
+Added in this build (for a ~40-person club):
 
 - **Invite-only access control** — email-OTP login, a member roll with roles (super-admin / admin / member / guest)
 - **Confirmed gatherings** — lock in a time, with automated pre-gathering reminder emails
