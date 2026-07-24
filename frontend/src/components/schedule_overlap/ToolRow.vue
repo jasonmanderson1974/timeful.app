@@ -191,26 +191,18 @@
                 />
               </v-list-item>
               <v-divider />
-              <v-list-item @click="(e) => $emit('confirmScheduleEvent', true)">
-                <v-img
-                  src="@/assets/gcal_logo.png"
-                  class="tw-mr-2 tw-flex-none"
-                  height="20"
-                  width="20"
-                />
+              <!-- Save the confirmed gathering to Gathering (no external calendar).
+                   Members can add it to their own calendar afterwards via the
+                   "Add to calendar" (.ics) item on the confirmed gathering, which
+                   carries the recurrence rule. -->
+              <v-list-item @click="() => $emit('saveScheduleEvent')">
+                <v-icon small class="tw-mr-2 tw-text-brass"
+                  >mdi-calendar-check</v-icon
+                >
                 <v-list-item-content>
-                  <v-list-item-title>Google Calendar</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item @click="(e) => $emit('confirmScheduleEvent', false)">
-                <v-img
-                  src="@/assets/outlook_logo.svg"
-                  class="tw-mr-2 tw-flex-none"
-                  height="20"
-                  width="20"
-                />
-                <v-list-item-content>
-                  <v-list-item-title>Outlook</v-list-item-title>
+                  <v-list-item-title class="tw-text-brass"
+                    >Save gathering</v-list-item-title
+                  >
                 </v-list-item-content>
               </v-list-item>
             </v-list>

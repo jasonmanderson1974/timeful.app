@@ -111,7 +111,7 @@
                   @update:weekOffset="(val) => $emit('update:weekOffset', val)"
                   @scheduleEvent="scheduleEvent"
                   @cancelScheduleEvent="cancelScheduleEvent"
-                  @confirmScheduleEvent="confirmScheduleEvent"
+                  @saveScheduleEvent="saveScheduleEvent"
                   @cancelGathering="cancelGathering"
                   :reminder-enabled.sync="reminderEnabled"
                   :reminder-lead-time-hours.sync="reminderLeadTimeHours"
@@ -480,7 +480,7 @@
                   @update:weekOffset="(val) => $emit('update:weekOffset', val)"
                   @scheduleEvent="scheduleEvent"
                   @cancelScheduleEvent="cancelScheduleEvent"
-                  @confirmScheduleEvent="confirmScheduleEvent"
+                  @saveScheduleEvent="saveScheduleEvent"
                   @cancelGathering="cancelGathering"
                   :reminder-enabled.sync="reminderEnabled"
                   :reminder-lead-time-hours.sync="reminderLeadTimeHours"
@@ -840,7 +840,7 @@
           @update:weekOffset="(val) => $emit('update:weekOffset', val)"
           @scheduleEvent="scheduleEvent"
           @cancelScheduleEvent="cancelScheduleEvent"
-          @confirmScheduleEvent="confirmScheduleEvent"
+          @saveScheduleEvent="saveScheduleEvent"
           @cancelGathering="cancelGathering"
           :reminder-enabled.sync="reminderEnabled"
           :reminder-lead-time-hours.sync="reminderLeadTimeHours"
@@ -1170,7 +1170,7 @@ export default {
       /* Variables for options */
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
-      // Pre-gathering reminder options (persisted on confirm; see confirmScheduleEvent)
+      // Pre-gathering reminder options (persisted on save; see saveScheduleEvent)
       reminderEnabled: true,
       reminderLeadTimeHours: 24,
       // Recurrence (C5): "none" | "weekly" | "biweekly" | "monthly"
@@ -2051,7 +2051,7 @@ export default {
             return `Tap and drag to add your "available" ${daysOrTimes} in green.`
           }
           case this.states.SCHEDULE_EVENT:
-            return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
+            return "Tap and drag on the calendar to set the gathering during those times, then Save."
           default:
             return ""
         }
@@ -2068,7 +2068,7 @@ export default {
           return `Click and drag to add your "available" ${daysOrTimes} in green.`
         }
         case this.states.SCHEDULE_EVENT:
-          return "Click and drag on the calendar to schedule a Google Calendar event during those times."
+          return "Click and drag on the calendar to set the gathering during those times, then Save."
         default:
           return ""
       }
@@ -2423,17 +2423,8 @@ export default {
     },
 
     /** Redirect user to Google Calendar to finish the creation of the event */
-    confirmScheduleEvent(googleCalendar = true) {
+    saveScheduleEvent() {
       if (!this.curScheduledEvent) return
-      // if (!isPremiumUser(this.authUser)) {
-      //   this.showUpgradeDialog({
-      //     type: upgradeDialogTypes.SCHEDULE_EVENT,
-      //     data: {
-      //       scheduledEvent: this.curScheduledEvent,
-      //     },
-      //   })
-      //   return
-      // }
 
       this.$posthog.capture("schedule_event_confirmed")
       // Get start date, and end date from the area that the user has dragged out
@@ -2461,47 +2452,13 @@ export default {
         endDate = dateToDowDate(this.event.dates, endDate, offset, true)
       }
 
-      // Format email string separated by commas
-      const emails = this.respondents.map((r) => {
-        // Return email if they are not a guest, otherwise return their name
-        if (r.email.length > 0) {
-          return r.email
-        } else {
-          // return `${r.firstName} (no email)`
-          return null
-        }
-      })
-      const emailsString = encodeURIComponent(emails.filter(Boolean).join(","))
-
       const eventId = this.event.shortId ?? this.event._id
 
-      let url = ""
-      if (googleCalendar) {
-        // Format start and end date to be in the format required by gcal (remove -, :, and .000)
-        const start = startDate.toISOString().replace(/([-:]|\.000)/g, "")
-        const end = endDate.toISOString().replace(/([-:]|\.000)/g, "")
-
-        // Construct Google Calendar event creation template url
-        url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-          this.event.name
-        )}&dates=${start}/${end}&details=${encodeURIComponent(
-          `\n\nThis Gathering was called with The Fellowship: ${window.location.origin}/e/`
-        )}${eventId}&ctz=${this.curTimezone.value}&location=${encodeURIComponent(
-          this.event.location || ""
-        )}&add=${emailsString}`
-      } else {
-        url = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
-          this.event.name
-        )}&body=${encodeURIComponent(
-          `\n\nThis Gathering was called with The Fellowship: ${window.location.origin}/e/` +
-            eventId
-        )}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}&location=${encodeURIComponent(
-          this.event.location || ""
-        )}&path=/calendar/action/compose&timezone=${this.curTimezone.value}`
-      }
-
-      // Persist the confirmed gathering + arm the reminder email. Best-effort:
-      // the calendar link still opens even if this fails (e.g. not the owner).
+      // Persist the confirmed gathering to Gathering (time + recurrence +
+      // reminder). No external calendar is opened here — members add it to
+      // their own calendar afterwards via the "Add to calendar" (.ics) link on
+      // the confirmed gathering, which carries the recurrence rule (RRULE).
+      // Best-effort: silently ignores failure (e.g. not the owner).
       setScheduledEvent(eventId, {
         scheduled: true,
         startDate: startDate.toISOString(),
@@ -2515,8 +2472,6 @@ export default {
         .then(() => this.refreshEvent())
         .catch(() => {})
 
-      // Navigate to url and reset state
-      window.open(url, "_blank")
       this.state = this.defaultState
     },
 

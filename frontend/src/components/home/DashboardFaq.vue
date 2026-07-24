@@ -130,7 +130,9 @@
               <p class="tw-mb-2">
                 When enough availability is in, the organiser presses
                 <strong>Schedule event</strong>, drags to select the winning
-                slot on the grid, and confirms. Before confirming you can set:
+                slot on the grid, then opens <strong>Schedule</strong> and
+                presses <strong>Save gathering</strong>. Before saving you can
+                set:
               </p>
               <ul class="tw-list-disc tw-space-y-2 tw-pl-5">
                 <li>
@@ -141,14 +143,16 @@
                   <strong>Repeat</strong> — whether this becomes a recurring
                   gathering (see below).
                 </li>
-                <li>
-                  <strong>Google Calendar</strong> or <strong>Outlook</strong> —
-                  which calendar to drop the confirmed event onto. Anyone can
-                  also download a universal <code>.ics</code> file.
-                </li>
               </ul>
               <p class="tw-mt-2">
-                Once scheduled, an <strong>RSVP</strong> panel appears so members
+                Saving confirms the gathering in Gathering itself — no external
+                calendar needed. To add it to your own calendar afterwards, use
+                <strong>Add to calendar</strong> on the confirmed gathering,
+                which downloads a universal <code>.ics</code> file (and carries
+                the repeat rule if it's recurring).
+              </p>
+              <p class="tw-mt-2">
+                Once saved, an <strong>RSVP</strong> panel appears so members
                 can mark themselves going / maybe / can't (with optional
                 plus-ones). The organiser can <em>Reschedule</em> or
                 <em>Cancel</em> the gathering later from the same menu.

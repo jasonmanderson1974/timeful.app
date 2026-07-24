@@ -211,7 +211,7 @@
         @cancel-editing="cancelEditing"
         @save-changes="saveChanges"
         @cancel-schedule-event="cancelScheduleEvent"
-        @confirm-schedule-event="confirmScheduleEvent"
+        @save-schedule-event="saveScheduleEvent"
       />
     </div>
   </span>
@@ -737,8 +737,8 @@ export default {
     cancelScheduleEvent() {
       this.scheduleOverlapComponent?.cancelScheduleEvent()
     },
-    confirmScheduleEvent() {
-      this.scheduleOverlapComponent?.confirmScheduleEvent()
+    saveScheduleEvent() {
+      this.scheduleOverlapComponent?.saveScheduleEvent()
     },
 
     highlightAvailabilityBtn() {

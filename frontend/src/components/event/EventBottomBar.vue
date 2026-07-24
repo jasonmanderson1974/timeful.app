@@ -55,9 +55,9 @@
         <v-btn
           :disabled="!allowScheduleEvent"
           class="tw-bg-leather tw-text-brass"
-          @click="$emit('confirm-schedule-event')"
+          @click="$emit('save-schedule-event')"
         >
-          Schedule
+          Save
         </v-btn>
       </template>
     </div>
@@ -99,7 +99,7 @@ export default {
     "cancel-editing",
     "save-changes",
     "cancel-schedule-event",
-    "confirm-schedule-event",
+    "save-schedule-event",
   ],
 
   computed: {
