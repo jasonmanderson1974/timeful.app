@@ -12,8 +12,8 @@ Production deployment using Docker Compose behind a Caddy reverse proxy.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/schej-it/timeful.app
-cd timeful.app
+git clone https://github.com/jasonmanderson1974/gathering.sirthomasfoolery.com.git
+cd gathering.sirthomasfoolery.com
 
 # 2. Create server environment file
 cp server/.env.template server/.env
