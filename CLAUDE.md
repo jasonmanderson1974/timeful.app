@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development workflow (READ FIRST — multi-machine)
 
-This fork is developed from **more than one machine**, all pushing directly to `main`. Full details in
+This repo is developed from **more than one machine**, all pushing directly to `main`. Full details in
 `DEVELOPMENT.md` (read it for deploy/local-dev/testing specifics). The rules that always apply:
 
 - **Sync before making ANY changes.** Another machine may have pushed. Start every task with
