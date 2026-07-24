@@ -98,8 +98,8 @@ happy-path, email-change/OTP flows, middleware. `go test` passing means "compile
   `models/ routes/ utils/ db/`, with an ephemeral Mongo service for the `db`
   integration tests.
 - **`frontend-ci.yml`** — on `frontend/**` changes: `npm run test:unit` + build.
-- Both run on push to `main` and PRs. Note: `gh` may default to the upstream
-  repo — use `gh run list --repo <owner>/timeful.app` to see this fork's runs.
+- Both run on push to `main` and PRs. `gh run list` targets this repo directly
+  (it was detached from the schej-it fork network), so no `--repo` flag is needed.
 
 ## Conventions
 
